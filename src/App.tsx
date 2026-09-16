@@ -2535,7 +2535,7 @@ function App() {
     (
       sessao.perfil ===
         'Gestor/Administrador' ||
-      sessao.perfil ===
+      String(sessao.perfil) ===
         'Gestor'
     )
   ) {

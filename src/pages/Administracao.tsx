@@ -1131,9 +1131,9 @@ function Administracao({
                     <button
                       type="button"
                       onClick={limparUsuario}
-                      className="adm-cancel-edit"
+                      className="adm-btn-secondary adm-cancel-edit"
                     >
-                      Cancelar Edição
+                      Cancelar Alteração
                     </button>
                   )}
 
@@ -1280,7 +1280,7 @@ function Administracao({
                       }
                     >
                       <option value="Gestor/Administrador">
-                        Gestor / Administrador
+                        Gestor (a)
                       </option>
 
                       <option value="Analista">
@@ -1438,9 +1438,9 @@ function Administracao({
                     <button
                       type="button"
                       onClick={limparCliente}
-                      className="adm-cancel-edit"
+                      className="adm-btn-secondary adm-cancel-edit"
                     >
-                      Cancelar Edição
+                      Cancelar Alteração
                     </button>
                   )}
 
@@ -1592,9 +1592,9 @@ function Administracao({
                     <button
                       type="button"
                       onClick={limparSistema}
-                      className="adm-cancel-edit"
+                      className="adm-btn-secondary adm-cancel-edit"
                     >
-                      Cancelar Edição
+                      Cancelar Alteração
                     </button>
                   )}
 
@@ -1778,9 +1778,9 @@ function Administracao({
                     <button
                       type="button"
                       onClick={limparTipo}
-                      className="adm-cancel-edit"
+                      className="adm-btn-secondary adm-cancel-edit"
                     >
-                      Cancelar Edição
+                      Cancelar Alteração
                     </button>
                   )}
 
