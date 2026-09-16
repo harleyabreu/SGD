@@ -1,0 +1,1097 @@
+/* ============================================================
+
+   VERSÃO 3.2 — Feriados.css
+
+   PADRÃO VISUAL UNIFICADO
+   Referência: tela Responsáveis aprovada.
+
+   IMPORTANTE:
+   - Somente apresentação visual foi ajustada.
+   - Nenhuma regra de negócio do Feriados.tsx foi alterada.
+   ============================================================ */
+
+/* ============================================================
+   ÁREA PRINCIPAL
+   ============================================================ */
+
+.feriados-page {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 92px;
+  box-sizing: border-box;
+
+  background: #f8fafc;
+  color: #0f172a;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* ============================================================
+   CONTEÚDO CENTRAL
+   ------------------------------------------------------------
+   IMPORTANTE: 1250px é a mesma referência estrutural usada
+   na tela Responsáveis. O conteúdo deixa de ficar estreito.
+   ============================================================ */
+
+.feriados-content {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 24px 28px 30px;
+
+  display: grid;
+  gap: 18px;
+
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   TÍTULO DA PÁGINA
+   ============================================================ */
+
+.feriados-breadcrumb {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.feriados-content > div:first-child {
+  margin-bottom: 0;
+}
+
+.feriados-content > div:first-child h1 {
+  margin: 0 0 5px;
+
+  color: #173f67;
+
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.feriados-content > div:first-child p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.feriados-card {
+  width: 100%;
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  padding: 20px;
+
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.feriados-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 16px;
+}
+
+.feriados-card-title h2 {
+  margin: 0 0 4px;
+
+  color: #0f172a;
+
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.feriados-card-title span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+/* ============================================================
+   FORMULÁRIO DE NOVO FERIADO
+   ============================================================ */
+
+.feriados-form {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 14px;
+
+  align-items: end;
+}
+
+.feriados-field {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.feriados-field-wide {
+  min-width: 0;
+}
+
+.feriados-field label {
+  color: #475569;
+
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.feriados-field input,
+.feriados-field select {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  padding: 0 11px;
+
+  background: #ffffff;
+  color: #0f172a;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  outline: none;
+}
+
+.feriados-field input:focus,
+.feriados-field select:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+/* ============================================================
+   FILTROS DO CALENDÁRIO
+   ============================================================ */
+
+.feriados-filtros {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 14px;
+
+  margin-bottom: 16px;
+}
+
+.feriados-search {
+  width: 100%;
+}
+
+.feriados-search input {
+  width: 100%;
+}
+
+/* ============================================================
+   TABELA
+   ============================================================ */
+
+.feriados-table-wrap {
+  width: 100%;
+
+  overflow-x: auto;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.feriados-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  background: #ffffff;
+}
+
+.feriados-table th,
+.feriados-table td {
+  padding: 12px 10px;
+
+  text-align: left;
+
+  border-bottom: 1px solid #edf1f5;
+
+  font-size: 12px;
+}
+
+.feriados-table th {
+  background: #f8fafc;
+
+  color: #475569;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.feriados-table td {
+  color: #0f172a;
+}
+
+.feriados-table tbody tr:nth-child(even) {
+  background: #fbfcfe;
+}
+
+.feriados-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.feriados-date {
+  font-weight: 600;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.feriados-status {
+  display: inline-flex;
+
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.feriados-status.ativo {
+  background: #e8f7ee;
+  color: #15803d;
+}
+
+.feriados-status.inativo {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* ============================================================
+   AÇÕES DA TABELA
+   ============================================================ */
+
+.feriados-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.feriados-actions button {
+  padding: 5px 4px;
+
+  background: transparent;
+
+  border: 0;
+
+  color: #2563eb;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.feriados-actions button:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   ESTADO VAZIO
+   ============================================================ */
+
+.feriados-empty {
+  padding: 28px !important;
+
+  text-align: center !important;
+
+  color: #64748b !important;
+
+  font-size: 12px !important;
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+
+.feriados-toast {
+  position: fixed;
+
+  top: 24px;
+  right: 24px;
+
+  z-index: 1200;
+
+  padding: 12px 16px;
+
+  background: #182230;
+  color: #ffffff;
+
+  border-radius: 8px;
+
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+
+  font-size: 14px;
+}
+
+/* ============================================================
+   BARRA INFERIOR
+   ------------------------------------------------------------
+   Igual à referência de Responsáveis:
+   ocupa toda a largura da janela.
+   ============================================================ */
+
+.feriados-page > div[style*="position: fixed"] {
+  position: fixed !important;
+
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+
+  width: 100% !important;
+  min-height: 60px !important;
+
+  box-sizing: border-box !important;
+
+  z-index: 1200 !important;
+
+  padding: 10px 20px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+
+  background: #ffffff !important;
+
+  border-top: 1px solid #dce5ef !important;
+
+  box-shadow: 0 -4px 16px rgba(30, 60, 90, 0.08) !important;
+}
+
+.feriados-page > div[style*="position: fixed"] > div {
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 10px !important;
+
+  flex-wrap: nowrap !important;
+}
+
+/* ============================================================
+   BOTÕES — MESMO PADRÃO DE RESPONSÁVEIS
+   ============================================================ */
+
+.feriados-page > div[style*="position: fixed"] button {
+  min-height: 40px !important;
+  height: 40px !important;
+
+  padding: 0 15px !important;
+
+  border-radius: 8px !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif !important;
+
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+
+  white-space: nowrap !important;
+
+  box-sizing: border-box !important;
+
+  cursor: pointer !important;
+}
+
+/* Voltar / Cancelar */
+.feriados-page > div[style*="position: fixed"] button:first-child,
+.feriados-page > div[style*="position: fixed"] button:not(:last-child) {
+  background: #ffffff !important;
+  color: #174f86 !important;
+  border: 1px solid #c8d5e2 !important;
+}
+
+/* Cadastrar / Salvar */
+.feriados-page > div[style*="position: fixed"] button:last-child {
+  background: #174f86 !important;
+  color: #ffffff !important;
+  border: 1px solid #174f86 !important;
+}
+
+.feriados-page > div[style*="position: fixed"] button:hover {
+  filter: brightness(0.97);
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .feriados-content {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .feriados-content {
+    width: calc(100% - 40px) !important;
+    padding: 22px 0 30px !important;
+  }
+
+  .feriados-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .feriados-filtros {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .feriados-content {
+    width: calc(100% - 24px) !important;
+    padding: 18px 0 24px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] {
+    padding: 10px 12px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] button {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] > div {
+    gap: 7px !important;
+  }
+}
+
+
+/* ============================================================
+   V3.3 — AJUSTES FINAIS
+   Base: código atual enviado pelo usuário.
+   - conteúdo mantém o porte visual aprovado;
+   - rodapé possui Voltar e Cadastrar;
+   - Cadastrar chama o salvar() existente;
+   - responsividade respeita a sidebar quando a janela encolhe.
+   ============================================================ */
+
+/* Área principal */
+.feriados-page {
+  min-height: 100vh !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 0 84px !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Conteúdo no mesmo porte da tela Responsáveis em desktop */
+.feriados-content {
+  width: min(1250px, calc(100vw - 40px)) !important;
+  max-width: 1250px !important;
+  margin: 0 auto !important;
+  padding: 24px 28px 30px !important;
+  box-sizing: border-box !important;
+}
+
+/* Cards ocupam toda a largura útil do conteúdo */
+.feriados-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ------------------------------------------------------------
+   RODAPÉ
+   ------------------------------------------------------------ */
+
+.feriados-page > div[style*="position: fixed"] {
+  position: fixed !important;
+
+  left: 240px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: calc(100% - 240px) !important;
+
+  min-height: 60px !important;
+  height: 60px !important;
+
+  padding: 10px 20px !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  z-index: 1200 !important;
+  pointer-events: auto !important;
+
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -4px 16px rgba(15,23,42,.06) !important;
+}
+
+.feriados-page > div[style*="position: fixed"] > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+}
+
+.feriados-page > div[style*="position: fixed"] button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: max-content !important;
+  min-height: 40px !important;
+  height: 40px !important;
+
+  padding: 0 15px !important;
+  border-radius: 8px !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.feriados-footer-voltar,
+.feriados-page > div[style*="position: fixed"] button:first-child {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.feriados-footer-cadastrar,
+.feriados-page > div[style*="position: fixed"] button:last-child {
+  background: #174f86 !important;
+  color: #ffffff !important;
+  border: 1px solid #174f86 !important;
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVIDADE REAL
+   ------------------------------------------------------------
+   Até 1100px, a largura é calculada descontando a sidebar de
+   240px, evitando que a página fique escondida atrás dela.
+   ------------------------------------------------------------ */
+
+@media (max-width: 1100px) {
+  .feriados-content {
+    width: calc(100vw - 280px) !important;
+    max-width: none !important;
+    margin-left: 260px !important;
+    margin-right: 20px !important;
+    padding: 20px 0 28px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] {
+    left: 240px !important;
+    width: calc(100vw - 240px) !important;
+  }
+}
+
+/* Em tablets, os campos passam para uma coluna */
+@media (max-width: 850px) {
+  .feriados-content {
+    width: calc(100vw - 270px) !important;
+    margin-left: 250px !important;
+    margin-right: 20px !important;
+    padding-top: 18px !important;
+  }
+
+  .feriados-form,
+  .feriados-filtros {
+    grid-template-columns: 1fr !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+/* Em telas pequenas, assume-se sidebar reduzida para 68px */
+@media (max-width: 700px) {
+  .feriados-content {
+    width: calc(100vw - 92px) !important;
+    margin-left: 80px !important;
+    margin-right: 12px !important;
+    padding: 18px 0 24px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] {
+    left: 68px !important;
+    width: calc(100vw - 68px) !important;
+    height: auto !important;
+    min-height: 60px !important;
+    padding: 10px 12px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] > div {
+    gap: 7px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] button {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+
+  .feriados-table-wrap {
+    overflow-x: auto !important;
+  }
+
+  .feriados-table {
+    min-width: 560px !important;
+  }
+}
+
+/* Telefone muito estreito: botões continuam visíveis */
+@media (max-width: 430px) {
+  .feriados-content {
+    width: calc(100vw - 80px) !important;
+    margin-left: 70px !important;
+    margin-right: 10px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] {
+    left: 68px !important;
+    right: 0 !important;
+    width: calc(100vw - 68px) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] button {
+    padding: 0 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+
+/* ============================================================
+   V3.5 — CONTEÚDO JUNTO DA SIDEBAR
+   Referência: Dashboard / Responsáveis aprovadas.
+   Apenas posicionamento horizontal.
+   ============================================================ */
+
+.feriados-content {
+  width: calc(100% - 240px) !important;
+  max-width: none !important;
+
+  margin-left: 240px !important;
+  margin-right: 0 !important;
+
+  padding: 24px 20px 30px !important;
+
+  box-sizing: border-box !important;
+}
+
+/* Cabeçalho da página acompanha exatamente o início do conteúdo. */
+.feriados-header {
+  width: calc(100% - 240px) !important;
+  max-width: none !important;
+
+  margin-left: 240px !important;
+  margin-right: 0 !important;
+
+  padding: 24px 20px 0 !important;
+
+  box-sizing: border-box !important;
+}
+
+/* Cards continuam ocupando 100% da área disponível. */
+.feriados-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) {
+  .feriados-content {
+    width: calc(100% - 220px) !important;
+    max-width: none !important;
+    margin-left: 220px !important;
+    margin-right: 0 !important;
+    padding: 20px 16px 30px !important;
+  }
+
+  .feriados-header {
+    width: calc(100% - 220px) !important;
+    margin-left: 220px !important;
+    margin-right: 0 !important;
+    padding: 20px 16px 0 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .feriados-content {
+    width: calc(100% - 68px) !important;
+    max-width: none !important;
+    margin-left: 68px !important;
+    margin-right: 0 !important;
+    padding: 18px 12px 24px !important;
+  }
+
+  .feriados-header {
+    width: calc(100% - 68px) !important;
+    margin-left: 68px !important;
+    margin-right: 0 !important;
+    padding: 18px 12px 0 !important;
+  }
+}
+/* ============================================================
+   V3.6 — PADRONIZAÇÃO VISUAL OFICIAL
+   Base: stylesheet atual enviado pelo usuário.
+   Somente apresentação. Não altera estrutura nem regras de negócio.
+   ============================================================ */
+
+.feriados-page,
+.feriados-page button,
+.feriados-page input,
+.feriados-page select,
+.feriados-page textarea {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Título da página */
+.feriados-content > div:first-child h1 {
+  color: #000000 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.feriados-breadcrumb,
+.feriados-content > div:first-child p {
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* Títulos dos cards */
+.feriados-card-title h2 {
+  color: #0f172a !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.feriados-card-title span {
+  color: #64748b !important;
+  font-size: 11px !important;
+}
+
+/* Labels */
+.feriados-field label {
+  color: #475569 !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+/* Campos */
+.feriados-field input,
+.feriados-field select {
+  height: 40px !important;
+  min-height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 0 11px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.feriados-field input::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+.feriados-field input:focus,
+.feriados-field select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+/* Tabela */
+.feriados-table th,
+.feriados-table td {
+  font-family: inherit !important;
+}
+
+.feriados-table th {
+  color: #475569 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+.feriados-table td {
+  color: #0f172a !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+.feriados-date {
+  color: #0f172a !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* Status */
+.feriados-status {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+/* Ações da tabela */
+.feriados-actions button {
+  color: #2563eb !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+}
+
+/* Estado vazio */
+.feriados-empty {
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* Rodapé */
+.feriados-page > div[style*="position: fixed"] button {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.feriados-footer-voltar,
+.feriados-page > div[style*="position: fixed"] button:first-child {
+  color: #174f86 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.feriados-footer-cadastrar,
+.feriados-page > div[style*="position: fixed"] button:last-child {
+  color: #ffffff !important;
+  background: #2563eb !important;
+  border: 1px solid #2563eb !important;
+}
+
+/* Responsividade: mantém o conteúdo enquadrado após a sidebar */
+@media (max-width: 900px) {
+  .feriados-content {
+    width: calc(100% - 240px) !important;
+    max-width: none !important;
+    margin-left: 240px !important;
+    margin-right: 0 !important;
+    padding: 20px 16px 30px !important;
+    box-sizing: border-box !important;
+  }
+
+  .feriados-header {
+    width: calc(100% - 240px) !important;
+    max-width: none !important;
+    margin-left: 240px !important;
+    margin-right: 0 !important;
+    padding: 20px 16px 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .feriados-content {
+    width: calc(100% - 68px) !important;
+    max-width: none !important;
+    margin-left: 68px !important;
+    margin-right: 0 !important;
+    padding: 18px 12px 24px !important;
+  }
+
+  .feriados-header {
+    width: calc(100% - 68px) !important;
+    margin-left: 68px !important;
+    margin-right: 0 !important;
+    padding: 18px 12px 0 !important;
+  }
+
+  .feriados-page > div[style*="position: fixed"] {
+    left: 68px !important;
+    width: calc(100% - 68px) !important;
+  }
+}
+/* Oculta o breadcrumb "Administração / Feriados" */
+.feriados-breadcrumb {
+  display: none !important;
+}
+/* ============================================================
+   V1.1 — SHELL EXCLUSIVO DO MENU PRINCIPAL
+   ------------------------------------------------------------
+   Sidebar, Cabeçalho e rodapé pertencem exclusivamente ao
+   MenuPrincipal. Este arquivo cuida somente do conteúdo de Feriados.
+   ============================================================ */
+
+.feriados-page {
+  width: 100% !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 0 92px !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+}
+
+.feriados-content,
+.feriados-header {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.feriados-content {
+  padding: 0 !important;
+}
+
+/* O rodapé oficial é o do MenuPrincipal. */
+.feriados-page > div[style*="position: fixed"] {
+  display: none !important;
+}
+
+/* A página já está dentro de .gd-page-content. */
+.gd-page-content .feriados-page {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.gd-page-content .feriados-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ajuste visual equivalente às telas já aprovadas. */
+.gd-page-content .feriados-page > .feriados-content {
+  padding: 0 !important;
+}
+
+@media (max-width: 900px) {
+  .gd-page-content .feriados-content {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .feriados-content {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* ============================================================
+   CORREÇÃO FINAL — PADRÃO EXATO DA NOVA DEMANDA
+   Somente espaçamento e cabeçalho da página.
+   ============================================================ */
+
+.gd-page-content .feriados-content {
+  padding: 2px 20px 92px !important;
+}
+
+.gd-page-content .feriados-content > div:first-child h1 {
+  margin: 0 0 5px !important;
+  color: #173f67 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.gd-page-content .feriados-content > div:first-child p {
+  margin: 0 !important;
+  color: #68788a !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+
+/* ============================================================
+   AJUSTE PONTUAL — ALINHAMENTO HORIZONTAL COM RESPONSÁVEIS
+   Somente o espaço entre a sidebar azul e o início dos campos.
+   ============================================================ */
+
+.gd-page-content .feriados-content {
+  padding-left: 0 !important;
+}
+
+.gd-page-content .feriados-page {
+  padding-left: 18px !important;
+  padding-right: 0 !important;
+}
+
+/* ============================================================
+   AJUSTE FINAL DE CORES — SOMENTE CABEÇALHOS
+   ============================================================ */
+
+/* Título principal "Feriados" em preto */
+.gd-page-content .feriados-content > div:first-child h1 {
+  color: #000000 !important;
+}
+
+/* Títulos dos cards em azul-marinho */
+.gd-page-content .feriados-content .feriados-card-title h2 {
+  color: #173f67 !important;
+}
