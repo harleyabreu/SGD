@@ -13,6 +13,7 @@ import {
 } from '../services/storage'
 
 import MenuPrincipal from '../components/MenuPrincipal'
+import { registrarAlteracao } from '../services/auditoria'
 
 interface Props {
   onVoltar: () => void
@@ -155,29 +156,65 @@ export default function Clientes({
     const agora =
       agoraISO()
 
-    const atualizados =
-      editando
-        ? clientes.map(
-            (cliente) =>
-              cliente.id === editando.id
-                ? {
-                    ...cliente,
-                    nome: nomeLimpo,
-                    sigla: siglaLimpa,
-                    atualizadoEm: agora,
-                  }
-                : cliente
-          )
-        : [
-            ...clientes,
-            {
-              id: proximoId(clientes),
-              nome: nomeLimpo,
-              sigla: siglaLimpa,
-              ativo: true,
-              criadoEm: agora,
-            },
-          ]
+    let atualizados: Cliente[]
+
+    if (editando) {
+      const clienteAnterior = clientes.find(
+        (cliente) => cliente.id === editando.id
+      )
+
+      atualizados = clientes.map(
+        (cliente) =>
+          cliente.id === editando.id
+            ? {
+                ...cliente,
+                nome: nomeLimpo,
+                sigla: siglaLimpa,
+                atualizadoEm: agora,
+              }
+            : cliente
+      )
+
+      const anterior = clienteAnterior
+        ? `Nome: ${clienteAnterior.nome} | Sigla: ${clienteAnterior.sigla || '—'}`
+        : '—'
+
+      const novo =
+        `Nome: ${nomeLimpo} | Sigla: ${siglaLimpa || '—'}`
+
+      registrarAlteracao(
+        'cliente',
+        editando.id,
+        'edicao',
+        `Órgão/Cliente ${nomeLimpo} foi atualizado.`,
+        nomeUsuario,
+        {
+          valorAnterior: anterior,
+          valorNovo: novo,
+        }
+      )
+    } else {
+      const novo: Cliente = {
+        id: proximoId(clientes),
+        nome: nomeLimpo,
+        sigla: siglaLimpa,
+        ativo: true,
+        criadoEm: agora,
+      }
+
+      atualizados = [
+        ...clientes,
+        novo,
+      ]
+
+      registrarAlteracao(
+        'cliente',
+        novo.id,
+        'criacao',
+        `Órgão/Cliente ${novo.nome} foi cadastrado.`,
+        nomeUsuario
+      )
+    }
 
     setClientes(atualizados)
 
@@ -193,13 +230,15 @@ export default function Clientes({
   function alternarStatus(
     cliente: Cliente
   ) {
+    const novoStatus = !cliente.ativo
+
     const atualizados =
       clientes.map(
         (item) =>
           item.id === cliente.id
             ? {
                 ...item,
-                ativo: !item.ativo,
+                ativo: novoStatus,
                 atualizadoEm: agoraISO(),
               }
             : item
@@ -208,6 +247,18 @@ export default function Clientes({
     setClientes(atualizados)
 
     salvarClientes(atualizados)
+
+    registrarAlteracao(
+      'cliente',
+      cliente.id,
+      'status',
+      `${cliente.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
+      nomeUsuario,
+      {
+        valorAnterior: cliente.ativo ? 'Ativo' : 'Inativo',
+        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+      }
+    )
   }
 
   const ativos =

@@ -38,6 +38,7 @@ import Clientes from './pages/Clientes'
 import Responsaveis from './pages/Responsaveis'
 import Relatorios from './pages/Relatorios'
 import TrocarSenha from './pages/TrocarSenha'
+import Configuracoes from './pages/Configuracoes'
 
 import type {
   Arquivo,
@@ -60,7 +61,40 @@ import {
 } from './services/storage'
 
 import { registrarAlteracao } from './services/auditoria'
-import { criarNotificacao } from './services/notificacoes'
+import { criarNotificacao as criarNotificacaoBase } from './services/notificacoes'
+
+type ConfiguracaoNotificacao = 'atrasadas' | 'proximoVencimento' | 'atribuicao' | 'conclusao' | 'reabertura' | 'cancelamento'
+
+function notificacaoHabilitada(campo: ConfiguracaoNotificacao): boolean {
+  const padrao: Record<ConfiguracaoNotificacao, boolean> = {
+    atrasadas: true, proximoVencimento: true, atribuicao: true,
+    conclusao: true, reabertura: true, cancelamento: true,
+  }
+  try {
+    const salvo = localStorage.getItem('configuracoes_sistema')
+    if (!salvo) return true
+    const dados = JSON.parse(salvo) as { notificacoes?: Partial<Record<ConfiguracaoNotificacao, boolean>> }
+    return dados.notificacoes?.[campo] ?? padrao[campo]
+  } catch {
+    return padrao[campo]
+  }
+}
+
+function identificarConfiguracaoNotificacao(titulo: string): ConfiguracaoNotificacao | null {
+  const valor = titulo.trim().toLowerCase()
+  if (valor === 'nova demanda atribuída' || valor === 'demanda atribuída') return 'atribuicao'
+  if (valor === 'demanda concluída') return 'conclusao'
+  if (valor === 'demanda reaberta') return 'reabertura'
+  if (valor === 'demanda cancelada') return 'cancelamento'
+  return null
+}
+
+function criarNotificacao(notificacao: Parameters<typeof criarNotificacaoBase>[0]) {
+  const campo = identificarConfiguracaoNotificacao(notificacao.titulo)
+  if (campo && !notificacaoHabilitada(campo)) return
+  criarNotificacaoBase(notificacao)
+}
+import { diasPrazoPorPrioridade as obterDiasSLAConfigurados } from './sla'
 
 // ============================================================
 // USUÁRIO PADRÃO
@@ -95,13 +129,6 @@ const PRIORIDADES = [
 // ============================================================
 // SLA
 // ============================================================
-
-const SLA_POR_PRIORIDADE: Record<string, number> = {
-  'Crítica': 2,
-  'Alta': 6,
-  'Média': 10,
-  'Baixa': 20,
-}
 
 // ============================================================
 // DATA / HORA
@@ -234,10 +261,7 @@ function adicionarDiasUteis(
 function diasPrazoPorPrioridade(
   prioridade: string
 ): number {
-  return (
-    SLA_POR_PRIORIDADE[prioridade] ??
-    SLA_POR_PRIORIDADE['Média']
-  )
+  return obterDiasSLAConfigurados(prioridade)
 }
 
 // ============================================================
@@ -2417,6 +2441,32 @@ function App() {
   }
 
   // ==========================================================
+  // CONFIGURAÇÕES
+  // ==========================================================
+
+  function abrirConfiguracoes() {
+    if (
+      sessao?.perfil !== 'Gestor/Administrador' &&
+      String(sessao?.perfil) !== 'Gestor'
+    ) {
+      return
+    }
+
+    setPagina('configuracoes')
+  }
+
+  function abrirAdministracao() {
+    if (
+      sessao?.perfil !== 'Gestor/Administrador' &&
+      String(sessao?.perfil) !== 'Gestor'
+    ) {
+      return
+    }
+
+    setPagina('administracao')
+  }
+
+  // ==========================================================
   // PRIMEIRO ACESSO / TROCA OBRIGATÓRIA DE SENHA
   // ==========================================================
 
@@ -2526,6 +2576,38 @@ function App() {
   }
 
   // ==========================================================
+  // CONFIGURAÇÕES
+  // ==========================================================
+
+  if (
+    pagina ===
+      'configuracoes' &&
+    (
+      sessao.perfil ===
+        'Gestor/Administrador' ||
+      String(sessao.perfil) ===
+        'Gestor'
+    )
+  ) {
+    return (
+      <Configuracoes
+        usuarioAtual={usuarioAtual!}
+        onVoltar={() => setPagina('dashboard')}
+        onDashboard={() => setPagina('dashboard')}
+        onTodasDemandas={() => setPagina('todas-demandas')}
+        onNovaDemanda={abrirNovaDemanda}
+        onClientes={abrirClientes}
+        onResponsaveis={abrirResponsaveis}
+        onFeriados={abrirFeriados}
+        onRelatorios={abrirRelatorios}
+        onConfiguracoes={abrirConfiguracoes}
+        onAdministracao={abrirAdministracao}
+        onLogout={realizarLogout}
+      />
+    )
+  }
+
+  // ==========================================================
   // ADMINISTRAÇÃO
   // ==========================================================
 
@@ -2545,6 +2627,10 @@ function App() {
 
         onVoltar={() =>
           setPagina('dashboard')
+        }
+
+        onVoltarConfiguracoes={() =>
+          setPagina('configuracoes')
         }
 
         onFeriados={() =>
@@ -2567,9 +2653,7 @@ function App() {
 
         onRelatorios={abrirRelatorios}
 
-        onConfiguracoes={() =>
-          setPagina('administracao')
-        }
+        onConfiguracoes={abrirConfiguracoes}
 
         onSair={realizarLogout}
       />
@@ -2601,7 +2685,7 @@ function App() {
         onResponsaveis={abrirResponsaveis}
         onFeriados={abrirFeriados}
         onRelatorios={abrirRelatorios}
-        onConfiguracoes={() => setPagina('administracao')}
+        onConfiguracoes={abrirConfiguracoes}
         onLogout={realizarLogout}
       />
     )
@@ -2653,7 +2737,7 @@ function App() {
         onResponsaveis={abrirResponsaveis}
         onFeriados={abrirFeriados}
         onRelatorios={abrirRelatorios}
-        onConfiguracoes={() => setPagina('administracao')}
+        onConfiguracoes={abrirConfiguracoes}
         onLogout={realizarLogout}
       />
     )
@@ -2704,7 +2788,7 @@ function App() {
         onResponsaveis={abrirResponsaveis}
         onFeriados={abrirFeriados}
         onRelatorios={abrirRelatorios}
-        onConfiguracoes={() => setPagina('administracao')}
+        onConfiguracoes={abrirConfiguracoes}
         onLogout={realizarLogout}
       />
     )
@@ -2780,11 +2864,7 @@ function App() {
           abrirRelatorios
         }
 
-        onConfiguracoes={() =>
-          setPagina(
-            'administracao'
-          )
-        }
+        onConfiguracoes={abrirConfiguracoes}
 
         onLogout={
           realizarLogout
@@ -2834,7 +2914,7 @@ function App() {
         onResponsaveis={abrirResponsaveis}
         onFeriados={abrirFeriados}
         onRelatorios={abrirRelatorios}
-        onConfiguracoes={() => setPagina('administracao')}
+        onConfiguracoes={abrirConfiguracoes}
         onLogout={realizarLogout}
       />
     )
@@ -2857,7 +2937,7 @@ function App() {
         onResponsaveis={abrirResponsaveis}
         onFeriados={abrirFeriados}
         onRelatorios={abrirRelatorios}
-        onConfiguracoes={() => setPagina('administracao')}
+        onConfiguracoes={abrirConfiguracoes}
         onLogout={realizarLogout}
       />
     )
@@ -2880,7 +2960,7 @@ function App() {
         onResponsaveis={abrirResponsaveis}
         onFeriados={abrirFeriados}
         onRelatorios={abrirRelatorios}
-        onConfiguracoes={() => setPagina('administracao')}
+        onConfiguracoes={abrirConfiguracoes}
         onLogout={realizarLogout}
       />
     )
@@ -2932,11 +3012,7 @@ function App() {
           abrirRelatorios
         }
 
-        onConfiguracoes={() =>
-          setPagina(
-            'administracao'
-          )
-        }
+        onConfiguracoes={abrirConfiguracoes}
       />
 
     </div>

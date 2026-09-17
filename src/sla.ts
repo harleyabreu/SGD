@@ -39,6 +39,63 @@ export const PRAZOS_SLA:
 }
 
 // ============================================================
+// CONFIGURAÇÕES DE SLA
+// ------------------------------------------------------------
+// A tela de Configurações grava os valores em localStorage na
+// chave 'configuracoes_sistema'. Sem configuração salva, os
+// valores oficiais acima continuam sendo utilizados.
+// ============================================================
+
+const CHAVE_CONFIGURACOES =
+  'configuracoes_sistema'
+
+type ConfiguracaoSLA = {
+  sla?: {
+    critica?: number
+    alta?: number
+    media?: number
+    baixa?: number
+  }
+}
+
+function carregarPrazosConfigurados(): Record<string, number> {
+  const padrao = { ...PRAZOS_SLA }
+
+  try {
+    const salvo = localStorage.getItem(CHAVE_CONFIGURACOES)
+
+    if (!salvo) {
+      return padrao
+    }
+
+    const configuracao = JSON.parse(salvo) as ConfiguracaoSLA
+    const sla = configuracao.sla
+
+    if (!sla) {
+      return padrao
+    }
+
+    const valores: Record<string, number> = {
+      'Crítica': sla.critica ?? padrao['Crítica'],
+      'Alta': sla.alta ?? padrao['Alta'],
+      'Média': sla.media ?? padrao['Média'],
+      'Baixa': sla.baixa ?? padrao['Baixa'],
+    }
+
+    return Object.fromEntries(
+      Object.entries(valores).map(([prioridade, valor]) => [
+        prioridade,
+        Number.isFinite(Number(valor)) && Number(valor) > 0
+          ? Math.floor(Number(valor))
+          : padrao[prioridade],
+      ])
+    )
+  } catch {
+    return padrao
+  }
+}
+
+// ============================================================
 // DATA LOCAL
 // ============================================================
 
@@ -393,11 +450,11 @@ export function diasPrazoPorPrioridade(
   prioridade: string
 ): number {
 
+  const prazos = carregarPrazosConfigurados()
+
   return (
-    PRAZOS_SLA[
-      prioridade
-    ] ??
-    10
+    prazos[prioridade] ??
+    prazos['Média']
   )
 }
 

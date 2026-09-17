@@ -54,6 +54,7 @@ type Aba =
 type Props = {
   usuarioAtual: Usuario
   onVoltar: () => void
+  onVoltarConfiguracoes?: () => void
   onFeriados: () => void
 
   // Navegações opcionais.
@@ -109,6 +110,7 @@ function formatarNomeComposto(nome: string) {
 function Administracao({
   usuarioAtual,
   onVoltar,
+  onVoltarConfiguracoes,
   onFeriados,
   onDashboard,
   onTodasDemandas,
@@ -294,6 +296,18 @@ function Administracao({
     )
   }
 
+  function atualizarAuditoriaLocal() {
+    setAuditoria(carregarAuditoria())
+  }
+
+  function quantidadeGestoresAtivos() {
+    return usuarios.filter(
+      (item) =>
+        item.perfil === 'Gestor/Administrador' &&
+        item.status === 'Ativo'
+    ).length
+  }
+
   // ==========================================================
   // USUÁRIOS
   // ==========================================================
@@ -374,6 +388,19 @@ function Administracao({
       }
     }
 
+    if (
+      editUsuario &&
+      editUsuario.status === 'Ativo' &&
+      editUsuario.perfil === 'Gestor/Administrador' &&
+      perfilUsuario !== 'Gestor/Administrador' &&
+      quantidadeGestoresAtivos() <= 1
+    ) {
+      window.alert(
+        'Não é possível retirar o perfil de Gestor deste usuário. O sistema precisa manter pelo menos um Gestor ativo.'
+      )
+      return
+    }
+
     const duplicado = usuarios.find(
       (item) =>
         item.id !== editUsuario?.id &&
@@ -431,8 +458,18 @@ function Administracao({
         modoAlterarSenha
           ? `Senha do usuário ${nomeUsuario.trim()} foi alterada pelo Gestor.`
           : `Usuário ${nomeUsuario.trim()} foi atualizado.`,
-        usuarioAtual.nome
+        usuarioAtual.nome,
+        {
+          valorAnterior: modoAlterarSenha
+            ? 'Senha: cadastrada anteriormente'
+            : `Nome: ${editUsuario.nome} | Login: ${editUsuario.login} | E-mail: ${editUsuario.email} | Telefone: ${editUsuario.telefone || '—'} | Perfil: ${editUsuario.perfil === 'Gestor/Administrador' ? 'Gestor' : 'Analista'}`,
+          valorNovo: modoAlterarSenha
+            ? 'Senha: alterada'
+            : `Nome: ${nomeUsuario.trim()} | Login: ${loginUsuario.trim()} | E-mail: ${emailUsuario.trim()} | Telefone: ${telefoneUsuario.trim() || '—'} | Perfil: ${perfilUsuario === 'Gestor/Administrador' ? 'Gestor' : 'Analista'}`,
+        }
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         modoAlterarSenha
@@ -467,6 +504,8 @@ function Administracao({
         `Usuário ${novo.nome} foi cadastrado.`,
         usuarioAtual.nome
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Usuário cadastrado com sucesso.'
@@ -506,6 +545,17 @@ function Administracao({
       }
     }
 
+    if (
+      item.status === 'Ativo' &&
+      item.perfil === 'Gestor/Administrador' &&
+      quantidadeGestoresAtivos() <= 1
+    ) {
+      window.alert(
+        'Não é possível inativar este usuário. O sistema precisa manter pelo menos um Gestor ativo.'
+      )
+      return
+    }
+
     const novoStatus: Usuario['status'] =
       item.status === 'Ativo'
         ? 'Inativo'
@@ -537,6 +587,8 @@ function Administracao({
         valorNovo: novoStatus,
       }
     )
+
+    atualizarAuditoriaLocal()
 
     avisar(
       `Usuário ${novoStatus.toLowerCase()} com sucesso.`
@@ -603,8 +655,14 @@ function Administracao({
         editCliente.id,
         'edicao',
         `Órgão ${nomeCliente.trim()} foi atualizado.`,
-        usuarioAtual.nome
+        usuarioAtual.nome,
+        {
+          valorAnterior: `Nome: ${editCliente.nome} | Sigla: ${editCliente.sigla || '—'}`,
+          valorNovo: `Nome: ${nomeCliente.trim()} | Sigla: ${siglaCliente.trim() || '—'}`,
+        }
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Órgão atualizado com sucesso.'
@@ -630,6 +688,8 @@ function Administracao({
         `Órgão ${novo.nome} foi cadastrado.`,
         usuarioAtual.nome
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Órgão cadastrado com sucesso.'
@@ -664,8 +724,14 @@ function Administracao({
       item.id,
       'status',
       `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      usuarioAtual.nome
+      usuarioAtual.nome,
+      {
+        valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
+        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+      }
     )
+
+    atualizarAuditoriaLocal()
 
     avisar(
       `Órgão ${novoStatus ? 'ativado' : 'inativado'}.`
@@ -736,13 +802,27 @@ function Administracao({
             : item
       )
 
+      const clienteAnterior = clientes.find(
+        (cliente) => cliente.id === editSistema.clienteId
+      )
+
+      const clienteNovo = clientes.find(
+        (cliente) => cliente.id === clienteId
+      )
+
       registrarAlteracao(
         'sistema',
         editSistema.id,
         'edicao',
         `Sistema ${nomeSistema.trim()} foi atualizado.`,
-        usuarioAtual.nome
+        usuarioAtual.nome,
+        {
+          valorAnterior: `Nome: ${editSistema.nome} | Órgão: ${clienteAnterior?.sigla || clienteAnterior?.nome || '—'}`,
+          valorNovo: `Nome: ${nomeSistema.trim()} | Órgão: ${clienteNovo?.sigla || clienteNovo?.nome || '—'}`,
+        }
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Sistema atualizado com sucesso.'
@@ -768,6 +848,8 @@ function Administracao({
         `Sistema ${novo.nome} foi cadastrado.`,
         usuarioAtual.nome
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Sistema cadastrado com sucesso.'
@@ -802,8 +884,14 @@ function Administracao({
       item.id,
       'status',
       `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      usuarioAtual.nome
+      usuarioAtual.nome,
+      {
+        valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
+        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+      }
     )
+
+    atualizarAuditoriaLocal()
 
     avisar(
       `Sistema ${novoStatus ? 'ativado' : 'inativado'}.`
@@ -867,8 +955,14 @@ function Administracao({
         editTipo.id,
         'edicao',
         `Tipo ${nomeTipo.trim()} foi atualizado.`,
-        usuarioAtual.nome
+        usuarioAtual.nome,
+        {
+          valorAnterior: editTipo.nome,
+          valorNovo: nomeTipo.trim(),
+        }
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Tipo atualizado com sucesso.'
@@ -893,6 +987,8 @@ function Administracao({
         `Tipo ${novo.nome} foi cadastrado.`,
         usuarioAtual.nome
       )
+
+      atualizarAuditoriaLocal()
 
       avisar(
         'Tipo cadastrado com sucesso.'
@@ -927,8 +1023,14 @@ function Administracao({
       item.id,
       'status',
       `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      usuarioAtual.nome
+      usuarioAtual.nome,
+      {
+        valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
+        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+      }
     )
+
+    atualizarAuditoriaLocal()
 
     avisar(
       `Tipo ${novoStatus ? 'ativado' : 'inativado'}.`
@@ -969,9 +1071,9 @@ function Administracao({
           <button
             type="button"
             className="adm-btn-secondary adm-footer-voltar"
-            onClick={onVoltar}
+            onClick={onVoltarConfiguracoes || onVoltar}
           >
-            Voltar ao Dashboard
+            ← Voltar a Configurações
           </button>
 
           <div className="adm-footer-acoes-direita">
@@ -1065,6 +1167,9 @@ function Administracao({
                   onClick={() => {
                     setAba(id)
                     setPesquisa('')
+                    if (id === 'auditoria') {
+                      atualizarAuditoriaLocal()
+                    }
                   }}
                 >
                   {label}

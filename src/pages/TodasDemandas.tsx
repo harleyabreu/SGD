@@ -53,6 +53,69 @@ import type { Demanda } from '../types'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './TodasDemandas.css'
 
+// ============================================================
+// PREFERÊNCIAS DE INTERFACE
+// Lidas das Configurações sem alterar o comportamento padrão.
+// ============================================================
+
+const CHAVE_CONFIGURACOES = 'configuracoes_sistema'
+
+type PreferenciasInterface = {
+  itensPorPagina: 10 | 20 | 30 | 50
+  visualizacaoPadrao: 'lista' | 'kanban'
+}
+
+const PREFERENCIAS_INTERFACE_PADRAO: PreferenciasInterface = {
+  itensPorPagina: 10,
+  visualizacaoPadrao: 'lista',
+}
+
+function carregarPreferenciasInterface(): PreferenciasInterface {
+  try {
+    const salvo = localStorage.getItem(CHAVE_CONFIGURACOES)
+
+    if (!salvo) {
+      return PREFERENCIAS_INTERFACE_PADRAO
+    }
+
+    const dados = JSON.parse(salvo) as {
+      interface?: {
+        itensPorPagina?: unknown
+        visualizacaoPadrao?: unknown
+      }
+    }
+
+    const itensValidos: PreferenciasInterface['itensPorPagina'][] = [
+      10,
+      20,
+      30,
+      50,
+    ]
+
+    const itensSalvos = dados.interface?.itensPorPagina
+    const visualizacaoSalva = dados.interface?.visualizacaoPadrao
+
+    const itensPorPagina = itensValidos.includes(
+      itensSalvos as PreferenciasInterface['itensPorPagina']
+    )
+      ? (itensSalvos as PreferenciasInterface['itensPorPagina'])
+      : PREFERENCIAS_INTERFACE_PADRAO.itensPorPagina
+
+    const visualizacaoPadrao =
+      visualizacaoSalva === 'kanban' || visualizacaoSalva === 'lista'
+        ? visualizacaoSalva
+        : PREFERENCIAS_INTERFACE_PADRAO.visualizacaoPadrao
+
+    return {
+      itensPorPagina,
+      visualizacaoPadrao,
+    }
+  } catch {
+    return PREFERENCIAS_INTERFACE_PADRAO
+  }
+}
+
+
 type Props = {
   demandas: Demanda[]
   onVoltar: () => void
@@ -381,12 +444,14 @@ export default function TodasDemandas({
   // ESTADOS
   // ==========================================================
 
+  const preferenciasInterface = carregarPreferenciasInterface()
+
   const [
     visualizacao,
     setVisualizacao
   ] = useState<
     'lista' | 'kanban'
-  >('lista')
+  >(preferenciasInterface.visualizacaoPadrao)
 
   const [
     pesquisa,
@@ -451,7 +516,7 @@ export default function TodasDemandas({
     useState(1)
 
   const [itensPorPagina, setItensPorPagina] =
-    useState(10)
+    useState<number>(preferenciasInterface.itensPorPagina)
 
   // ==========================================================
   // V 1.7 — SELEÇÃO MÚLTIPLA E AÇÕES EM MASSA
@@ -1718,9 +1783,9 @@ export default function TodasDemandas({
                         fontWeight: 600,
                       }}
                     >
-                      <option value={5}>5</option>
                       <option value={10}>10</option>
                       <option value={20}>20</option>
+                      <option value={30}>30</option>
                       <option value={50}>50</option>
                     </select>
                     <span>

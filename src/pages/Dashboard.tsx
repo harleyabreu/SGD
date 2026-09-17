@@ -323,13 +323,36 @@ function criarIdNotificacao(
   return `${tipo}-${demandaId}-${referencia}`
 }
 
+function notificacaoDashboardHabilitada(campo: 'atrasadas' | 'proximoVencimento' | 'atribuicao' | 'conclusao' | 'reabertura' | 'cancelamento'): boolean {
+  const padrao = {
+    atrasadas: true,
+    proximoVencimento: true,
+    atribuicao: true,
+    conclusao: true,
+    reabertura: true,
+    cancelamento: true,
+  }
+
+  try {
+    const salvo = localStorage.getItem('configuracoes_sistema')
+    if (!salvo) return true
+    const dados = JSON.parse(salvo) as {
+      notificacoes?: Partial<typeof padrao>
+    }
+    return dados.notificacoes?.[campo] ?? padrao[campo]
+  } catch {
+    return padrao[campo]
+  }
+}
+
+
 function gerarNotificacoes(
   demandas: Demanda[]
 ): Notificacao[] {
   const notificacoes: Notificacao[] = []
 
   demandas.forEach((demanda) => {
-    if (estaAtrasada(demanda)) {
+    if (notificacaoDashboardHabilitada('atrasadas') && estaAtrasada(demanda)) {
       notificacoes.push({
         id: criarIdNotificacao(
           'atrasada',
@@ -347,7 +370,7 @@ function gerarNotificacoes(
       })
     }
 
-    if (estaProximaDoVencimento(demanda)) {
+    if (notificacaoDashboardHabilitada('proximoVencimento') && estaProximaDoVencimento(demanda)) {
       notificacoes.push({
         id: criarIdNotificacao(
           'prazo',
@@ -374,7 +397,7 @@ function gerarNotificacoes(
         return
       }
 
-      if (item.tipo === 'responsavel') {
+      if (item.tipo === 'responsavel' && notificacaoDashboardHabilitada('atribuicao')) {
         notificacoes.push({
           id: criarIdNotificacao(
             'responsavel',
@@ -406,8 +429,9 @@ function gerarNotificacoes(
         ).toLowerCase()
 
         if (
-          titulo.includes('conclu') ||
-          descricao.includes('conclu')
+          notificacaoDashboardHabilitada('conclusao') &&
+          (titulo.includes('conclu') ||
+          descricao.includes('conclu'))
         ) {
           notificacoes.push({
             id: criarIdNotificacao(
@@ -428,8 +452,9 @@ function gerarNotificacoes(
         }
 
         if (
-          descricao.includes('cancelad') ||
-          titulo.includes('cancelad')
+          notificacaoDashboardHabilitada('cancelamento') &&
+          (descricao.includes('cancelad') ||
+          titulo.includes('cancelad'))
         ) {
           notificacoes.push({
             id: criarIdNotificacao(
@@ -467,6 +492,7 @@ function gerarNotificacoes(
           )
 
         if (
+          notificacaoDashboardHabilitada('reabertura') &&
           houveConclusaoAnterior &&
           !descricao.includes('conclu')
         ) {
