@@ -116,6 +116,32 @@ const STATUS_OFICIAIS = [
 ]
 
 // ============================================================
+// FLUXO OFICIAL DA DEMANDA
+// ------------------------------------------------------------
+// Nova nasce no cadastro e não deve ser usada como destino de
+// fluxo operacional. Conclusão e cancelamento são finais; a
+// reabertura utiliza uma operação própria e motivo obrigatório.
+// ============================================================
+
+const TRANSICOES_PERMITIDAS: Record<string, string[]> = {
+  Nova: ['Aguardando', 'Em Atendimento', 'Cancelada'],
+  Aguardando: ['Em Atendimento', 'Cancelada'],
+  'Em Atendimento': ['Com Pendências', 'Concluída', 'Cancelada'],
+  'Com Pendências': ['Em Atendimento', 'Concluída', 'Cancelada'],
+  Concluída: [],
+  Cancelada: [],
+}
+
+function ehGestor(sessaoAtual: SessaoUsuario | null): boolean {
+  return sessaoAtual?.perfil === 'Gestor/Administrador' || String(sessaoAtual?.perfil) === 'Gestor'
+}
+
+function transicaoPermitida(statusAnterior: string, novoStatus: string): boolean {
+  if (statusAnterior === novoStatus) return true
+  return TRANSICOES_PERMITIDAS[statusAnterior]?.includes(novoStatus) ?? false
+}
+
+// ============================================================
 // PRIORIDADES
 // ============================================================
 
@@ -1022,6 +1048,19 @@ function App() {
       demanda.responsavel?.trim() ||
       ''
 
+    if (
+      responsavel &&
+      !analistasAtivos.some(
+        (usuario) =>
+          usuario.nome === responsavel
+      )
+    ) {
+      window.alert(
+        'Selecione um Analista ativo cadastrado no sistema.'
+      )
+      return
+    }
+
     const novaDemanda =
       normalizarDemanda({
         ...demanda,
@@ -1151,6 +1190,21 @@ function App() {
         novaPrioridade
       )
     ) {
+      return
+    }
+
+    const demandaPrioridade =
+      demandas.find(
+        (item) => item.id === id
+      )
+
+    if (
+      demandaPrioridade?.status === 'Concluída' ||
+      demandaPrioridade?.status === 'Cancelada'
+    ) {
+      window.alert(
+        'Demandas concluídas ou canceladas não podem ter a prioridade alterada. Reabra a demanda antes, quando aplicável.'
+      )
       return
     }
 
@@ -1302,6 +1356,30 @@ function App() {
       return
     }
 
+    if (
+      novoPrazo < dataLocalISO()
+    ) {
+      window.alert(
+        'O novo prazo não pode ser anterior à data atual.'
+      )
+      return
+    }
+
+    const demandaPrazo =
+      demandas.find(
+        (item) => item.id === id
+      )
+
+    if (
+      demandaPrazo?.status === 'Concluída' ||
+      demandaPrazo?.status === 'Cancelada'
+    ) {
+      window.alert(
+        'Demandas concluídas ou canceladas não podem ter o prazo alterado. Reabra a demanda antes, quando aplicável.'
+      )
+      return
+    }
+
     atualizarDemanda(
       id,
       (demanda) => {
@@ -1423,6 +1501,21 @@ function App() {
           demanda.status !==
           'Concluída'
         ) {
+          return demanda
+        }
+
+        const responsavelAtual =
+          demanda.responsavel?.trim() || ''
+
+        if (
+          !responsavelAtual ||
+          !analistasAtivos.some(
+            (usuario) => usuario.nome === responsavelAtual
+          )
+        ) {
+          window.alert(
+            'A demanda precisa ter um Analista ativo definido para ser reaberta.'
+          )
           return demanda
         }
 
@@ -1579,6 +1672,27 @@ function App() {
         const statusAnterior =
           demanda.status
 
+        let periodosPendencia =
+          [
+            ...(demanda.periodosPendencia || []),
+          ]
+
+        if (statusAnterior === 'Com Pendências') {
+          const ultimo =
+            periodosPendencia[
+              periodosPendencia.length - 1
+            ]
+
+          if (ultimo && !ultimo.fim) {
+            periodosPendencia[
+              periodosPendencia.length - 1
+            ] = {
+              ...ultimo,
+              fim: agora,
+            }
+          }
+        }
+
         const descricao =
           `Demanda cancelada. Status anterior: "${statusAnterior}". Motivo: ${motivoFinal}.`
 
@@ -1658,6 +1772,8 @@ function App() {
           motivoCancelamento:
             motivoFinal,
 
+          periodosPendencia,
+
           historico: [
             historico,
 
@@ -1686,6 +1802,46 @@ function App() {
       return
     }
 
+    const demandaAtual =
+      demandas.find(
+        (item) => item.id === id
+      )
+
+    if (!demandaAtual) {
+      return
+    }
+
+    const usuarioEhGestor =
+      ehGestor(sessao)
+
+    if (
+      !usuarioEhGestor &&
+      demandaAtual.responsavel !== nomeUsuarioAtual
+    ) {
+      window.alert(
+        'Você só pode alterar o status de demandas atribuídas a você.'
+      )
+      return
+    }
+
+    if (
+      demandaAtual.status === novoStatus
+    ) {
+      return
+    }
+
+    if (
+      !transicaoPermitida(
+        demandaAtual.status,
+        novoStatus
+      )
+    ) {
+      window.alert(
+        `Não é permitido alterar o status de "${demandaAtual.status}" para "${novoStatus}". Utilize a ação específica disponível no fluxo.`
+      )
+      return
+    }
+
     if (
       novoStatus ===
         'Com Pendências' &&
@@ -1707,6 +1863,43 @@ function App() {
         'O comentário de conclusão é obrigatório.'
       )
 
+      return
+    }
+
+    if (
+      novoStatus ===
+        'Em Atendimento' &&
+      !demandaAtual.responsavel?.trim()
+    ) {
+      window.alert(
+        'Defina um Analista antes de colocar a demanda Em Atendimento.'
+      )
+      return
+    }
+
+    if (
+      novoStatus ===
+        'Em Atendimento' &&
+      !analistasAtivos.some(
+        (usuario) =>
+          usuario.nome ===
+          demandaAtual.responsavel
+      )
+    ) {
+      window.alert(
+        'O Analista responsável precisa estar ativo e cadastrado no sistema.'
+      )
+      return
+    }
+
+    if (
+      novoStatus ===
+        'Aguardando' &&
+      demandaAtual.responsavel?.trim()
+    ) {
+      window.alert(
+        'Para colocar a demanda em Aguardando, remova primeiro o Analista responsável.'
+      )
       return
     }
 
@@ -1744,10 +1937,6 @@ function App() {
               []),
           ]
 
-        // ======================================================
-        // ENTRADA EM PENDÊNCIA
-        // ======================================================
-
         if (
           novoStatus ===
           'Com Pendências'
@@ -1766,9 +1955,30 @@ function App() {
           ]
         }
 
-        // ======================================================
-        // SAÍDA DA PENDÊNCIA
-        // ======================================================
+        if (
+          novoStatus ===
+            'Concluída' &&
+          statusAnterior ===
+            'Com Pendências'
+        ) {
+          const ultimo =
+            periodosPendencia[
+              periodosPendencia.length - 1
+            ]
+
+          if (
+            ultimo &&
+            !ultimo.fim
+          ) {
+            periodosPendencia[
+              periodosPendencia.length - 1
+            ] = {
+              ...ultimo,
+              fim:
+                agora,
+            }
+          }
+        }
 
         if (
           novoStatus ===
@@ -1798,10 +2008,6 @@ function App() {
           }
         }
 
-        // ======================================================
-        // TÍTULO DO HISTÓRICO
-        // ======================================================
-
         let titulo =
           'Status alterado'
 
@@ -1826,10 +2032,6 @@ function App() {
           titulo =
             'Atendimento retomado'
         }
-
-        // ======================================================
-        // DESCRIÇÃO
-        // ======================================================
 
         let descricao =
           `Status alterado de "${statusAnterior}" para "${novoStatus}".`
@@ -1885,10 +2087,6 @@ function App() {
             motivo?.trim(),
         }
 
-        // ======================================================
-        // AUDITORIA
-        // ======================================================
-
         registrarAlteracao(
           'demanda',
           id,
@@ -1906,10 +2104,6 @@ function App() {
               motivo?.trim(),
           }
         )
-
-        // ======================================================
-        // NOTIFICAÇÃO — PENDÊNCIA
-        // ======================================================
 
         if (
           novoStatus ===
@@ -1932,10 +2126,6 @@ function App() {
               demanda.prioridade,
           })
         }
-
-        // ======================================================
-        // NOTIFICAÇÃO — CONCLUSÃO
-        // ======================================================
 
         if (
           novoStatus ===
@@ -2012,13 +2202,24 @@ function App() {
     }
 
     if (
+      !ehGestor(sessao)
+    ) {
+      window.alert(
+        'A alteração de status em massa está disponível somente para o Gestor.'
+      )
+      return
+    }
+
+    if (
+      novoStatus ===
+        'Com Pendências' ||
       novoStatus ===
         'Concluída' ||
       novoStatus ===
         'Cancelada'
     ) {
       window.alert(
-        'Conclusão e cancelamento devem ser realizados pela tela de detalhe, com os registros obrigatórios.'
+        'Com Pendências, Conclusão e Cancelamento devem ser realizados pela tela de detalhe, com os dados obrigatórios.'
       )
 
       return
@@ -2037,6 +2238,8 @@ function App() {
 
     const agora =
       agoraISO()
+
+    let alteradas = 0
 
     const demandasAtualizadas =
       demandas.map(
@@ -2060,6 +2263,68 @@ function App() {
           ) {
             return demandaNormalizada
           }
+
+          if (
+            !transicaoPermitida(
+              demandaNormalizada.status,
+              novoStatus
+            )
+          ) {
+            return demandaNormalizada
+          }
+
+          if (
+            novoStatus ===
+              'Em Atendimento' &&
+            !demandaNormalizada.responsavel?.trim()
+          ) {
+            return demandaNormalizada
+          }
+
+          if (
+            novoStatus ===
+              'Em Atendimento' &&
+            !analistasAtivos.some(
+              (usuario) =>
+                usuario.nome ===
+                demandaNormalizada.responsavel
+            )
+          ) {
+            return demandaNormalizada
+          }
+
+          if (
+            novoStatus ===
+              'Aguardando' &&
+            demandaNormalizada.responsavel?.trim()
+          ) {
+            return demandaNormalizada
+          }
+
+          let periodosPendencia = [
+            ...(demandaNormalizada.periodosPendencia || []),
+          ]
+
+          if (
+            novoStatus === 'Em Atendimento' &&
+            demandaNormalizada.status === 'Com Pendências'
+          ) {
+            const ultimo =
+              periodosPendencia[
+                periodosPendencia.length - 1
+              ]
+
+            if (ultimo && !ultimo.fim) {
+              periodosPendencia[
+                periodosPendencia.length - 1
+              ] = {
+                ...ultimo,
+                fim: agora,
+              }
+            }
+          }
+
+          alteradas += 1
 
           const historico:
             Historico = {
@@ -2116,6 +2381,8 @@ function App() {
             status:
               novoStatus,
 
+            periodosPendencia,
+
             historico: [
               historico,
 
@@ -2125,6 +2392,15 @@ function App() {
           }
         }
       )
+
+    if (
+      alteradas === 0
+    ) {
+      window.alert(
+        'Nenhuma das demandas selecionadas pode receber esse status dentro das regras atuais do fluxo.'
+      )
+      return
+    }
 
     salvarDemandas(
       demandasAtualizadas
@@ -2139,6 +2415,13 @@ function App() {
     id: number,
     novoResponsavel: string
   ) {
+    if (!ehGestor(sessao)) {
+      window.alert(
+        'Somente o Gestor pode distribuir ou redistribuir demandas.'
+      )
+      return
+    }
+
     const nomeNovo =
       novoResponsavel.trim()
 
@@ -2160,6 +2443,24 @@ function App() {
       return
     }
 
+    const demandaAtual =
+      demandas.find(
+        (item) => item.id === id
+      )
+
+    if (!demandaAtual) {
+      return
+    }
+
+    if (
+      demandaAtual.status === 'Cancelada'
+    ) {
+      window.alert(
+        'Demandas canceladas não podem ser redistribuídas.'
+      )
+      return
+    }
+
     atualizarDemanda(
       id,
       (demanda) => {
@@ -2178,10 +2479,48 @@ function App() {
           nomeNovo ||
           'Sem Analista'
 
-        const statusNovo =
-          nomeNovo
-            ? 'Em Atendimento'
-            : 'Aguardando'
+        let statusNovo =
+          demanda.status
+
+        if (demanda.status === 'Aguardando') {
+          statusNovo =
+            nomeNovo
+              ? 'Em Atendimento'
+              : 'Aguardando'
+        } else if (
+          demanda.status === 'Em Atendimento'
+        ) {
+          statusNovo =
+            nomeNovo
+              ? 'Em Atendimento'
+              : 'Aguardando'
+        } else if (
+          demanda.status === 'Nova'
+        ) {
+          statusNovo =
+            nomeNovo
+              ? 'Em Atendimento'
+              : 'Nova'
+        } else if (
+          demanda.status === 'Com Pendências'
+        ) {
+          if (!nomeNovo) {
+            window.alert(
+              'Uma demanda em Com Pendências precisa permanecer com um Analista definido.'
+            )
+            return demanda
+          }
+
+          statusNovo =
+            'Com Pendências'
+        } else if (
+          demanda.status === 'Concluída'
+        ) {
+          // Permite que o Gestor defina um Analista antes da reabertura,
+          // sem alterar o estado final da demanda.
+          statusNovo =
+            'Concluída'
+        }
 
         const historico =
           criarHistorico(
@@ -2214,7 +2553,8 @@ function App() {
         )
 
         if (
-          nomeNovo
+          nomeNovo &&
+          demanda.status !== 'Concluída'
         ) {
           criarNotificacao({
             tipo:
@@ -2268,6 +2608,25 @@ function App() {
     if (
       !textoLimpo
     ) {
+      return
+    }
+
+    const demandaAtual =
+      demandas.find(
+        (item) => item.id === id
+      )
+
+    if (!demandaAtual) {
+      return
+    }
+
+    if (
+      !ehGestor(sessao) &&
+      demandaAtual.responsavel?.trim() !== nomeUsuarioAtual
+    ) {
+      window.alert(
+        'Você só pode comentar em demandas atribuídas a você.'
+      )
       return
     }
 
@@ -2338,6 +2697,25 @@ function App() {
     id: number,
     arquivo: Arquivo
   ) {
+    const demandaAtual =
+      demandas.find(
+        (item) => item.id === id
+      )
+
+    if (!demandaAtual) {
+      return
+    }
+
+    if (
+      !ehGestor(sessao) &&
+      demandaAtual.responsavel?.trim() !== nomeUsuarioAtual
+    ) {
+      window.alert(
+        'Você só pode anexar arquivos em demandas atribuídas a você.'
+      )
+      return
+    }
+
     atualizarDemanda(
       id,
       (demanda) => {

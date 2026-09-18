@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { Demanda, Usuario } from '../types'
 import { carregarUsuarios, salvarUsuarios } from '../services/storage'
 import { registrarAlteracao } from '../services/auditoria'
+import { estaAtrasada as estaAtrasadaSLA, obterPrazoEfetivo } from '../sla'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './MinhasDemandas.css'
 
@@ -20,7 +21,7 @@ type UsuarioSeguranca = Usuario & {
 }
 
 const MINIMO_SENHA = 6
-const STATUS = ['Todos', 'Aguardando', 'Em Atendimento', 'Com Pendências', 'Concluída', 'Cancelada']
+const STATUS = ['Todos', 'Nova', 'Aguardando', 'Em Atendimento', 'Com Pendências', 'Concluída', 'Cancelada']
 const PRIORIDADES = ['Todas', 'Crítica', 'Alta', 'Média', 'Baixa']
 
 async function hashSenha(senha: string): Promise<string> {
@@ -55,23 +56,33 @@ function formatarData(data: string): string {
 }
 
 function estaAtrasada(demanda: Demanda): boolean {
-  if (!demanda.prazo || demanda.status === 'Concluída' || demanda.status === 'Cancelada') return false
-  const prazo = converterData(demanda.prazo)
-  if (!prazo) return false
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  return prazo < hoje
+  return estaAtrasadaSLA(demanda)
+
 }
 
 function estaProxima(demanda: Demanda): boolean {
-  if (!demanda.prazo || demanda.status === 'Concluída' || demanda.status === 'Cancelada') return false
-  const prazo = converterData(demanda.prazo)
-  if (!prazo) return false
+  if (
+    !demanda.prazo ||
+    demanda.status === 'Concluída' ||
+    demanda.status === 'Cancelada'
+  ) {
+    return false
+  }
+
+  const prazo = obterPrazoEfetivo(demanda)
+
+  if (!prazo) {
+    return false
+  }
+
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
+
   const limite = new Date(hoje)
   limite.setDate(limite.getDate() + 7)
+
   return prazo >= hoje && prazo <= limite
+
 }
 
 export default function MinhasDemandas({

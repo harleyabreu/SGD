@@ -365,6 +365,11 @@ export function DetalheDemandaPage({
     setMotivoPendencia,
   ] = useState('')
 
+  const [
+    motivoPendenciaConfirmado,
+    setMotivoPendenciaConfirmado,
+  ] = useState('')
+
   // ==========================================================
   // CONCLUSÃO
   // ==========================================================
@@ -377,6 +382,11 @@ export function DetalheDemandaPage({
   const [
     comentarioConclusao,
     setComentarioConclusao,
+  ] = useState('')
+
+  const [
+    comentarioConclusaoConfirmado,
+    setComentarioConclusaoConfirmado,
   ] = useState('')
 
   // ==========================================================
@@ -490,9 +500,13 @@ export function DetalheDemandaPage({
 
     setMotivoPendencia('')
 
+    setMotivoPendenciaConfirmado('')
+
     setMostrarConclusao(false)
 
     setComentarioConclusao('')
+
+    setComentarioConclusaoConfirmado('')
   }, [demanda])
 
   // ==========================================================
@@ -873,6 +887,10 @@ export function DetalheDemandaPage({
         ''
       )
 
+      setMotivoPendenciaConfirmado(
+        ''
+      )
+
       setMostrarPendencia(
         true
       )
@@ -889,6 +907,10 @@ export function DetalheDemandaPage({
       'Concluída'
     ) {
       setComentarioConclusao(
+        ''
+      )
+
+      setComentarioConclusaoConfirmado(
         ''
       )
 
@@ -914,6 +936,10 @@ export function DetalheDemandaPage({
 
       return
     }
+
+    setMotivoPendenciaConfirmado('')
+
+    setComentarioConclusaoConfirmado('')
 
     setStatusSelecionado(
       novoStatus
@@ -1007,6 +1033,12 @@ export function DetalheDemandaPage({
         historicoStatus,
         ...atual,
       ]
+    )
+
+    // O motivo precisa permanecer disponível até o clique em
+    // "Salvar Alterações", pois o App.tsx é quem persiste o status.
+    setMotivoPendenciaConfirmado(
+      motivo
     )
 
     setMotivoPendencia(
@@ -1109,6 +1141,12 @@ export function DetalheDemandaPage({
       ]
     )
 
+    // Mantém o comentário de conclusão disponível para o App.tsx,
+    // que valida esse dado ao persistir o novo status.
+    setComentarioConclusaoConfirmado(
+      texto
+    )
+
     setComentarioConclusao(
       ''
     )
@@ -1127,6 +1165,10 @@ export function DetalheDemandaPage({
       ''
     )
 
+    setMotivoPendenciaConfirmado(
+      ''
+    )
+
     setMostrarPendencia(
       false
     )
@@ -1142,6 +1184,10 @@ export function DetalheDemandaPage({
 
   function cancelarConclusao() {
     setComentarioConclusao(
+      ''
+    )
+
+    setComentarioConclusaoConfirmado(
       ''
     )
 
@@ -1240,14 +1286,17 @@ export function DetalheDemandaPage({
         'Com Pendências'
       ) {
         motivoStatus =
-          motivoPendencia.trim()
+          motivoPendenciaConfirmado.trim() ||
+          motivoPendencia.trim() ||
+          undefined
       } else if (
         statusSelecionado ===
         'Concluída'
       ) {
         // A conclusão exige comentário obrigatório no App.
-        // O comentário de conclusão foi criado como pendente
-        // logo antes da mudança de status.
+        // Primeiro usamos o comentário explicitamente confirmado
+        // no bloco de conclusão. O fallback preserva compatibilidade
+        // com comentários pendentes já existentes na tela.
         const comentarioConclusaoPendente =
           comentariosLocais
             .filter((item) =>
@@ -1256,6 +1305,7 @@ export function DetalheDemandaPage({
             .at(-1)
 
         motivoStatus =
+          comentarioConclusaoConfirmado.trim() ||
           comentarioConclusaoPendente?.texto?.trim() ||
           undefined
       }
@@ -1356,6 +1406,38 @@ export function DetalheDemandaPage({
 
   return (
     <>
+      <style>{`
+        .detalhe-page .cancelamento-acoes .btn-cancelamento-voltar {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          min-width: 86px !important;
+          min-height: 40px !important;
+          height: 40px !important;
+          padding: 0 15px !important;
+          margin: 0 !important;
+          background: #ffffff !important;
+          color: #475569 !important;
+          border: 1px solid #cbd5e1 !important;
+          border-radius: 8px !important;
+          font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+          font-size: 12px !important;
+          line-height: 1.2 !important;
+          font-weight: 700 !important;
+          white-space: nowrap !important;
+          box-sizing: border-box !important;
+          cursor: pointer !important;
+          text-decoration: none !important;
+          opacity: 1 !important;
+        }
+
+        .detalhe-page .cancelamento-acoes .btn-cancelamento-voltar:hover {
+          background: #f8fafc !important;
+          border-color: #b9c7d6 !important;
+          color: #174f86 !important;
+        }
+      `}</style>
+
       <MenuPrincipal
         usuarioAtual={{
           id: 0,
@@ -1436,6 +1518,119 @@ export function DetalheDemandaPage({
           </span>
 
         </div>
+
+
+        {/* ==================================================
+            CANCELAMENTO DA DEMANDA
+            ================================================== */}
+
+        {demanda.status !==
+          'Concluída' &&
+          demanda.status !==
+            'Cancelada' && (
+
+          <section className="detalhe-card detalhe-card-cancelamento">
+
+            <div className="cancelamento-header">
+
+              <div>
+
+                <div className="cancelamento-titulo">
+                  Cancelamento da Demanda
+                </div>
+
+                <p className="cancelamento-descricao">
+                  Esta ação encerra definitivamente a demanda e exige um motivo obrigatório.
+                </p>
+
+              </div>
+
+              {!mostrarCancelamento && (
+
+                <button
+                  type="button"
+                  className="btn-danger-outline btn-cancelar-demanda"
+                  onClick={() =>
+                    setMostrarCancelamento(true)
+                  }
+                >
+                  ✕ Cancelar Demanda
+                </button>
+
+              )}
+
+            </div>
+
+            {mostrarCancelamento && (
+
+              <div className="cancelamento-formulario">
+
+                <label className="cancelamento-label">
+                  Motivo do cancelamento
+                </label>
+
+                <textarea
+                  value={motivoCancelamento}
+                  onChange={(event) =>
+                    setMotivoCancelamento(event.target.value)
+                  }
+                  placeholder="Informe obrigatoriamente o motivo do cancelamento."
+                  className="cancelamento-textarea"
+                />
+
+                <div className="cancelamento-acoes">
+
+                  <button
+                    type="button"
+                    className="btn-voltar btn-cancelamento-voltar"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '86px',
+                      minHeight: '40px',
+                      height: '40px',
+                      padding: '0 15px',
+                      margin: 0,
+                      background: '#ffffff',
+                      color: '#475569',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                      fontSize: '12px',
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      whiteSpace: 'nowrap',
+                      boxSizing: 'border-box',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                    }}
+                    onClick={() => {
+                      setMotivoCancelamento('')
+                      setMostrarCancelamento(false)
+                    }}
+                  >
+                    Voltar
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-danger-confirmar"
+                    onClick={confirmarCancelamento}
+                  >
+                    Confirmar Cancelamento
+                  </button>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </section>
+
+        )}
+
 
 
         {/* ==================================================
@@ -1846,131 +2041,6 @@ export function DetalheDemandaPage({
               )}
 
 
-              {/* =================================================
-                  CANCELAMENTO
-                  ================================================= */}
-
-              {demanda.status !==
-                'Concluída' &&
-                demanda.status !==
-                  'Cancelada' && (
-
-                <div
-                  style={{
-                    marginTop:
-                      '16px',
-
-                    paddingTop:
-                      '14px',
-
-                    borderTop:
-                      '1px solid #dce5ef',
-                  }}
-                >
-
-                  {!mostrarCancelamento ? (
-
-                    <button
-                      type="button"
-                      className="btn-danger-outline"
-                      onClick={() =>
-                        setMostrarCancelamento(
-                          true
-                        )
-                      }
-                    >
-                      ✕ Cancelar Demanda
-                    </button>
-
-                  ) : (
-
-                    <>
-
-                      <strong
-                        style={{
-                          display:
-                            'block',
-
-                          marginBottom:
-                            '8px',
-                        }}
-                      >
-                        Motivo do cancelamento
-                      </strong>
-
-                      <textarea
-                        value={
-                          motivoCancelamento
-                        }
-                        onChange={(event) =>
-                          setMotivoCancelamento(
-                            event.target.value
-                          )
-                        }
-                        placeholder="Informe obrigatoriamente o motivo do cancelamento."
-                        style={{
-                          width:
-                            '100%',
-
-                          minHeight:
-                            '80px',
-                        }}
-                      />
-
-                      <div
-                        style={{
-                          display:
-                            'flex',
-
-                          gap:
-                            '10px',
-
-                          marginTop:
-                            '10px',
-
-                          flexWrap:
-                            'wrap',
-                        }}
-                      >
-
-                        <button
-                          type="button"
-                          className="btn-voltar"
-                          onClick={() => {
-
-                            setMotivoCancelamento(
-                              ''
-                            )
-
-                            setMostrarCancelamento(
-                              false
-                            )
-                          }}
-                        >
-                          Voltar
-                        </button>
-
-
-                        <button
-                          type="button"
-                          className="btn-primary"
-                          onClick={
-                            confirmarCancelamento
-                          }
-                        >
-                          Confirmar cancelamento
-                        </button>
-
-                      </div>
-
-                    </>
-
-                  )}
-
-                </div>
-
-              )}
-
             </div>
 
           )}
@@ -2014,6 +2084,8 @@ export function DetalheDemandaPage({
         </section>
 
 
+
+
         {/* ==================================================
             AÇÕES
             ================================================== */}
@@ -2024,45 +2096,6 @@ export function DetalheDemandaPage({
             Ações
           </div>
 
-
-          {/* RETOMAR */}
-
-          {demanda.status ===
-            'Com Pendências' && (
-
-            <div
-              style={{
-                marginBottom:
-                  '14px',
-              }}
-            >
-
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => {
-
-                  if (
-                    !responsavelSelecionado.trim()
-                  ) {
-                    alert(
-                      'Defina um Analista antes de retomar o atendimento.'
-                    )
-
-                    return
-                  }
-
-                  setStatusSelecionado(
-                    'Em Atendimento'
-                  )
-                }}
-              >
-                ▶ Retomar atendimento
-              </button>
-
-            </div>
-
-          )}
 
 
           <div className="acoes-content">
@@ -2086,9 +2119,11 @@ export function DetalheDemandaPage({
                 }
                 disabled={
                   demanda.status ===
-                    'Concluída' ||
-                  demanda.status ===
-                    'Cancelada'
+                    'Cancelada' ||
+                  (
+                    demanda.status === 'Concluída' &&
+                    perfilUsuario !== 'Gestor/Administrador'
+                  )
                 }
               >
 
@@ -2157,6 +2192,43 @@ export function DetalheDemandaPage({
             </div>
 
           </div>
+
+
+          {/* RETOMAR — abaixo dos controles */}
+
+          {demanda.status ===
+            'Com Pendências' && (
+
+            <div
+              className="retomar-acoes"
+            >
+
+              <button
+                type="button"
+                className="btn-primary btn-retomar"
+                onClick={() => {
+
+                  if (
+                    !responsavelSelecionado.trim()
+                  ) {
+                    alert(
+                      'Defina um Analista antes de retomar o atendimento.'
+                    )
+
+                    return
+                  }
+
+                  setStatusSelecionado(
+                    'Em Atendimento'
+                  )
+                }}
+              >
+                ▶ Retomar atendimento
+              </button>
+
+            </div>
+
+          )}
 
         </section>
 

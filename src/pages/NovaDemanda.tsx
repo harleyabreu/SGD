@@ -3,8 +3,9 @@
 // V2.9 — NOVA DEMANDA / MENU PRINCIPAL
 // ============================================================
 
-import { type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import type { Demanda, Usuario } from '../types'
+import { diasPrazoPorPrioridade } from '../sla'
 import './NovaDemanda.css'
 import MenuPrincipal from '../components/MenuPrincipal'
 
@@ -15,6 +16,7 @@ type CadastroItem = {
   descricao?: string
   status?: string
   ativo?: boolean
+  clienteId?: number
 }
 
 type NovaDemandaProps = {
@@ -63,7 +65,45 @@ export default function NovaDemanda({
   onConfiguracoes,
   onLogout,
 }: NovaDemandaProps) {
+  const [clienteSelecionado, setClienteSelecionado] = useState('')
+  const [sistemaSelecionado, setSistemaSelecionado] = useState('')
+
+  const clienteObjetoSelecionado = useMemo(
+    () =>
+      clientes.find(
+        (item) =>
+          textoItem(item) === clienteSelecionado
+      ),
+    [clientes, clienteSelecionado]
+  )
+
+  const sistemasAtivos = useMemo(
+    () =>
+      sistemas.filter(
+        (item) =>
+          item.status !== 'Inativo' &&
+          item.ativo !== false
+      ),
+    [sistemas]
+  )
+
+  const sistemasFiltrados = useMemo(() => {
+    if (!clienteObjetoSelecionado?.id) {
+      return sistemasAtivos
+    }
+
+    const vinculados = sistemasAtivos.filter(
+      (item) =>
+        item.clienteId === clienteObjetoSelecionado.id
+    )
+
+    return vinculados.length > 0
+      ? vinculados
+      : sistemasAtivos
+  }, [sistemasAtivos, clienteObjetoSelecionado])
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
+
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
@@ -93,6 +133,29 @@ export default function NovaDemanda({
     ) {
       alert('Preencha todos os campos obrigatórios.')
       return
+    }
+
+    if (
+      clienteObjetoSelecionado?.id
+    ) {
+      const sistemasVinculados =
+        sistemasAtivos.filter(
+          (item) =>
+            item.clienteId === clienteObjetoSelecionado.id
+        )
+
+      if (
+        sistemasVinculados.length > 0 &&
+        !sistemasVinculados.some(
+          (item) =>
+            textoItem(item) === demanda.sistema
+        )
+      ) {
+        alert(
+          'Selecione um sistema vinculado ao cliente / órgão informado.'
+        )
+        return
+      }
     }
 
     onSalvar(demanda)
@@ -165,7 +228,15 @@ export default function NovaDemanda({
 
             <div className="campo">
               <label htmlFor="cliente">Cliente / Órgão *</label>
-              <select id="cliente" name="cliente" defaultValue="">
+              <select
+                id="cliente"
+                name="cliente"
+                value={clienteSelecionado}
+                onChange={(event) => {
+                  setClienteSelecionado(event.target.value)
+                  setSistemaSelecionado('')
+                }}
+              >
                 <option value="">Selecione o cliente / órgão</option>
                 {clientes
                   .filter((item) => item.status !== 'Inativo' && item.ativo !== false)
@@ -183,18 +254,28 @@ export default function NovaDemanda({
             <div className="formulario-grid">
               <div className="campo">
                 <label htmlFor="sistema">Sistema *</label>
-                <select id="sistema" name="sistema" defaultValue="">
-                  <option value="">Selecione o sistema</option>
-                  {sistemas
-                    .filter((item) => item.status !== 'Inativo' && item.ativo !== false)
-                    .map((sistema, index) => {
-                      const valor = textoItem(sistema)
-                      return (
-                        <option key={sistema.id ?? `${valor}-${index}`} value={valor}>
-                          {valor}
-                        </option>
-                      )
-                    })}
+                <select
+                  id="sistema"
+                  name="sistema"
+                  value={sistemaSelecionado}
+                  onChange={(event) =>
+                    setSistemaSelecionado(event.target.value)
+                  }
+                  disabled={!clienteSelecionado}
+                >
+                  <option value="">
+                    {clienteSelecionado
+                      ? 'Selecione o sistema'
+                      : 'Selecione primeiro o cliente / órgão'}
+                  </option>
+                  {sistemasFiltrados.map((sistema, index) => {
+                    const valor = textoItem(sistema)
+                    return (
+                      <option key={sistema.id ?? `${valor}-${index}`} value={valor}>
+                        {valor}
+                      </option>
+                    )
+                  })}
                 </select>
               </div>
 
@@ -283,7 +364,10 @@ export default function NovaDemanda({
                 Calculado automaticamente após o cadastro
               </strong>
               <small style={{ marginTop: '4px', color: '#6b7c93' }}>
-                Crítica: 2 dias úteis • Alta: 6 • Média: 10 • Baixa: 20.
+                Crítica: {diasPrazoPorPrioridade('Crítica')} dias úteis •
+                Alta: {diasPrazoPorPrioridade('Alta')} •
+                Média: {diasPrazoPorPrioridade('Média')} •
+                Baixa: {diasPrazoPorPrioridade('Baixa')}.
                 Finais de semana e feriados cadastrados não são contabilizados.
               </small>
             </div>

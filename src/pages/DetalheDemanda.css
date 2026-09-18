@@ -863,3 +863,292 @@ body,
     padding: 16px 12px 84px !important;
   }
 }
+
+/* ============================================================
+   RODAPÉ GLOBAL — PADRÃO OFICIAL
+   O botão "Salvar Alterações" deve seguir o mesmo padrão
+   visual dos botões principais do sistema.
+   ============================================================ */
+.gd-shell-footer .btn-salvar {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 8px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .16) !important;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease !important;
+}
+
+.gd-shell-footer .btn-salvar:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.gd-shell-footer .btn-salvar:disabled {
+  background: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+
+/* ============================================================
+   BOTÃO RETOMAR ATENDIMENTO — PADRÃO OFICIAL
+   Mantém exatamente a linguagem visual dos botões primários.
+   ============================================================ */
+.detalhe-page .btn-retomar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 144px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  margin: 0 !important;
+
+  border: 1px solid #2563eb !important;
+  border-radius: 8px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .14) !important;
+  transition: background .15s ease, border-color .15s ease,
+    box-shadow .15s ease, opacity .15s ease !important;
+}
+
+.detalhe-page .btn-retomar:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, .18) !important;
+}
+
+.detalhe-page .btn-retomar:disabled {
+  background: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+}
+
+@media (max-width: 700px) {
+  .detalhe-page .btn-retomar {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+
+/* ============================================================
+   RETOMAR — ALINHAMENTO À DIREITA
+   ============================================================ */
+.detalhe-page .retomar-acoes {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  margin-top: 18px !important;
+  padding: 14px 18px 16px 0 !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+@media (max-width: 700px) {
+  .detalhe-page .retomar-acoes {
+    padding: 14px 0 16px !important;
+  }
+}
+
+
+.detalhe-page .retomar-acoes .btn-retomar {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+/* ============================================================
+   CARD EXCLUSIVO — CANCELAMENTO DA DEMANDA
+   A ação destrutiva fica isolada das demais ações do Gestor.
+   ============================================================ */
+.detalhe-page .detalhe-card-cancelamento {
+  margin-top: 16px !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  overflow: hidden !important;
+}
+
+.detalhe-page .cancelamento-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  padding: 16px 18px !important;
+  background: #fff7f7 !important;
+}
+
+.detalhe-page .cancelamento-titulo {
+  color: #991b1b !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+.detalhe-page .cancelamento-descricao {
+  margin: 5px 0 0 !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+.detalhe-page .btn-cancelar-demanda {
+  flex: 0 0 auto !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  border: 1px solid #ef4444 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #dc2626 !important;
+}
+
+.detalhe-page .btn-cancelar-demanda:hover:not(:disabled) {
+  background: #fef2f2 !important;
+  border-color: #dc2626 !important;
+  color: #b91c1c !important;
+}
+
+.detalhe-page .cancelamento-formulario {
+  padding: 16px 18px !important;
+  border-top: 1px solid #fee2e2 !important;
+}
+
+.detalhe-page .cancelamento-label {
+  display: block !important;
+  margin-bottom: 8px !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.detalhe-page .cancelamento-textarea {
+  width: 100% !important;
+  min-height: 84px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+}
+
+.detalhe-page .cancelamento-textarea:focus {
+  outline: none !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, .10) !important;
+}
+
+.detalhe-page .cancelamento-acoes {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+}
+
+.detalhe-page .btn-danger-confirmar {
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  border: 1px solid #dc2626 !important;
+  border-radius: 8px !important;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.detalhe-page .btn-danger-confirmar:hover:not(:disabled) {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+@media (max-width: 700px) {
+  .detalhe-page .cancelamento-header {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .detalhe-page .btn-cancelar-demanda {
+    width: 100% !important;
+  }
+
+  .detalhe-page .cancelamento-acoes {
+    justify-content: stretch !important;
+  }
+
+  .detalhe-page .cancelamento-acoes button {
+    flex: 1 1 0 !important;
+  }
+}
+
+
+/* ============================================================
+   VOLTAR DO CANCELAMENTO — PADRÃO SECUNDÁRIO
+   ============================================================ */
+.detalhe-page .cancelamento-acoes .btn-cancelamento-voltar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: 86px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 15px !important;
+  margin: 0 !important;
+
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+
+  cursor: pointer !important;
+  transition: background .15s ease, border-color .15s ease,
+    color .15s ease, box-shadow .15s ease !important;
+}
+
+.detalhe-page .cancelamento-acoes .btn-cancelamento-voltar:hover {
+  background: #f8fafc !important;
+  border-color: #b9c7d6 !important;
+  color: #174f86 !important;
+}

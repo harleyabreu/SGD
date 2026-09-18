@@ -238,7 +238,13 @@ export function feriadosCadastrados():
     }
 
     return dados
+      .filter((item) => {
+        if (typeof item === 'string') {
+          return true
+        }
 
+        return item?.ativo !== false
+      })
       .map(
         (item) => {
 

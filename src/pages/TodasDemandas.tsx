@@ -29,7 +29,7 @@
 // - Exportação das demandas filtradas para CSV
 // - Exportação respeita os filtros e a ordenação atualmente aplicados
 // - Tratamento de caracteres especiais para abertura correta no Excel/LibreOffice
-// - Compatibilidade mantida com o fluxo oficial de 5 status
+// - Compatibilidade mantida com o fluxo oficial de 6 status
 //
 // CONTEMPLA NA APLICAÇÃO
 // - Lista e Kanban
@@ -43,13 +43,14 @@
 // - Acesso aos detalhes da demanda
 // - Seleção múltipla e ações em massa
 // - Exportação CSV dos resultados filtrados
-// - Fluxo oficial: Nova, Aguardando, Em Atendimento, Com Pendências e Concluída
+// - Fluxo oficial: Nova, Aguardando, Em Atendimento, Com Pendências, Concluída e Cancelada
 // - 'Em Processo' não existe na interface e dados legados são convertidos
 // ============================================================
 
 import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
 import type { Demanda } from '../types'
+import { estaAtrasada as estaAtrasadaSLA, obterPrazoEfetivo } from '../sla'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './TodasDemandas.css'
 
@@ -146,6 +147,7 @@ const STATUS = [
   'Em Atendimento',
   'Com Pendências',
   'Concluída',
+  'Cancelada',
 ]
 
 // ============================================================
@@ -229,34 +231,8 @@ function normalizarStatus(status: string): string {
 // ============================================================
 
 function estaAtrasada(demanda: Demanda): boolean {
-  if (
-    demanda.status === 'Concluída'
-  ) {
-    return false
-  }
+  return estaAtrasadaSLA(demanda)
 
-  if (!demanda.prazo) {
-    return false
-  }
-
-  const prazo = converterData(
-    demanda.prazo
-  )
-
-  if (!prazo) {
-    return false
-  }
-
-  const hoje = new Date()
-
-  hoje.setHours(
-    0,
-    0,
-    0,
-    0
-  )
-
-  return prazo < hoje
 }
 
 // ============================================================
@@ -266,12 +242,13 @@ function estaAtrasada(demanda: Demanda): boolean {
 function estaProximaDoVencimento(demanda: Demanda): boolean {
   if (
     demanda.status === 'Concluída' ||
+    demanda.status === 'Cancelada' ||
     !demanda.prazo
   ) {
     return false
   }
 
-  const prazo = converterData(demanda.prazo)
+  const prazo = obterPrazoEfetivo(demanda)
 
   if (!prazo) {
     return false
@@ -284,6 +261,7 @@ function estaProximaDoVencimento(demanda: Demanda): boolean {
   limite.setDate(limite.getDate() + 7)
 
   return prazo >= hoje && prazo <= limite
+
 }
 
 // ============================================================
@@ -355,6 +333,9 @@ function obterClasseStatus(
     case 'Concluída':
       return 'status concluida'
 
+    case 'Cancelada':
+      return 'status status-cancelada'
+
     default:
       return 'status nova'
   }
@@ -383,6 +364,9 @@ function obterClasseColuna(
 
     case 'Concluída':
       return 'coluna coluna-concluida'
+
+    case 'Cancelada':
+      return 'coluna coluna-cancelada'
 
     default:
       return 'coluna'
@@ -614,7 +598,7 @@ export default function TodasDemandas({
           }
 
           if (situacao === 'abertas') {
-            return demanda.status !== 'Concluída'
+            return demanda.status !== 'Concluída' && demanda.status !== 'Cancelada'
           }
 
           if (situacao === 'atrasadas') {
@@ -631,6 +615,10 @@ export default function TodasDemandas({
 
           if (situacao === 'concluidas') {
             return demanda.status === 'Concluída'
+          }
+
+          if (situacao === 'canceladas') {
+            return demanda.status === 'Cancelada'
           }
 
           return true
@@ -849,8 +837,21 @@ export default function TodasDemandas({
       (item) => item.id === id
     )
 
-    if (demanda && demanda.status !== statusDestino) {
-      onAlterarStatus(id, statusDestino)
+    if (
+      demanda &&
+      demanda.status !== statusDestino
+    ) {
+      if (
+        statusDestino === 'Com Pendências' ||
+        statusDestino === 'Concluída' ||
+        statusDestino === 'Cancelada'
+      ) {
+        window.alert(
+          'Esta mudança exige informações obrigatórias e deve ser realizada pela tela de detalhes.'
+        )
+      } else {
+        onAlterarStatus(id, statusDestino)
+      }
     }
 
     finalizarArraste()
@@ -1011,7 +1012,9 @@ export default function TodasDemandas({
           ? 'Próxima do vencimento'
           : demanda.status === 'Concluída'
             ? 'Concluída'
-            : 'No prazo',
+            : demanda.status === 'Cancelada'
+              ? 'Cancelada'
+              : 'No prazo',
       demanda.status,
       demanda.observacao || '',
     ])
@@ -1398,6 +1401,7 @@ export default function TodasDemandas({
                   <option value="proximas">Próximas do vencimento</option>
                   <option value="críticas">Críticas</option>
                   <option value="concluidas">Concluídas</option>
+                  <option value="canceladas">Canceladas</option>
                 </select>
 
               </div>
@@ -1508,11 +1512,18 @@ export default function TodasDemandas({
                   aria-label="Novo status para ações em massa"
                 >
                   <option value="">Alterar status para...</option>
-                  {STATUS.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
+                  {STATUS
+                    .filter(
+                      (item) =>
+                        item !== 'Com Pendências' &&
+                        item !== 'Concluída' &&
+                        item !== 'Cancelada'
+                    )
+                    .map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
                 </select>
 
                 <button
@@ -2245,23 +2256,30 @@ export default function TodasDemandas({
                                         }
                                       >
 
-                                        {STATUS.map(
-                                          (item) => (
-
-                                            <option
-                                              key={
-                                                item
-                                              }
-                                              value={
-                                                item
-                                              }
-                                            >
-                                              Mover para:{' '}
-                                              {item}
-                                            </option>
-
+                                        {STATUS
+                                          .filter(
+                                            (item) =>
+                                              item === demanda.status ||
+                                              item === 'Aguardando' ||
+                                              item === 'Em Atendimento'
                                           )
-                                        )}
+                                          .map(
+                                            (item) => (
+
+                                              <option
+                                                key={
+                                                  item
+                                                }
+                                                value={
+                                                  item
+                                                }
+                                              >
+                                                Mover para:{' '}
+                                                {item}
+                                              </option>
+
+                                            )
+                                          )}
 
                                       </select>
 

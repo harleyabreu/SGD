@@ -1,4 +1,4 @@
-// V 2.0 CORRIGIDA — preserva integralmente a base V1.8; Dashboard do Gestor, indicadores, filtros e alertas.
+// V 2.1 — Dashboard do Gestor, indicadores, filtros, SLA central e notificações configuráveis.
 // ============================================================
 // V 1.8
 // Gestão de Demandas de TI
@@ -33,7 +33,9 @@ import {
   calcularTempoAtendimento,
   calcularTempoPosReabertura,
   estaAtrasada as estaAtrasadaSLA,
+  estaProximaDoVencimento as estaProximaDoVencimentoSLA,
   formatarDiasUteis,
+  obterPrazoEfetivo,
 } from '../sla'
 
 type Historico = {
@@ -188,27 +190,7 @@ function converterData(dataTexto: string): Date | null {
 // ============================================================
 
 function estaAtrasada(demanda: Demanda): boolean {
-  if (
-    demanda.status === 'Concluída' ||
-    demanda.status === 'Cancelada'
-  ) {
-    return false
-  }
-
-  if (!demanda.prazo) {
-    return false
-  }
-
-  const prazo = converterData(demanda.prazo)
-
-  if (!prazo) {
-    return false
-  }
-
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  return prazo < hoje
+  return estaAtrasadaSLA(demanda)
 }
 
 // ============================================================
@@ -218,30 +200,10 @@ function estaAtrasada(demanda: Demanda): boolean {
 function estaProximaDoVencimento(
   demanda: Demanda
 ): boolean {
-  if (
-    demanda.status === 'Concluída' ||
-    demanda.status === 'Cancelada'
-  ) {
-    return false
-  }
-
-  if (!demanda.prazo) {
-    return false
-  }
-
-  const prazo = converterData(demanda.prazo)
-
-  if (!prazo) {
-    return false
-  }
-
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  const limite = new Date(hoje)
-  limite.setDate(limite.getDate() + 7)
-
-  return prazo >= hoje && prazo <= limite
+  return estaProximaDoVencimentoSLA(
+    demanda,
+    2
+  )
 }
 
 // ============================================================
@@ -315,12 +277,42 @@ function formatarDataHoraNotificacao(dataTexto: string): string {
   })
 }
 
+function obterTimestampNotificacao(dataTexto: string): number {
+  if (!dataTexto) {
+    return 0
+  }
+
+  const timestampISO = new Date(dataTexto).getTime()
+
+  if (!Number.isNaN(timestampISO)) {
+    return timestampISO
+  }
+
+  const data = converterData(dataTexto)
+
+  return data ? data.getTime() : 0
+}
+
 function criarIdNotificacao(
   tipo: string,
   demandaId: number,
   referencia: string
 ): string {
   return `${tipo}-${demandaId}-${referencia}`
+}
+
+function formatarPrazoEfetivo(demanda: Demanda): string {
+  const prazo = obterPrazoEfetivo(demanda)
+
+  if (!prazo) {
+    return demanda.prazo || ''
+  }
+
+  const dia = String(prazo.getDate()).padStart(2, '0')
+  const mes = String(prazo.getMonth() + 1).padStart(2, '0')
+  const ano = prazo.getFullYear()
+
+  return `${dia}/${mes}/${ano}`
 }
 
 function notificacaoDashboardHabilitada(campo: 'atrasadas' | 'proximoVencimento' | 'atribuicao' | 'conclusao' | 'reabertura' | 'cancelamento'): boolean {
@@ -353,17 +345,19 @@ function gerarNotificacoes(
 
   demandas.forEach((demanda) => {
     if (notificacaoDashboardHabilitada('atrasadas') && estaAtrasada(demanda)) {
+      const prazoEfetivo = formatarPrazoEfetivo(demanda)
+
       notificacoes.push({
         id: criarIdNotificacao(
           'atrasada',
           demanda.id,
-          demanda.prazo
+          prazoEfetivo
         ),
         tipo: 'atrasada',
         titulo: 'Demanda atrasada',
         descricao:
-          `A demanda "${demanda.titulo}" ultrapassou o prazo de atendimento.`,
-        data: demanda.prazo,
+          `A demanda "${demanda.titulo}" ultrapassou o prazo efetivo de atendimento.`,
+        data: prazoEfetivo,
         demandaId: demanda.id,
         prioridade: demanda.prioridade,
         lida: false,
@@ -371,17 +365,19 @@ function gerarNotificacoes(
     }
 
     if (notificacaoDashboardHabilitada('proximoVencimento') && estaProximaDoVencimento(demanda)) {
+      const prazoEfetivo = formatarPrazoEfetivo(demanda)
+
       notificacoes.push({
         id: criarIdNotificacao(
           'prazo',
           demanda.id,
-          demanda.prazo
+          prazoEfetivo
         ),
         tipo: 'prazo',
         titulo: 'Prazo próximo do vencimento',
         descricao:
           `A demanda "${demanda.titulo}" está próxima do vencimento do prazo.`,
-        data: demanda.prazo,
+        data: prazoEfetivo,
         demandaId: demanda.id,
         prioridade: demanda.prioridade,
         lida: false,
@@ -519,8 +515,8 @@ function gerarNotificacoes(
 
   return notificacoes.sort(
     (a, b) =>
-      new Date(b.data).getTime() -
-      new Date(a.data).getTime()
+      obterTimestampNotificacao(b.data) -
+      obterTimestampNotificacao(a.data)
   )
 }
 
@@ -1857,7 +1853,7 @@ function Dashboard({
                                 : '#1e293b',
                           }}
                         >
-                          {demanda.prazo || '-'}
+                          {formatarPrazoEfetivo(demanda) || '-'}
                         </strong>
 
                       </div>
