@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import type { Usuario } from '../types'
 
 /**
@@ -435,6 +435,226 @@ const ESTILOS = `
     overflow-y: auto;
   }
 
+
+  /* ============================================================
+     CENTRAL DE NOTIFICAÇÕES GLOBAL — TODAS AS TELAS
+     ============================================================ */
+
+  .gd-global-notification-content {
+    width: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    color: #0f172a;
+  }
+
+  .gd-global-notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 15px 16px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .gd-global-notification-header > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .gd-global-notification-header strong {
+    color: #0f172a;
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .gd-global-notification-header small {
+    color: #64748b;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .gd-global-notification-mark-all {
+    border: 0;
+    background: transparent;
+    color: #2563eb;
+    padding: 4px 0;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .gd-global-notification-mark-all:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+
+  .gd-global-notification-list {
+    max-height: 470px;
+    overflow-y: auto;
+  }
+
+  .gd-global-notification-empty {
+    min-height: 180px;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 7px;
+    color: #64748b;
+  }
+
+  .gd-global-notification-empty > span {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f0fdf4;
+    color: #16a34a;
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .gd-global-notification-empty strong {
+    color: #475569;
+    font-size: 12px;
+  }
+
+  .gd-global-notification-empty small {
+    max-width: 250px;
+    color: #64748b;
+    line-height: 1.45;
+    font-size: 10px;
+  }
+
+  .gd-global-notification-item {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) 8px;
+    align-items: start;
+    gap: 10px;
+    padding: 13px 15px;
+
+    border: 0;
+    border-bottom: 1px solid #eef2f6;
+
+    background: #ffffff;
+    color: #0f172a;
+
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+      background 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  .gd-global-notification-item:hover {
+    background: #f8fafc;
+  }
+
+  .gd-global-notification-item.nao-lida {
+    background: #f5f9fd;
+  }
+
+  .gd-global-notification-item.nao-lida:hover {
+    background: #edf5fc;
+  }
+
+  .gd-global-notification-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eef3f8;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .gd-global-notification-body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .gd-global-notification-body strong {
+    color: #243b53;
+    font-size: 11px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+
+  .gd-global-notification-body > span {
+    color: #475569;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .gd-global-notification-body small {
+    color: #94a3b8;
+    font-size: 9px;
+    line-height: 1.25;
+  }
+
+  .gd-global-notification-dot {
+    width: 7px;
+    height: 7px;
+    margin-top: 4px;
+    border-radius: 50%;
+    background: #2563eb;
+  }
+
+  .gd-global-notification-atrasada .gd-global-notification-icon {
+    background: #fef2f2;
+  }
+
+  .gd-global-notification-prazo .gd-global-notification-icon {
+    background: #fffbeb;
+  }
+
+  .gd-global-notification-responsavel .gd-global-notification-icon {
+    background: #eff6ff;
+  }
+
+  .gd-global-notification-concluida .gd-global-notification-icon {
+    background: #f0fdf4;
+  }
+
+  .gd-global-notification-cancelada .gd-global-notification-icon {
+    background: #fef2f2;
+  }
+
+  .gd-global-notification-reaberta .gd-global-notification-icon {
+    background: #eff6ff;
+  }
+
+  .gd-global-notification-footer {
+    padding: 9px 16px;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 9px;
+    line-height: 1.3;
+  }
+
+  .gd-global-notification-channel {
+    padding: 8px 16px;
+    border-top: 1px solid #f1f5f9;
+    color: #94a3b8;
+    font-size: 8px;
+    line-height: 1.2;
+  }
+
   .gd-user {
     display: flex;
     align-items: center;
@@ -712,6 +932,714 @@ function perfilExibicao(usuario: Usuario) {
     : usuario.perfil
 }
 
+
+// ============================================================
+// CENTRAL DE NOTIFICAÇÕES GLOBAL
+// ------------------------------------------------------------
+// Quando uma tela não fornece notificacoesConteudo,
+// o próprio MenuPrincipal monta a mesma central visual/funcional
+// a partir das demandas persistidas no storage.
+// Isso faz o sino funcionar em todas as telas do sistema,
+// sem obrigar cada página a duplicar a implementação.
+// ============================================================
+
+type DemandaNotificacaoGlobal = {
+  id: number
+  titulo: string
+  prioridade: string
+  prazo: string
+  status: string
+  historico?: Array<{
+    id: number
+    tipo: string
+    titulo: string
+    descricao: string
+    data: string
+    usuario: string
+    referenciaId?: number
+  }>
+}
+
+type NotificacaoGlobal = {
+  id: string
+  tipo: string
+  titulo: string
+  descricao: string
+  data: string
+  demandaId: number
+  prioridade?: string
+  lida: boolean
+}
+
+type CampoNotificacaoGlobal =
+  | 'atrasadas'
+  | 'proximoVencimento'
+  | 'atribuicao'
+  | 'conclusao'
+  | 'reabertura'
+  | 'cancelamento'
+
+function carregarDemandasParaNotificacoes(): DemandaNotificacaoGlobal[] {
+  try {
+    const salvo = localStorage.getItem('demandas')
+
+    if (!salvo) {
+      return []
+    }
+
+    const dados = JSON.parse(salvo)
+
+    if (!Array.isArray(dados)) {
+      return []
+    }
+
+    return dados.map((item) => ({
+      ...item,
+      status:
+        item?.status === 'Em Processo'
+          ? 'Em Atendimento'
+          : String(item?.status || ''),
+      prioridade:
+        item?.prioridade === 'Urgente'
+          ? 'Crítica'
+          : String(item?.prioridade || ''),
+      historico: Array.isArray(item?.historico)
+        ? item.historico
+        : [],
+    }))
+  } catch {
+    return []
+  }
+}
+
+function converterDataNotificacaoGlobal(
+  valor: string
+): Date | null {
+  if (!valor) {
+    return null
+  }
+
+  const texto = String(valor).trim()
+
+  const brasileiro =
+    /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto)
+
+  if (brasileiro) {
+    const [, dia, mes, ano] = brasileiro
+
+    const resultado = new Date(
+      Number(ano),
+      Number(mes) - 1,
+      Number(dia)
+    )
+
+    resultado.setHours(0, 0, 0, 0)
+
+    return resultado
+  }
+
+  const resultado = new Date(texto)
+
+  if (Number.isNaN(resultado.getTime())) {
+    return null
+  }
+
+  resultado.setHours(0, 0, 0, 0)
+
+  return resultado
+}
+
+function formatarDataHoraNotificacaoGlobal(
+  valor: string
+): string {
+  if (!valor) {
+    return ''
+  }
+
+  const data = new Date(valor)
+
+  if (!Number.isNaN(data.getTime())) {
+    return data.toLocaleString('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    })
+  }
+
+  const dataBrasileira =
+    converterDataNotificacaoGlobal(valor)
+
+  if (dataBrasileira) {
+    return dataBrasileira.toLocaleDateString('pt-BR')
+  }
+
+  return valor
+}
+
+function notificacaoGlobalHabilitada(
+  campo: CampoNotificacaoGlobal
+): boolean {
+  const padrao: Record<
+    CampoNotificacaoGlobal,
+    boolean
+  > = {
+    atrasadas: true,
+    proximoVencimento: true,
+    atribuicao: true,
+    conclusao: true,
+    reabertura: true,
+    cancelamento: true,
+  }
+
+  try {
+    const salvo =
+      localStorage.getItem(
+        'configuracoes_sistema'
+      )
+
+    if (!salvo) {
+      return padrao[campo]
+    }
+
+    const dados = JSON.parse(salvo) as {
+      notificacoes?: Partial<
+        Record<CampoNotificacaoGlobal, boolean>
+      >
+    }
+
+    return (
+      dados.notificacoes?.[campo] ??
+      padrao[campo]
+    )
+  } catch {
+    return padrao[campo]
+  }
+}
+
+function criarIdNotificacaoGlobal(
+  tipo: string,
+  demandaId: number,
+  referencia: string
+): string {
+  return `${tipo}-${demandaId}-${referencia}`
+}
+
+function estaAtrasadaNotificacaoGlobal(
+  demanda: DemandaNotificacaoGlobal
+): boolean {
+  if (
+    demanda.status === 'Concluída' ||
+    demanda.status === 'Cancelada'
+  ) {
+    return false
+  }
+
+  if (!demanda.prazo) {
+    return false
+  }
+
+  const prazo =
+    converterDataNotificacaoGlobal(
+      demanda.prazo
+    )
+
+  if (!prazo) {
+    return false
+  }
+
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+
+  return prazo < hoje
+}
+
+function estaProximaDoVencimentoNotificacaoGlobal(
+  demanda: DemandaNotificacaoGlobal
+): boolean {
+  if (
+    demanda.status === 'Concluída' ||
+    demanda.status === 'Cancelada'
+  ) {
+    return false
+  }
+
+  if (!demanda.prazo) {
+    return false
+  }
+
+  const prazo =
+    converterDataNotificacaoGlobal(
+      demanda.prazo
+    )
+
+  if (!prazo) {
+    return false
+  }
+
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+
+  const limite = new Date(hoje)
+  limite.setDate(
+    limite.getDate() + 7
+  )
+
+  return (
+    prazo >= hoje &&
+    prazo <= limite
+  )
+}
+
+function gerarNotificacoesGlobais(
+  demandas: DemandaNotificacaoGlobal[]
+): NotificacaoGlobal[] {
+  const notificacoes: NotificacaoGlobal[] = []
+
+  demandas.forEach((demanda) => {
+    if (
+      notificacaoGlobalHabilitada('atrasadas') &&
+      estaAtrasadaNotificacaoGlobal(demanda)
+    ) {
+      notificacoes.push({
+        id: criarIdNotificacaoGlobal(
+          'atrasada',
+          demanda.id,
+          demanda.prazo
+        ),
+        tipo: 'atrasada',
+        titulo: 'Demanda atrasada',
+        descricao:
+          `A demanda "${demanda.titulo}" ultrapassou o prazo de atendimento.`,
+        data: demanda.prazo,
+        demandaId: demanda.id,
+        prioridade: demanda.prioridade,
+        lida: false,
+      })
+    }
+
+    if (
+      notificacaoGlobalHabilitada(
+        'proximoVencimento'
+      ) &&
+      estaProximaDoVencimentoNotificacaoGlobal(
+        demanda
+      )
+    ) {
+      notificacoes.push({
+        id: criarIdNotificacaoGlobal(
+          'prazo',
+          demanda.id,
+          demanda.prazo
+        ),
+        tipo: 'prazo',
+        titulo:
+          'Prazo próximo do vencimento',
+        descricao:
+          `A demanda "${demanda.titulo}" está próxima do vencimento do prazo.`,
+        data: demanda.prazo,
+        demandaId: demanda.id,
+        prioridade: demanda.prioridade,
+        lida: false,
+      })
+    }
+
+    const historico =
+      Array.isArray(demanda.historico)
+        ? demanda.historico
+        : []
+
+    historico.forEach((item) => {
+      if (!item || !item.id) {
+        return
+      }
+
+      if (
+        item.tipo === 'responsavel' &&
+        notificacaoGlobalHabilitada(
+          'atribuicao'
+        )
+      ) {
+        notificacoes.push({
+          id: criarIdNotificacaoGlobal(
+            'responsavel',
+            demanda.id,
+            String(item.id)
+          ),
+          tipo: 'responsavel',
+          titulo:
+            item.titulo ===
+            'Responsável alterado'
+              ? 'Responsável alterado'
+              : 'Demanda atribuída',
+          descricao:
+            item.descricao ||
+            `O responsável da demanda "${demanda.titulo}" foi alterado.`,
+          data: item.data,
+          demandaId: demanda.id,
+          prioridade: demanda.prioridade,
+          lida: false,
+        })
+      }
+
+      if (item.tipo !== 'status') {
+        return
+      }
+
+      const descricao = String(
+        item.descricao || ''
+      ).toLowerCase()
+
+      const titulo = String(
+        item.titulo || ''
+      ).toLowerCase()
+
+      if (
+        notificacaoGlobalHabilitada(
+          'conclusao'
+        ) &&
+        (
+          titulo.includes('conclu') ||
+          descricao.includes('conclu')
+        )
+      ) {
+        notificacoes.push({
+          id: criarIdNotificacaoGlobal(
+            'concluida',
+            demanda.id,
+            String(item.id)
+          ),
+          tipo: 'concluida',
+          titulo:
+            'Demanda concluída',
+          descricao:
+            item.descricao ||
+            `A demanda "${demanda.titulo}" foi concluída.`,
+          data: item.data,
+          demandaId: demanda.id,
+          prioridade: demanda.prioridade,
+          lida: false,
+        })
+      }
+
+      if (
+        notificacaoGlobalHabilitada(
+          'cancelamento'
+        ) &&
+        (
+          descricao.includes('cancelad') ||
+          titulo.includes('cancelad')
+        )
+      ) {
+        notificacoes.push({
+          id: criarIdNotificacaoGlobal(
+            'cancelada',
+            demanda.id,
+            String(item.id)
+          ),
+          tipo: 'cancelada',
+          titulo:
+            'Demanda cancelada',
+          descricao:
+            item.descricao ||
+            `A demanda "${demanda.titulo}" foi cancelada.`,
+          data: item.data,
+          demandaId: demanda.id,
+          prioridade: demanda.prioridade,
+          lida: false,
+        })
+      }
+
+      const houveConclusaoAnterior =
+        historico.some(
+          (anterior) =>
+            anterior.id !== item.id &&
+            anterior.tipo === 'status' &&
+            (
+              String(
+                anterior.titulo || ''
+              )
+                .toLowerCase()
+                .includes('conclu') ||
+              String(
+                anterior.descricao || ''
+              )
+                .toLowerCase()
+                .includes('conclu')
+            ) &&
+            new Date(
+              anterior.data
+            ).getTime() <=
+              new Date(
+                item.data
+              ).getTime()
+        )
+
+      if (
+        notificacaoGlobalHabilitada(
+          'reabertura'
+        ) &&
+        houveConclusaoAnterior &&
+        !descricao.includes('conclu')
+      ) {
+        notificacoes.push({
+          id: criarIdNotificacaoGlobal(
+            'reaberta',
+            demanda.id,
+            String(item.id)
+          ),
+          tipo: 'reaberta',
+          titulo:
+            'Demanda reaberta',
+          descricao:
+            item.descricao ||
+            `A demanda "${demanda.titulo}" foi reaberta.`,
+          data: item.data,
+          demandaId: demanda.id,
+          prioridade: demanda.prioridade,
+          lida: false,
+        })
+      }
+    })
+  })
+
+  return notificacoes.sort(
+    (a, b) =>
+      new Date(b.data).getTime() -
+      new Date(a.data).getTime()
+  )
+}
+
+function obterIconeNotificacaoGlobal(
+  tipo: string
+): string {
+  switch (tipo) {
+    case 'atrasada':
+      return '🔴'
+    case 'prazo':
+      return '🕐'
+    case 'responsavel':
+      return '👤'
+    case 'concluida':
+      return '🟢'
+    case 'cancelada':
+      return '⚫'
+    case 'reaberta':
+      return '🔄'
+    default:
+      return '🔔'
+  }
+}
+
+function obterClasseNotificacaoGlobal(
+  tipo: string
+): string {
+  switch (tipo) {
+    case 'atrasada':
+      return 'atrasada'
+    case 'prazo':
+      return 'prazo'
+    case 'responsavel':
+      return 'responsavel'
+    case 'concluida':
+      return 'concluida'
+    case 'cancelada':
+      return 'cancelada'
+    case 'reaberta':
+      return 'reaberta'
+    default:
+      return 'normal'
+  }
+}
+
+function marcarLeituraNotificacaoGlobal(
+  id: string
+) {
+  if (!id) {
+    return
+  }
+
+  try {
+    const salvo =
+      localStorage.getItem(
+        'notificacoes_lidas'
+      )
+
+    const atuais =
+      salvo
+        ? JSON.parse(salvo)
+        : []
+
+    const leituras =
+      Array.isArray(atuais)
+        ? atuais
+        : []
+
+    if (leituras.includes(id)) {
+      return
+    }
+
+    localStorage.setItem(
+      'notificacoes_lidas',
+      JSON.stringify([
+        ...leituras,
+        id,
+      ])
+    )
+  } catch {
+    // A central continua disponível mesmo sem persistência.
+  }
+}
+
+function salvarTodasLeiturasNotificacoesGlobais(
+  ids: string[]
+) {
+  try {
+    const salvo =
+      localStorage.getItem(
+        'notificacoes_lidas'
+      )
+
+    const atuais =
+      salvo
+        ? JSON.parse(salvo)
+        : []
+
+    const leiturasAtuais =
+      Array.isArray(atuais)
+        ? atuais
+        : []
+
+    localStorage.setItem(
+      'notificacoes_lidas',
+      JSON.stringify([
+        ...new Set([
+          ...leiturasAtuais,
+          ...ids,
+        ]),
+      ])
+    )
+  } catch {
+    // Sem interrupção da interface.
+  }
+}
+
+function GlobalNotificationPanel({
+  notificacoes,
+  onLer,
+  onLerTodas,
+}: {
+  notificacoes: NotificacaoGlobal[]
+  onLer: (id: string) => void
+  onLerTodas: () => void
+}) {
+  const naoLidas = notificacoes.filter(
+    (item) => !item.lida
+  )
+
+  return (
+    <div className="gd-global-notification-content">
+      <div className="gd-global-notification-header">
+        <div>
+          <strong>Notificações</strong>
+          <small>
+            {naoLidas.length}{' '}
+            {naoLidas.length === 1
+              ? 'não lida'
+              : 'não lidas'}
+          </small>
+        </div>
+
+        {naoLidas.length > 0 && (
+          <button
+            type="button"
+            className="gd-global-notification-mark-all"
+            onClick={onLerTodas}
+          >
+            Marcar todas como lidas
+          </button>
+        )}
+      </div>
+
+      <div className="gd-global-notification-list">
+        {notificacoes.length === 0 ? (
+          <div className="gd-global-notification-empty">
+            <span>✓</span>
+            <strong>
+              Nenhuma notificação.
+            </strong>
+            <small>
+              Não existem alertas ou ocorrências
+              pendentes no momento.
+            </small>
+          </div>
+        ) : (
+          notificacoes
+            .slice(0, 12)
+            .map((notificacao) => (
+              <button
+                type="button"
+                key={notificacao.id}
+                className={`gd-global-notification-item ${
+                  notificacao.lida
+                    ? ''
+                    : 'nao-lida'
+                } gd-global-notification-${obterClasseNotificacaoGlobal(
+                  notificacao.tipo
+                )}`}
+                onClick={() =>
+                  onLer(notificacao.id)
+                }
+              >
+                <span className="gd-global-notification-icon">
+                  {obterIconeNotificacaoGlobal(
+                    notificacao.tipo
+                  )}
+                </span>
+
+                <span className="gd-global-notification-body">
+                  <strong>
+                    {notificacao.titulo}
+                  </strong>
+
+                  <span>
+                    {notificacao.descricao}
+                  </span>
+
+                  <small>
+                    Demanda #
+                    {notificacao.demandaId}
+                    {' • '}
+                    {formatarDataHoraNotificacaoGlobal(
+                      notificacao.data
+                    )}
+                  </small>
+                </span>
+
+                {!notificacao.lida && (
+                  <span
+                    className="gd-global-notification-dot"
+                    aria-label="Não lida"
+                  />
+                )}
+              </button>
+            ))
+        )}
+      </div>
+
+      {notificacoes.length > 12 && (
+        <div className="gd-global-notification-footer">
+          Exibindo as 12 notificações mais recentes.
+        </div>
+      )}
+
+      <div className="gd-global-notification-channel">
+        <span>
+          Canal do sistema: dentro da aplicação
+        </span>
+      </div>
+    </div>
+  )
+}
+
 type BotaoMenuProps = {
   id: MenuItem
   icone: string
@@ -765,6 +1693,131 @@ export default function MenuPrincipal({
   rodapeAcoes,
 }: Props) {
   const [notificacoesAbertas, setNotificacoesAbertas] = useState(false)
+  const [notificacoesAtualizacao, setNotificacoesAtualizacao] = useState(0)
+
+  const demandasParaNotificacoes = useMemo(
+    () => carregarDemandasParaNotificacoes(),
+    [notificacoesAtualizacao]
+  )
+
+  const notificacoesGlobaisBase = useMemo(
+    () => gerarNotificacoesGlobais(
+      demandasParaNotificacoes
+    ),
+    [demandasParaNotificacoes]
+  )
+
+  const [leiturasGlobais, setLeiturasGlobais] = useState<string[]>(
+    () => {
+      try {
+        const salvo =
+          localStorage.getItem(
+            'notificacoes_lidas'
+          )
+
+        const dados =
+          salvo
+            ? JSON.parse(salvo)
+            : []
+
+        return Array.isArray(dados)
+          ? dados
+          : []
+      } catch {
+        return []
+      }
+    }
+  )
+
+  const notificacoesGlobais = useMemo(
+    () =>
+      notificacoesGlobaisBase.map(
+        (item) => ({
+          ...item,
+          lida:
+            leiturasGlobais.includes(
+              item.id
+            ),
+        })
+      ),
+    [notificacoesGlobaisBase, leiturasGlobais]
+  )
+
+  const notificacoesGlobaisNaoLidas =
+    notificacoesGlobais.filter(
+      (item) => !item.lida
+    )
+
+  function atualizarNotificacoesGlobais() {
+    try {
+      const salvo =
+        localStorage.getItem(
+          'notificacoes_lidas'
+        )
+
+      const dados =
+        salvo
+          ? JSON.parse(salvo)
+          : []
+
+      setLeiturasGlobais(
+        Array.isArray(dados)
+          ? dados
+          : []
+      )
+    } catch {
+      setLeiturasGlobais([])
+    }
+
+    setNotificacoesAtualizacao(
+      (valor) => valor + 1
+    )
+  }
+
+  function marcarNotificacaoGlobalComoLida(
+    id: string
+  ) {
+    if (
+      !id ||
+      leiturasGlobais.includes(id)
+    ) {
+      return
+    }
+
+    const novasLeituras = [
+      ...leiturasGlobais,
+      id,
+    ]
+
+    setLeiturasGlobais(
+      novasLeituras
+    )
+
+    marcarLeituraNotificacaoGlobal(id)
+  }
+
+  function marcarTodasNotificacoesGlobaisComoLidas() {
+    const ids =
+      notificacoesGlobais.map(
+        (item) => item.id
+      )
+
+    const novasLeituras = [
+      ...new Set([
+        ...leiturasGlobais,
+        ...ids,
+      ]),
+    ]
+
+    setLeiturasGlobais(
+      novasLeituras
+    )
+
+    salvarTodasLeiturasNotificacoesGlobais(
+      ids
+    )
+  }
+
   const nomeExibicao = usuarioAtual?.nome || nomeUsuario || 'Usuário'
   const perfil = usuarioAtual ? perfilExibicao(usuarioAtual) : (perfilUsuario || 'Usuário')
   const iniciais = iniciaisDoUsuario(nomeExibicao)
@@ -916,24 +1969,58 @@ export default function MenuPrincipal({
                 className="gd-notification"
                 aria-label="Notificações"
                 aria-expanded={notificacoesAbertas}
-                onClick={() => setNotificacoesAbertas((aberta) => !aberta)}
+                onClick={() => {
+                  atualizarNotificacoesGlobais()
+
+                  setNotificacoesAbertas(
+                    (aberta) => !aberta
+                  )
+                }}
               >
                 🔔
 
-                {notificacoes > 0 && (
+                {(notificacoesConteudo
+                  ? notificacoes
+                  : notificacoesGlobaisNaoLidas.length) > 0 && (
                   <span className="gd-notification-badge">
-                    {notificacoes > 99 ? '99+' : notificacoes}
+                    {
+                      (
+                        notificacoesConteudo
+                          ? notificacoes
+                          : notificacoesGlobaisNaoLidas.length
+                      ) > 99
+                        ? '99+'
+                        : (
+                            notificacoesConteudo
+                              ? notificacoes
+                              : notificacoesGlobaisNaoLidas.length
+                          )
+                    }
                   </span>
                 )}
               </button>
 
-              {notificacoesAbertas && notificacoesConteudo && (
+              {notificacoesAbertas && (
                 <div
                   className="gd-notification-panel"
                   role="dialog"
                   aria-label="Central de notificações"
                 >
-                  {notificacoesConteudo}
+                  {notificacoesConteudo ? (
+                    notificacoesConteudo
+                  ) : (
+                    <GlobalNotificationPanel
+                      notificacoes={
+                        notificacoesGlobais
+                      }
+                      onLer={
+                        marcarNotificacaoGlobalComoLida
+                      }
+                      onLerTodas={
+                        marcarTodasNotificacoesGlobaisComoLidas
+                      }
+                    />
+                  )}
                 </div>
               )}
             </div>
