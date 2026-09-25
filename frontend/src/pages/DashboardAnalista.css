@@ -1,0 +1,681 @@
+.analista-dashboard {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  color: var(--gd-text);
+}
+
+.analista-dashboard-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.analista-eyebrow {
+  margin: 0 0 5px;
+  color: var(--gd-primary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.analista-dashboard-header h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 750;
+  letter-spacing: -.3px;
+}
+
+.analista-dashboard-header p:last-child {
+  margin: 6px 0 0;
+  color: var(--gd-text-muted);
+  font-size: 12px;
+}
+
+.analista-primary-button,
+.analista-panel-header button {
+  border: 1px solid var(--gd-primary);
+  border-radius: var(--gd-radius-md);
+  background: var(--gd-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.analista-primary-button {
+  min-height: 38px;
+  padding: 0 15px;
+}
+
+.analista-primary-button:hover,
+.analista-panel-header button:hover {
+  background: var(--gd-primary-dark);
+}
+
+.analista-indicators {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.analista-indicator {
+  min-height: 108px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--gd-surface);
+  border: 1px solid var(--gd-border);
+  border-radius: var(--gd-radius-lg);
+  box-shadow: var(--gd-shadow-sm);
+}
+
+.analista-indicator span {
+  color: var(--gd-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.analista-indicator strong {
+  margin-top: 8px;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.analista-indicator small {
+  margin-top: 6px;
+  color: var(--gd-text-muted);
+  font-size: 10px;
+}
+
+.indicator-blue strong { color: var(--gd-primary); }
+.indicator-orange strong { color: var(--gd-warning); }
+.indicator-green strong { color: var(--gd-success-dark); }
+.indicator-red strong { color: var(--gd-danger-dark); }
+.indicator-purple strong { color: var(--gd-purple); }
+.indicator-slate strong { color: var(--gd-text); }
+
+.analista-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.analista-panel {
+  background: var(--gd-surface);
+  border: 1px solid var(--gd-border);
+  border-radius: var(--gd-radius-lg);
+  box-shadow: var(--gd-shadow-sm);
+  overflow: hidden;
+}
+
+.analista-panel-header {
+  min-height: 58px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--gd-border);
+}
+
+.analista-panel-header h3 {
+  margin: 0;
+  color: var(--gd-text);
+  font-size: 13px;
+}
+
+.analista-panel-header span {
+  display: block;
+  margin-top: 3px;
+  color: var(--gd-text-muted);
+  font-size: 10px;
+}
+
+.analista-panel-header button {
+  min-height: 30px;
+  padding: 0 10px;
+  background: var(--gd-primary-light);
+  border-color: #bfdbfe;
+  color: var(--gd-primary-dark);
+}
+
+.analista-panel-header button:hover {
+  color: #fff;
+  border-color: var(--gd-primary-dark);
+}
+
+.analista-demand-list,
+.analista-deadline-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.analista-demand-row,
+.analista-deadline-row {
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 0;
+  border-bottom: 1px solid var(--gd-border);
+  background: var(--gd-surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.analista-demand-row:last-child,
+.analista-deadline-row:last-child {
+  border-bottom: 0;
+}
+
+.analista-demand-row:hover,
+.analista-deadline-row:hover {
+  background: var(--gd-surface-hover);
+}
+
+.analista-demand-row strong,
+.analista-deadline-row strong {
+  display: block;
+  color: var(--gd-text);
+  font-size: 11px;
+}
+
+.analista-demand-row small,
+.analista-deadline-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--gd-text-muted);
+  font-size: 9px;
+}
+
+.analista-row-date {
+  color: var(--gd-text-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.analista-status-pendencia {
+  padding: 4px 8px;
+  border-radius: var(--gd-radius-pill);
+  background: var(--gd-warning-light);
+  color: var(--gd-warning);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.analista-deadlines {
+  margin-bottom: 16px;
+}
+
+.analista-date-warning,
+.analista-date-danger {
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.analista-date-warning { color: var(--gd-warning); }
+.analista-date-danger { color: var(--gd-danger-dark); }
+
+.analista-empty {
+  min-height: 94px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gd-text-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 1100px) {
+  .analista-indicators {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .analista-dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .analista-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 560px) {
+  .analista-indicators {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* ============================================================
+   FASE 5 — DASHBOARD DO ANALISTA OCUPA TODA A ÁREA PRINCIPAL
+   O shell (sidebar/cabeçalho) continua sob responsabilidade do
+   MenuPrincipal. Este bloco remove apenas a limitação visual de
+   largura do conteúdo do analista.
+   ============================================================ */
+
+.gd-page-content .analista-dashboard {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .analista-dashboard > .analista-dashboard-header,
+.gd-page-content .analista-dashboard > .analista-indicators,
+.gd-page-content .analista-dashboard > .analista-grid,
+.gd-page-content .analista-dashboard > .analista-panel {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+@media (max-width: 900px) {
+  .gd-page-content .analista-dashboard {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+/* ============================================================
+   FASE 5 — PADRONIZAÇÃO DO ENQUADRAMENTO DAS 3 TELAS DO ANALISTA
+   Dashboard | Minhas Demandas | Configurações
+
+   Objetivo:
+   - mesma distância lateral em relação à barra azul;
+   - mesma área útil horizontal;
+   - mesma altura visual do cabeçalho interno;
+   - preservar todo o conteúdo e comportamento existentes.
+   ============================================================ */
+
+.gd-page-content .analista-dashboard,
+.gd-page-content .minhas-demandas-page,
+.gd-page-content .analista-config-page {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Todos os cabeçalhos internos começam e terminam no mesmo ritmo visual. */
+.gd-page-content .analista-dashboard-header,
+.gd-page-content .minhas-demandas-heading,
+.gd-page-content .analista-config-header {
+  min-height: 58px !important;
+  margin-top: 0 !important;
+  margin-bottom: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Dashboard */
+.gd-page-content .analista-dashboard-header {
+  width: 100% !important;
+}
+
+/* Minhas Demandas:
+   o padding lateral próprio da tela estava criando ~20px extras,
+   deixando os cards mais afastados da barra azul que nas outras telas. */
+.gd-page-content .minhas-demandas-page {
+  padding-top: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 88px !important;
+  padding-left: 0 !important;
+}
+
+/* Configurações */
+.gd-page-content .analista-config-page {
+  padding: 0 !important;
+}
+
+/* Os blocos principais das três telas ocupam a mesma largura útil. */
+.gd-page-content .analista-dashboard > *,
+.gd-page-content .minhas-demandas-page > *,
+.gd-page-content .analista-config-page > * {
+  box-sizing: border-box !important;
+}
+
+/* Mantém responsividade sem recriar espaçamentos diferentes. */
+@media (max-width: 900px) {
+  .gd-page-content .analista-dashboard,
+  .gd-page-content .minhas-demandas-page,
+  .gd-page-content .analista-config-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .gd-page-content .analista-dashboard-header,
+  .gd-page-content .minhas-demandas-heading,
+  .gd-page-content .analista-config-header {
+    min-height: 58px !important;
+    margin-bottom: 14px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .analista-dashboard-header,
+  .gd-page-content .minhas-demandas-heading,
+  .gd-page-content .analista-config-header {
+    min-height: auto !important;
+  }
+
+  .gd-page-content .minhas-demandas-page,
+  .gd-page-content .analista-config-page {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* ============================================================
+   FASE 5 — PADRONIZAÇÃO DOS BOTÕES DO DASHBOARD DO ANALISTA
+   Mantém as ações contextuais das listas como estão e aplica
+   o padrão global somente aos controles de navegação.
+   ============================================================ */
+
+.analista-panel-header .analista-panel-action {
+  min-height: 32px !important;
+  height: 32px !important;
+  padding: 0 11px !important;
+  border-radius: var(--gd-control-radius, 8px) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   FASE 5 — CORES DOS INDICADORES DO DASHBOARD DO ANALISTA
+   Camada visual sutil sobre o layout original aprovado.
+   ============================================================ */
+.analista-indicator {
+  position: relative;
+  overflow: hidden;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.analista-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: inherit;
+}
+
+.analista-indicator:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(15, 23, 42, .07);
+}
+
+.analista-indicator.indicator-blue {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 44%);
+}
+.analista-indicator.indicator-blue::before { background: #2563eb; }
+.analista-indicator.indicator-blue span { color: #1d4ed8; }
+.analista-indicator.indicator-blue strong { color: #2563eb; }
+
+.analista-indicator.indicator-orange {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg, #fffbf5 0%, #ffffff 44%);
+}
+.analista-indicator.indicator-orange::before { background: #f59e0b; }
+.analista-indicator.indicator-orange span { color: #b45309; }
+.analista-indicator.indicator-orange strong { color: #d97706; }
+
+.analista-indicator.indicator-green {
+  border-color: #bbf7d0;
+  background: linear-gradient(180deg, #f8fff9 0%, #ffffff 44%);
+}
+.analista-indicator.indicator-green::before { background: #16a34a; }
+.analista-indicator.indicator-green span { color: #15803d; }
+.analista-indicator.indicator-green strong { color: #16a34a; }
+
+.analista-indicator.indicator-red {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fffafa 0%, #ffffff 44%);
+}
+.analista-indicator.indicator-red::before { background: #dc2626; }
+.analista-indicator.indicator-red span { color: #b91c1c; }
+.analista-indicator.indicator-red strong { color: #dc2626; }
+
+.analista-indicator.indicator-purple {
+  border-color: #e9d5ff;
+  background: linear-gradient(180deg, #fcfaff 0%, #ffffff 44%);
+}
+.analista-indicator.indicator-purple::before { background: #9333ea; }
+.analista-indicator.indicator-purple span { color: #7e22ce; }
+.analista-indicator.indicator-purple strong { color: #9333ea; }
+
+.analista-indicator.indicator-slate {
+  border-color: #cbd5e1;
+  background: linear-gradient(180deg, #fafbfc 0%, #ffffff 44%);
+}
+.analista-indicator.indicator-slate::before { background: #64748b; }
+.analista-indicator.indicator-slate span { color: #334155; }
+.analista-indicator.indicator-slate strong { color: #0f172a; }
+
+
+
+/* ============================================================
+   MELHORIA VISUAL — PARTE INFERIOR DO DASHBOARD DO ANALISTA
+   Mantém o conteúdo e a lógica existentes; altera apenas a
+   apresentação dos blocos Em Atendimento, Com Pendências e
+   Próximos Prazos.
+   ============================================================ */
+.analista-panel-atendimento,
+.analista-panel-pendencias,
+.analista-panel-prazos {
+  position: relative;
+  border-width: 1px;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .045);
+}
+
+.analista-panel-atendimento::before,
+.analista-panel-pendencias::before,
+.analista-panel-prazos::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 2;
+}
+
+.analista-panel-atendimento::before { background: #2563eb; }
+.analista-panel-pendencias::before { background: #f59e0b; }
+.analista-panel-prazos::before { background: #9333ea; }
+
+.analista-panel-atendimento .analista-panel-header,
+.analista-panel-pendencias .analista-panel-header,
+.analista-panel-prazos .analista-panel-header {
+  min-height: 64px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.analista-panel-atendimento .analista-panel-header {
+  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
+}
+
+.analista-panel-pendencias .analista-panel-header {
+  background: linear-gradient(180deg, #fffbf4 0%, #ffffff 100%);
+}
+
+.analista-panel-prazos .analista-panel-header {
+  background: linear-gradient(180deg, #fbf9ff 0%, #ffffff 100%);
+}
+
+.analista-panel-atendimento .analista-panel-header > div:first-child,
+.analista-panel-pendencias .analista-panel-header > div:first-child,
+.analista-panel-prazos .analista-panel-header > div:first-child {
+  position: relative;
+  padding-left: 10px;
+}
+
+.analista-panel-atendimento .analista-panel-header > div:first-child::before,
+.analista-panel-pendencias .analista-panel-header > div:first-child::before,
+.analista-panel-prazos .analista-panel-header > div:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  border-radius: 999px;
+}
+
+.analista-panel-atendimento .analista-panel-header > div:first-child::before { background: #2563eb; }
+.analista-panel-pendencias .analista-panel-header > div:first-child::before { background: #f59e0b; }
+.analista-panel-prazos .analista-panel-header > div:first-child::before { background: #9333ea; }
+
+.analista-panel-atendimento .analista-panel-header h3 { color: #1d4ed8; }
+.analista-panel-pendencias .analista-panel-header h3 { color: #b45309; }
+.analista-panel-prazos .analista-panel-header h3 { color: #7e22ce; }
+
+.analista-panel-atendimento .analista-panel-header > div:first-child span,
+.analista-panel-pendencias .analista-panel-header > div:first-child span,
+.analista-panel-prazos .analista-panel-header > div:first-child span {
+  color: #64748b;
+}
+
+.analista-panel-atendimento .analista-panel-action {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.analista-panel-pendencias .analista-panel-action {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.analista-panel-atendimento .analista-panel-action:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.analista-panel-pendencias .analista-panel-action:hover {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.analista-panel-atendimento .analista-demand-row,
+.analista-panel-pendencias .analista-demand-row,
+.analista-panel-prazos .analista-deadline-row {
+  min-height: 62px;
+  padding: 11px 16px;
+  transition: background .15s ease, padding-left .15s ease;
+}
+
+.analista-panel-atendimento .analista-demand-row:hover {
+  background: #f8fbff;
+  padding-left: 19px;
+}
+
+.analista-panel-pendencias .analista-demand-row:hover {
+  background: #fffcf5;
+  padding-left: 19px;
+}
+
+.analista-panel-prazos .analista-deadline-row:hover {
+  background: #fbf9ff;
+  padding-left: 19px;
+}
+
+.analista-panel-atendimento .analista-demand-row > span:first-child,
+.analista-panel-pendencias .analista-demand-row > span:first-child,
+.analista-panel-prazos .analista-deadline-title {
+  min-width: 0;
+}
+
+.analista-panel-atendimento .analista-demand-row strong,
+.analista-panel-pendencias .analista-demand-row strong,
+.analista-panel-prazos .analista-deadline-row strong {
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.analista-panel-atendimento .analista-demand-row small,
+.analista-panel-pendencias .analista-demand-row small,
+.analista-panel-prazos .analista-deadline-row small {
+  margin-top: 4px;
+}
+
+.analista-panel-atendimento .analista-row-date {
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 9px;
+}
+
+.analista-panel-pendencias .analista-status-pendencia {
+  padding: 5px 9px;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.analista-panel-prazos .analista-deadline-row > span:last-child {
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+}
+
+.analista-panel-prazos .analista-date-warning {
+  color: #7e22ce;
+}
+
+.analista-panel-prazos .analista-date-danger {
+  color: #b91c1c;
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+.analista-panel-atendimento .analista-empty,
+.analista-panel-pendencias .analista-empty,
+.analista-panel-prazos .analista-empty {
+  min-height: 108px;
+  padding: 0 16px;
+  background: linear-gradient(180deg, #fcfdff 0%, #ffffff 100%);
+  color: #64748b;
+}
+
+@media (max-width: 760px) {
+  .analista-panel-atendimento .analista-panel-header,
+  .analista-panel-pendencias .analista-panel-header,
+  .analista-panel-prazos .analista-panel-header {
+    min-height: 60px;
+    padding: 12px 14px;
+  }
+
+  .analista-panel-atendimento .analista-demand-row,
+  .analista-panel-pendencias .analista-demand-row,
+  .analista-panel-prazos .analista-deadline-row {
+    padding: 10px 14px;
+  }
+}

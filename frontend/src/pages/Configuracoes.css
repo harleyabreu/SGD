@@ -1,0 +1,536 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   CONFIGURAÇÕES — PADRÃO VISUAL FASE 5
+   Baseado na tela Responsáveis / Clientes / Feriados.
+   Somente apresentação visual. Lógica preservada no TSX.
+   ============================================================ */
+
+.configuracoes-page,
+.configuracoes-page * {
+  box-sizing: border-box;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.configuracoes-page {
+  width: 100% !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 17px 21px 96px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* ============================================================
+   CABEÇALHO DA PÁGINA
+   ============================================================ */
+
+.configuracoes-page-header {
+  width: 100% !important;
+  margin: 0 0 18px !important;
+  padding: 0 !important;
+}
+
+.configuracoes-page-header > div:first-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-bottom: 4px !important;
+}
+
+.configuracoes-page-header > div:first-child > div {
+  width: 4px !important;
+  min-width: 4px !important;
+  height: 27px !important;
+  border-radius: 4px !important;
+  background: #2563eb !important;
+}
+
+.configuracoes-page-title {
+  margin: 0 !important;
+  color: #173f67 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -.3px !important;
+}
+
+.configuracoes-page-subtitle {
+  margin: 0 0 0 14px !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   AVISO DE SALVAMENTO
+   ============================================================ */
+
+.configuracoes-message {
+  margin-bottom: 14px !important;
+  padding: 10px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  border: 1px solid #bbf7d0 !important;
+  border-radius: 10px !important;
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .03) !important;
+}
+
+.configuracoes-message-icon {
+  width: 23px !important;
+  height: 23px !important;
+  min-width: 23px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+/* ============================================================
+   PADRÃO DE CARDS
+   ============================================================ */
+
+.configuracoes-card {
+  position: relative !important;
+  width: 100% !important;
+  margin: 0 0 14px !important;
+  padding: 18px !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important;
+}
+
+.configuracoes-card::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  height: 3px !important;
+  background: #2563eb !important;
+}
+
+.configuracoes-identificacao-card::before {
+  background: #2563eb !important;
+}
+
+.configuracoes-sla-card::before {
+  background: #ea580c !important;
+}
+
+.configuracoes-notificacoes-card::before {
+  background: #ca8a04 !important;
+}
+
+.configuracoes-interface-card::before {
+  background: #7c3aed !important;
+}
+
+.configuracoes-fluxo-card::before {
+  background: #0891b2 !important;
+}
+
+/* ============================================================
+   ADMINISTRAÇÃO
+   ============================================================ */
+
+.configuracoes-admin-card {
+  padding: 0 !important;
+  border-color: #bfdbfe !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 38%) !important;
+}
+
+.configuracoes-admin-card::before {
+  background: #2563eb !important;
+}
+
+.configuracoes-admin-accent {
+  display: none !important;
+}
+
+.configuracoes-admin-card > div:nth-child(2) {
+  padding: 16px 18px !important;
+}
+
+.configuracoes-admin-card .configuracoes-section-icon {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  box-shadow: inset 0 0 0 1px #bfdbfe !important;
+}
+
+.configuracoes-admin-card h2 {
+  color: #173f67 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.configuracoes-admin-card > div:nth-child(2) p {
+  margin-top: 4px !important;
+}
+
+/* ============================================================
+   CABEÇALHO INTERNO DOS CARDS
+   ============================================================ */
+
+.configuracoes-page .configuracoes-section-icon {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 10px !important;
+  font-size: 17px !important;
+}
+
+.configuracoes-card > div:not(.configuracoes-admin-accent) .configuracoes-section-icon {
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, .10) !important;
+}
+
+.configuracoes-card > div:first-of-type:not(.configuracoes-admin-accent) {
+  margin-bottom: 16px !important;
+}
+
+.configuracoes-section-heading {
+  color: #0f172a !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.configuracoes-section-description {
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   BOTÕES DO RODAPÉ
+   ============================================================ */
+
+.configuracoes-btn-secondary,
+.configuracoes-btn-primary {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease !important;
+}
+
+.configuracoes-btn-secondary {
+  background: #ffffff !important;
+  color: #174f86 !important;
+  -webkit-text-fill-color: #174f86 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.configuracoes-btn-secondary:hover {
+  background: #f8fbff !important;
+  border-color: #93c5fd !important;
+  color: #174f86 !important;
+  -webkit-text-fill-color: #174f86 !important;
+}
+
+.configuracoes-btn-primary,
+.configuracoes-btn-admin {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1px solid #2563eb !important;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, .20) !important;
+}
+
+.configuracoes-btn-primary:hover,
+.configuracoes-btn-admin:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 12px rgba(37, 99, 235, .25) !important;
+}
+
+.configuracoes-btn-admin {
+  height: 39px !important;
+  min-height: 39px !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+}
+
+/* ============================================================
+   IDENTIFICAÇÃO
+   ============================================================ */
+
+.config-identificacao {
+  gap: 12px !important;
+}
+
+.config-identificacao > div {
+  min-height: 70px !important;
+  padding: 12px 13px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #fafcff !important;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+}
+
+.config-identificacao > div:hover {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, .05) !important;
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   CAMPOS / LABELS
+   ============================================================ */
+
+.configuracoes-page input[type="number"],
+.configuracoes-page select {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  outline: none !important;
+}
+
+.configuracoes-page input[type="number"]:focus,
+.configuracoes-page select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+.configuracoes-page input[type="number"]:hover,
+.configuracoes-page select:hover {
+  border-color: #93c5fd !important;
+}
+
+/* ============================================================
+   SLA
+   ============================================================ */
+
+.config-sla-grid {
+  gap: 12px !important;
+}
+
+.config-sla-grid > label {
+  min-width: 0 !important;
+  padding: 11px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  transition: border-color .16s ease, box-shadow .16s ease !important;
+}
+
+.config-sla-grid > label:hover {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, .05) !important;
+}
+
+.config-sla-grid > label input {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+/* ============================================================
+   NOTIFICAÇÕES
+   ============================================================ */
+
+.config-notificacoes-grid {
+  gap: 10px !important;
+}
+
+.config-notificacoes-grid > label {
+  min-height: 64px !important;
+  padding: 10px 11px !important;
+  border-radius: 10px !important;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease !important;
+}
+
+.config-notificacoes-grid > label:hover {
+  border-color: #bfdbfe !important;
+  transform: translateY(-1px);
+}
+
+.configuracoes-notification-count {
+  padding: 5px 9px !important;
+  border: 1px solid #bbf7d0 !important;
+  background: #f0fdf4 !important;
+  color: #15803d !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+/* ============================================================
+   PREFERÊNCIAS
+   ============================================================ */
+
+.config-interface-grid {
+  gap: 12px !important;
+}
+
+.config-interface-grid > label {
+  padding: 11px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #fafcff !important;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+}
+
+.config-interface-grid > label:hover {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, .05) !important;
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   FLUXO
+   ============================================================ */
+
+.configuracoes-status-chip {
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  transition: transform .15s ease, box-shadow .15s ease !important;
+}
+
+.configuracoes-status-chip:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, .08) !important;
+}
+
+/* ============================================================
+   INFORMAÇÃO DO SLA
+   ============================================================ */
+
+.configuracoes-sla-card > div:nth-of-type(3) {
+  margin-top: 12px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 9px !important;
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  font-size: 11px !important;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 1000px) {
+  .config-identificacao,
+  .config-sla-grid,
+  .config-notificacoes-grid,
+  .config-interface-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .configuracoes-page {
+    padding: 18px 12px 110px !important;
+  }
+
+  .configuracoes-page-title {
+    font-size: 22px !important;
+  }
+
+  .configuracoes-page-subtitle {
+    font-size: 12px !important;
+    margin-left: 14px !important;
+  }
+
+  .configuracoes-card {
+    padding: 15px !important;
+    border-radius: 10px !important;
+  }
+
+  .configuracoes-admin-card {
+    padding: 0 !important;
+  }
+
+  .configuracoes-admin-card > div:nth-child(2) {
+    padding: 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .configuracoes-admin-card .configuracoes-btn-admin {
+    width: 100% !important;
+  }
+
+  .config-identificacao,
+  .config-sla-grid,
+  .config-notificacoes-grid,
+  .config-interface-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .configuracoes-btn-secondary,
+  .configuracoes-btn-primary {
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .configuracoes-page {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .configuracoes-page-title {
+    font-size: 21px !important;
+  }
+
+  .configuracoes-card {
+    padding: 13px !important;
+  }
+
+  .configuracoes-section-icon {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+  }
+}
+
+/* ============================================================
+   AJUSTE FINAL — CABEÇALHO DA TELA CONFIGURAÇÕES
+   Somente posicionamento visual do título.
+   ============================================================ */
+
+.configuracoes-page {
+  padding-top: 4px !important;
+}
+
+/* Remove o traço azul ao lado do título. */
+.configuracoes-page-header > div:first-child > div {
+  display: none !important;
+}
+
+.configuracoes-page-header > div:first-child {
+  gap: 0 !important;
+}
+
+.configuracoes-page-subtitle {
+  margin-left: 0 !important;
+}

@@ -1,0 +1,605 @@
+/* =========================================
+   PÁGINA DE TODAS AS DEMANDAS
+========================================= */
+
+.demandas-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  padding: 30px;
+  box-sizing: border-box;
+  color: #172b4d;
+}
+
+
+/* =========================================
+   BOTÃO VOLTAR
+========================================= */
+
+.btn-voltar {
+  border: none;
+  background: transparent;
+  color: #164477;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 22px;
+}
+
+.btn-voltar:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================
+   CABEÇALHO
+========================================= */
+
+.demandas-header {
+  max-width: 1100px;
+  margin: 0 auto 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.demandas-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  color: #173f6d;
+}
+
+.demandas-header p {
+  margin: 0;
+  color: #667085;
+  font-size: 15px;
+}
+
+
+/* =========================================
+   BOTÃO NOVA DEMANDA
+========================================= */
+
+.btn-nova-demanda {
+  background: #164477;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-nova-demanda:hover {
+  background: #0f355d;
+}
+
+
+/* =========================================
+   FILTROS
+========================================= */
+
+.filtros {
+  max-width: 1100px;
+  margin: 0 auto 16px;
+  background: white;
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 14px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
+}
+
+.filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.filtro label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #344054;
+}
+
+.filtro input,
+.filtro select {
+  width: 100%;
+  height: 36px;
+  box-sizing: border-box;
+  border: 1px solid #d0d5dd;
+  border-radius: 5px;
+  background: white;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #344054;
+  outline: none;
+}
+
+.filtro input:focus,
+.filtro select:focus {
+  border-color: #164477;
+  box-shadow: 0 0 0 2px rgba(22, 68, 119, 0.1);
+}
+
+
+/* =========================================
+   AÇÕES
+========================================= */
+
+.acoes-demandas {
+  max-width: 1100px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-filtro,
+.btn-limpar,
+.btn-kanban {
+  height: 36px;
+  padding: 0 15px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-filtro {
+  background: #164477;
+  color: white;
+  border: 1px solid #164477;
+}
+
+.btn-filtro:hover {
+  background: #0f355d;
+}
+
+.btn-limpar {
+  background: white;
+  color: #344054;
+  border: 1px solid #d0d5dd;
+}
+
+.btn-limpar:hover {
+  background: #f9fafb;
+}
+
+.btn-kanban {
+  margin-left: auto;
+  background: white;
+  color: #164477;
+  border: 1px solid #164477;
+}
+
+.btn-kanban:hover {
+  background: #f0f5fa;
+}
+
+
+/* =========================================
+   CONTAINER DA LISTA
+========================================= */
+
+.tabela-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: white;
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
+}
+
+
+/* =========================================
+   CABEÇALHO DA LISTA
+========================================= */
+
+.tabela-header {
+  min-height: 55px;
+  padding: 0 18px;
+  border-bottom: 1px solid #e4e7ec;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.tabela-header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: #172b4d;
+}
+
+.tabela-header span {
+  color: #667085;
+  font-size: 13px;
+}
+
+
+/* =========================================
+   LISTA DE DEMANDAS
+========================================= */
+
+.lista-demandas {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
+/* =========================================
+   CARD DA DEMANDA
+========================================= */
+
+.demanda-card {
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  background: white;
+  padding: 18px;
+  box-sizing: border-box;
+  transition: 0.2s ease;
+}
+
+.demanda-card:hover {
+  border-color: #b8c7d9;
+  box-shadow: 0 3px 10px rgba(16, 24, 40, 0.07);
+}
+
+
+/* =========================================
+   TOPO DO CARD
+========================================= */
+
+.demanda-card-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.demanda-card-topo h3 {
+  margin: 0 0 5px;
+  font-size: 18px;
+  color: #173f6d;
+}
+
+.demanda-id {
+  font-size: 12px;
+  color: #667085;
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-nova {
+  background: #e8f1fb;
+  color: #164477;
+}
+
+.status-atendimento {
+  background: #e8f1fb;
+  color: #155eef;
+}
+
+.status-pendencias {
+  background: #fff1e6;
+  color: #c2410c;
+}
+
+.status-concluida {
+  background: #eaf8ef;
+  color: #16803c;
+}
+
+.status-cancelada {
+  background: #fef0f0;
+  color: #d92d20;
+}
+
+
+/* =========================================
+   DESCRIÇÃO
+========================================= */
+
+.demanda-descricao {
+  padding: 15px 0;
+}
+
+.demanda-descricao strong,
+.demanda-observacao strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #667085;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.demanda-descricao p,
+.demanda-observacao p {
+  margin: 0;
+  color: #344054;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   INFORMAÇÕES
+========================================= */
+
+.demanda-informacoes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #eaecf0;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.informacao {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.informacao-label {
+  font-size: 11px;
+  color: #667085;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.informacao strong {
+  font-size: 14px;
+  color: #344054;
+}
+
+
+/* =========================================
+   PRIORIDADES
+========================================= */
+
+.prioridade-critica {
+  color: #b42318 !important;
+}
+
+.prioridade-alta {
+  color: #d92d20 !important;
+}
+
+.prioridade-media {
+  color: #b54708 !important;
+}
+
+.prioridade-baixa {
+  color: #16803c !important;
+}
+
+
+/* =========================================
+   OBSERVAÇÃO
+========================================= */
+
+.demanda-observacao {
+  padding-top: 14px;
+}
+
+.demanda-observacao p {
+  background: #f8fafc;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+
+/* =========================================
+   NENHUMA DEMANDA
+========================================= */
+
+.sem-demandas {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.icone-demandas {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.sem-demandas h3 {
+  margin: 0 0 8px;
+  color: #344054;
+  font-size: 17px;
+}
+
+.sem-demandas p {
+  margin: 0 0 20px;
+  color: #667085;
+  font-size: 14px;
+}
+
+
+/* =========================================
+   KANBAN
+========================================= */
+
+.kanban-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: white;
+  border: 1px solid #dce3ec;
+  border-radius: 8px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.kanban-header {
+  margin-bottom: 18px;
+}
+
+.kanban-header h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+  color: #172b4d;
+}
+
+.kanban-header p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.kanban-column {
+  min-height: 350px;
+  background: #f8fafc;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.kanban-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 4px 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #dce3ec;
+  font-size: 13px;
+  font-weight: 700;
+  color: #344054;
+}
+
+.kanban-card {
+  background: white;
+  border: 1px solid #dce3ec;
+  border-radius: 7px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.kanban-card h4 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  color: #173f6d;
+}
+
+.kanban-card span {
+  font-size: 11px;
+  color: #667085;
+}
+
+.kanban-card p {
+  margin: 10px 0 8px;
+  font-size: 12px;
+  color: #344054;
+}
+
+.kanban-card strong {
+  font-size: 12px;
+  color: #667085;
+}
+
+.kanban-empty {
+  text-align: center;
+  color: #98a2b3;
+  font-size: 12px;
+  padding: 30px 10px;
+}
+
+
+/* =========================================
+   RESPONSIVIDADE
+========================================= */
+
+@media (max-width: 900px) {
+
+  .filtros {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .demanda-informacoes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .kanban-board {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .demandas-page {
+    padding: 18px;
+  }
+
+  .demandas-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .acoes-demandas {
+    flex-wrap: wrap;
+  }
+
+  .btn-kanban {
+    margin-left: 0;
+  }
+
+  .demanda-card-topo {
+    flex-direction: column;
+  }
+
+  .demanda-informacoes {
+    grid-template-columns: 1fr;
+  }
+
+  .kanban-board {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,49 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   ESTILOS GLOBAIS DA APLICAÇÃO
+   FASE 5 — PADRONIZAÇÃO GERAL
+   ============================================================ */
+
+/* ============================================================
+   CONTAINER PRINCIPAL
+   ============================================================ */
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   APLICAÇÃO
+   ============================================================ */
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--gd-background);
+  color: var(--gd-text);
+}
+
+/* ============================================================
+   UTILITÁRIOS GLOBAIS
+   ============================================================ */
+
+.gd-surface {
+  background: var(--gd-surface);
+}
+
+.gd-border {
+  border: 1px solid var(--gd-border);
+}
+
+.gd-shadow-sm {
+  box-shadow: var(--gd-shadow-sm);
+}
+
+.gd-shadow-md {
+  box-shadow: var(--gd-shadow-md);
+}
+
+.gd-shadow-lg {
+  box-shadow: var(--gd-shadow-lg);
+}

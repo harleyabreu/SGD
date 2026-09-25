@@ -1,0 +1,544 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   CLIENTES — FASE 5 / PADRÃO VISUAL NOVO
+   Referência estrutural: Feriados / Responsáveis / Nova Demanda
+
+   SOMENTE VISUAL.
+   A lógica do Clientes.tsx não é alterada.
+   ============================================================ */
+
+.clientes-page,
+.clientes-page * {
+  box-sizing: border-box;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ============================================================
+   ÁREA PRINCIPAL
+   ============================================================ */
+
+.clientes-page {
+  width: 100% !important;
+  max-width: 1250px !important;
+  margin: 0 auto !important;
+  padding: 2px 20px 96px !important;
+  min-height: auto !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* ============================================================
+   TÍTULO DA PÁGINA
+   ============================================================ */
+
+.clientes-page-title {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.clientes-page-title h1 {
+  margin: 0 0 5px !important;
+  color: #173f67 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.clientes-page-title p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   RESUMO — 3 CARDS
+   ============================================================ */
+
+.clientes-summary-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin: 0 !important;
+}
+
+.clientes-summary-card {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 92px !important;
+  padding: 18px 18px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  overflow: hidden !important;
+
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.clientes-summary-card::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: #2563eb !important;
+}
+
+.clientes-summary-card:nth-child(2)::before {
+  background: #16a34a !important;
+}
+
+.clientes-summary-card:nth-child(3)::before {
+  background: #94a3b8 !important;
+}
+
+.clientes-summary-card strong {
+  margin: 0 !important;
+  color: #174f86 !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.clientes-summary-card:nth-child(2) strong {
+  color: #15803d !important;
+}
+
+.clientes-summary-card:nth-child(3) strong {
+  color: #64748b !important;
+}
+
+.clientes-summary-card span {
+  margin: 0 !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+}
+
+/* ============================================================
+   CARD PRINCIPAL
+   ============================================================ */
+
+.clientes-main-card {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 20px !important;
+
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.clientes-card-header {
+  width: 100% !important;
+  margin: 0 0 16px !important;
+  padding: 0 0 14px 13px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  position: relative !important;
+}
+
+.clientes-card-header::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 14px !important;
+  width: 4px !important;
+  border-radius: 2px !important;
+  background: #2563eb !important;
+}
+
+.clientes-card-header h2 {
+  margin: 0 0 4px !important;
+  color: #0f172a !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.clientes-card-header p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   PESQUISA
+   ============================================================ */
+
+.clientes-search {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 11px !important;
+
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  outline: none !important;
+}
+
+.clientes-search::placeholder,
+.clientes-input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.clientes-search:focus,
+.clientes-input:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+/* ============================================================
+   FORMULÁRIO
+   ============================================================ */
+
+.clientes-form {
+  width: 100% !important;
+  margin: 16px 0 0 !important;
+  padding: 18px !important;
+
+  background: #f8fafc !important;
+  border: 1px solid #dce5ef !important;
+  border-radius: 8px !important;
+}
+
+.clientes-form h3 {
+  margin: 0 0 16px !important;
+  color: #173f67 !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.clientes-form-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 16px !important;
+}
+
+.clientes-form-grid label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.clientes-input {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 0 11px !important;
+
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+
+  font-size: 12px !important;
+  outline: none !important;
+}
+
+.clientes-error {
+  margin-top: 12px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 8px !important;
+  background: #fff1f2 !important;
+  color: #b91c1c !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+/* ============================================================
+   TABELA
+   ============================================================ */
+
+.clientes-main-card > div[style*="overflowX"] {
+  width: 100% !important;
+  margin-top: 16px !important;
+  overflow-x: auto !important;
+}
+
+.clientes-table {
+  width: 100% !important;
+  margin: 0 !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  font-size: 12px !important;
+}
+
+.clientes-table thead th {
+  padding: 11px 10px !important;
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .03em !important;
+  white-space: nowrap !important;
+}
+
+.clientes-table tbody td {
+  padding: 12px 10px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #edf1f5 !important;
+  vertical-align: middle !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.clientes-table tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.clientes-table-row:hover td {
+  background: #f8fafc !important;
+}
+
+.clientes-table tbody td strong {
+  color: #0f172a !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.clientes-table span {
+  display: inline-block !important;
+  padding: 4px 9px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================
+   BOTÕES DA TABELA
+   ============================================================ */
+
+.clientes-table button {
+  min-height: 32px !important;
+  height: 32px !important;
+  margin-left: 6px !important;
+  padding: 0 10px !important;
+
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+
+  font-family: inherit !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.clientes-table button:first-child {
+  color: #2563eb !important;
+}
+
+.clientes-table button:first-child:hover {
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+}
+
+.clientes-table .btn-acao-inativar {
+  color: #dc2626 !important;
+}
+
+.clientes-table .btn-acao-inativar:hover {
+  background: #fff1f2 !important;
+  border-color: #fca5a5 !important;
+}
+
+.clientes-table .btn-acao-ativar {
+  color: #15803d !important;
+}
+
+.clientes-table .btn-acao-ativar:hover {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+}
+
+/* ============================================================
+   BARRA INFERIOR — MESMO PADRÃO NOVO
+   ============================================================ */
+
+.clientes-page ~ div[style*="position: fixed"],
+.clientes-page > div[style*="position: fixed"] {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  min-height: 60px !important;
+  z-index: 1200 !important;
+  padding: 10px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: #ffffff !important;
+  border-top: 1px solid #dce5ef !important;
+  box-shadow: 0 -4px 16px rgba(30, 60, 90, .08) !important;
+}
+
+.clientes-page ~ div[style*="position: fixed"] button,
+.clientes-page > div[style*="position: fixed"] button {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 15px !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+/* MenuPrincipal normalmente coloca o rodapé fora do .clientes-page. */
+.gd-shell-footer button,
+button.btn-secundario.clientes-btn-secondary,
+button.btn-principal.clientes-btn-primary {
+  min-height: 40px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+button.btn-secundario.clientes-btn-secondary {
+  background: #ffffff !important;
+  color: #174f86 !important;
+  border: 1px solid #c8d5e2 !important;
+}
+
+button.btn-principal.clientes-btn-primary {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1px solid #2563eb !important;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .clientes-page {
+    max-width: none !important;
+    width: calc(100% - 32px) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 800px) {
+  .clientes-summary-grid,
+  .clientes-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clientes-page {
+    width: calc(100% - 28px) !important;
+    padding-top: 20px !important;
+  }
+
+  .clientes-main-card {
+    padding: 16px !important;
+  }
+}
+
+/* ============================================================
+   AJUSTE FINAL — LARGURA DO CONTEÚDO
+   O conteúdo deve acompanhar toda a área disponível do sistema,
+   como nas demais telas do padrão novo.
+   ============================================================ */
+
+.clientes-page {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 2px 20px 96px !important;
+}
+
+.clientes-page-title,
+.clientes-summary-grid,
+.clientes-main-card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.clientes-summary-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.clientes-main-card {
+  padding: 20px !important;
+}
+
+@media (max-width: 1100px) {
+  .clientes-page {
+    width: 100% !important;
+    max-width: none !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+
+/* ============================================================
+   AJUSTE FINAL — TÍTULO DA PÁGINA
+   Somente o título sobe para seguir o padrão visual aprovado.
+   ============================================================ */
+.clientes-page {
+  padding-top: 2px !important;
+}
+
+/* Alinhamento vertical com a tela Responsáveis */
+.clientes-page-title {
+  margin-bottom: 31px !important;
+}
+
+.clientes-page-title {
+  margin-top: 0 !important;
+}
+
+.clientes-page-title h1 {
+  margin-top: 0 !important;
+}

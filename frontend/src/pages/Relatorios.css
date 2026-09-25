@@ -1,0 +1,1407 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   RELATÓRIOS — PADRÃO VISUAL FINAL
+   REFERÊNCIA: TELA FERIADOS APROVADA
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: #f8fafc;
+}
+
+body {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #0f172a;
+}
+
+/* ============================================================
+   PÁGINA
+   ============================================================ */
+
+.relatorios-page {
+  min-height: 100vh !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 0 84px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* ============================================================
+   CONTEÚDO
+   MESMA GEOMETRIA DA TELA FERIADOS:
+   sidebar global = 240px
+   ============================================================ */
+
+.relatorios-content {
+  width: calc(100% - 240px) !important;
+  max-width: none !important;
+
+  margin-left: 240px !important;
+  margin-right: 0 !important;
+
+  padding: 24px 20px 30px !important;
+
+  display: grid !important;
+  gap: 18px !important;
+
+  background: #f8fafc !important;
+
+  box-sizing: border-box !important;
+}
+
+/* ============================================================
+   TÍTULO
+   ============================================================ */
+
+.relatorios-heading {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.relatorios-heading h1 {
+  margin: 0 0 5px !important;
+
+  color: #173f67 !important;
+
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+
+  letter-spacing: -0.3px !important;
+}
+
+.relatorios-heading p {
+  margin: 0 !important;
+
+  color: #64748b !important;
+
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.relatorios-content section {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 20px !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important;
+}
+
+.relatorios-content h2 {
+  color: #0f172a !important;
+}
+
+/* ============================================================
+   CARD DE FILTROS
+   ============================================================ */
+
+.relatorios-content section:first-of-type {
+  margin: 0 !important;
+}
+
+.relatorios-content section:first-of-type h2 {
+  margin: 0 !important;
+
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.relatorios-content section:first-of-type p {
+  margin: 5px 0 0 !important;
+
+  color: #64748b !important;
+
+  font-size: 12px !important;
+}
+
+/* ============================================================
+   CAMPOS
+   ============================================================ */
+
+.relatorios-content label {
+  color: #475569 !important;
+
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.relatorios-content select {
+  width: 100% !important;
+
+  height: 40px !important;
+  min-height: 40px !important;
+
+  padding: 0 11px !important;
+
+  background: #ffffff !important;
+  color: #0f172a !important;
+
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+
+  font-family: inherit !important;
+  font-size: 12px !important;
+
+  outline: none !important;
+}
+
+.relatorios-content select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+/* ============================================================
+   GRIDS DE INDICADORES
+   ============================================================ */
+
+.relatorios-content > div[style*="gridTemplateColumns"] {
+  width: 100% !important;
+  gap: 14px !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] > div {
+  min-width: 0 !important;
+
+  background: #ffffff !important;
+
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important;
+}
+
+/* Números dos indicadores */
+.relatorios-content > div[style*="gridTemplateColumns"] > div strong {
+  color: #173f67 !important;
+}
+
+/* ============================================================
+   DUAS COLUNAS
+   ============================================================ */
+
+.relatorios-content > div[style*="gridTemplateColumns"] section {
+  min-width: 0 !important;
+}
+
+.relatorios-content section h2 {
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+}
+
+.relatorios-content section > div[style*="display: flex"] {
+  color: #0f172a;
+}
+
+.relatorios-content section > div[style*="display: flex"] span {
+  font-size: 12px !important;
+  color: #0f172a !important;
+}
+
+.relatorios-content section > div[style*="display: flex"] strong {
+  color: #0f172a !important;
+  font-size: 12px !important;
+}
+
+/* ============================================================
+   RESUMO OPERACIONAL
+   ============================================================ */
+
+.relatorios-content section:last-of-type {
+  margin-bottom: 0 !important;
+}
+
+/* ============================================================
+   TABELA
+   ============================================================ */
+
+.relatorios-table-wrap {
+  width: 100% !important;
+
+  overflow-x: auto !important;
+
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+
+  background: #ffffff !important;
+}
+
+.relatorios-table-wrap table {
+  width: 100% !important;
+  min-width: 780px !important;
+
+  border-collapse: collapse !important;
+
+  background: #ffffff !important;
+}
+
+.relatorios-table-wrap th {
+  padding: 12px 10px !important;
+
+  text-align: left !important;
+
+  background: #f8fafc !important;
+  color: #475569 !important;
+
+  border-bottom: 1px solid #e2e8f0 !important;
+
+  font-size: 10px !important;
+  font-weight: 700 !important;
+
+  text-transform: uppercase !important;
+  letter-spacing: .03em !important;
+}
+
+.relatorios-table-wrap td {
+  padding: 12px 10px !important;
+
+  color: #0f172a !important;
+
+  border-bottom: 1px solid #edf1f5 !important;
+
+  font-size: 12px !important;
+}
+
+.relatorios-table-wrap tbody tr:nth-child(even) td {
+  background: #fbfcfe !important;
+}
+
+.relatorios-table-wrap tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+/* ============================================================
+   RODAPÉ
+   EXATAMENTE NA ÁREA DE CONTEÚDO, SEM COBRIR A SIDEBAR
+   ============================================================ */
+
+.relatorios-footer {
+  position: fixed !important;
+
+  left: 240px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+
+  width: calc(100% - 240px) !important;
+
+  height: 60px !important;
+  min-height: 60px !important;
+
+  padding: 10px 20px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  gap: 12px !important;
+
+  z-index: 1200 !important;
+
+  background: #ffffff !important;
+
+  border-top: 1px solid #e2e8f0 !important;
+
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, .06) !important;
+}
+
+.relatorios-footer button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-width: max-content !important;
+
+  height: 40px !important;
+  min-height: 40px !important;
+
+  padding: 0 15px !important;
+
+  border-radius: 8px !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.relatorios-footer .btn-secundario {
+  background: #ffffff !important;
+  color: #475569 !important;
+
+  border: 1px solid #cbd5e1 !important;
+}
+
+.relatorios-footer .btn-principal {
+  background: #2563eb !important;
+  color: #ffffff !important;
+
+  border: 1px solid #2563eb !important;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .relatorios-content {
+    width: calc(100% - 240px) !important;
+    max-width: none !important;
+
+    margin-left: 240px !important;
+    margin-right: 0 !important;
+
+    padding: 20px 16px 30px !important;
+  }
+
+  .relatorios-footer {
+    left: 240px !important;
+    width: calc(100% - 240px) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .relatorios-content {
+    width: calc(100% - 220px) !important;
+    max-width: none !important;
+
+    margin-left: 220px !important;
+    margin-right: 0 !important;
+
+    padding: 20px 16px 30px !important;
+  }
+
+  .relatorios-footer {
+    left: 220px !important;
+    width: calc(100% - 220px) !important;
+  }
+
+  .relatorios-content > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .relatorios-content > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .relatorios-content section:first-of-type > div {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .relatorios-content {
+    width: calc(100% - 68px) !important;
+    max-width: none !important;
+
+    margin-left: 68px !important;
+    margin-right: 0 !important;
+
+    padding: 18px 12px 90px !important;
+  }
+
+  .relatorios-footer {
+    left: 68px !important;
+    width: calc(100% - 68px) !important;
+
+    height: auto !important;
+    min-height: 60px !important;
+
+    padding: 10px 12px !important;
+  }
+
+  .relatorios-footer button {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+
+  .relatorios-table-wrap {
+    overflow-x: auto !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .relatorios-content {
+    width: calc(100% - 68px) !important;
+    margin-left: 68px !important;
+    padding: 18px 10px 90px !important;
+  }
+
+  .relatorios-footer {
+    left: 68px !important;
+    width: calc(100% - 68px) !important;
+
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .relatorios-footer button {
+    padding: 0 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* ============================================================
+   V3.1 — PADRONIZAÇÃO VISUAL OFICIAL
+   Base: Relatorios.css atual enviado pelo usuário.
+   Somente apresentação visual. Não altera JSX ou regras de negócio.
+   Referência: Nova Demanda / Responsáveis / Feriados aprovadas.
+   ============================================================ */
+
+.relatorios-page,
+.relatorios-page button,
+.relatorios-page input,
+.relatorios-page select,
+.relatorios-page textarea {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Título da página */
+.relatorios-heading h1 {
+  color: #173f67 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.relatorios-heading p {
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* Títulos de cards */
+.relatorios-content h2,
+.relatorios-content section h2 {
+  color: #0f172a !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+/* Texto auxiliar */
+.relatorios-content section:first-of-type p {
+  color: #64748b !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+/* Labels dos filtros */
+.relatorios-content label {
+  color: #475569 !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+/* Selects */
+.relatorios-content select {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.relatorios-content select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+/* Cards e indicadores */
+.relatorios-content section,
+.relatorios-content > div[style*="gridTemplateColumns"] > div {
+  border-color: #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important;
+}
+
+/* Números dos indicadores */
+.relatorios-content > div[style*="gridTemplateColumns"] > div strong {
+  color: #173f67 !important;
+  font-weight: 700 !important;
+}
+
+/* Listas de status/prioridade */
+.relatorios-content section > div[style*="display: flex"] span {
+  color: #0f172a !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+.relatorios-content section > div[style*="display: flex"] strong {
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+/* Tabela */
+.relatorios-table-wrap th {
+  font-family: inherit !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+}
+
+.relatorios-table-wrap td {
+  font-family: inherit !important;
+  font-size: 12px !important;
+  color: #0f172a !important;
+}
+
+/* Rodapé e botões */
+.relatorios-footer button {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.relatorios-footer .btn-secundario {
+  color: #475569 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.relatorios-footer .btn-principal {
+  color: #ffffff !important;
+  background: #2563eb !important;
+  border: 1px solid #2563eb !important;
+}
+
+/* Responsividade: preserva a estrutura já existente */
+@media (max-width: 700px) {
+  .relatorios-content label {
+    font-size: 11px !important;
+  }
+
+  .relatorios-content select {
+    font-size: 13px !important;
+  }
+
+  .relatorios-footer button {
+    font-size: 11px !important;
+  }
+}
+
+
+/* ============================================================
+   V1.5 — PADRONIZAÇÃO DEFINITIVA COM MENUPRINCIPAL
+   ============================================================ */
+
+.gd-page-content .relatorios-page {
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 84px !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .relatorios-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 24px 20px 96px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  gap: 18px !important;
+  background: #f8fafc !important;
+}
+
+/* O rodapé local não participa mais da estrutura. */
+.gd-page-content .relatorios-footer {
+  display: none !important;
+}
+
+/* Resumo Operacional — quatro blocos bem distribuídos. */
+.gd-page-content .relatorios-resumo-operacional {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+.gd-page-content .relatorios-resumo-operacional-item {
+  min-width: 0 !important;
+  min-height: 54px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .relatorios-resumo-operacional-item strong {
+  margin: 0 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  color: #173f67 !important;
+}
+
+.gd-page-content .relatorios-resumo-operacional-item span {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  color: #475569 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 900px) {
+  .gd-page-content .relatorios-resumo-operacional {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .gd-page-content .relatorios-resumo-operacional {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .relatorios-resumo-operacional-item {
+    justify-content: flex-start !important;
+  }
+
+  .gd-page-content .relatorios-content {
+    padding: 18px 12px 88px !important;
+  }
+}
+
+/* ============================================================
+   V1.5 — AJUSTES FINAIS
+   - MenuPrincipal é o único shell global
+   - Resumo Operacional corrigido
+   - Área de conteúdo sem margem própria de Sidebar
+   ============================================================ */
+
+.gd-page-content .relatorios-page {
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 84px !important;
+  background: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .relatorios-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 24px 20px 96px !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  gap: 18px !important;
+  background: #f8fafc !important;
+}
+
+/* Garante que nenhuma regra antiga volte a criar posicionamento próprio. */
+.gd-page-content .relatorios-content,
+.gd-page-content .relatorios-content section {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+/* Resumo Operacional: quatro blocos organizados e legíveis. */
+.gd-page-content .relatorios-resumo-operacional {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+.gd-page-content .relatorios-resumo-operacional-item {
+  min-width: 0 !important;
+  min-height: 54px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .relatorios-resumo-operacional-item strong {
+  margin: 0 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  color: #173f67 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .relatorios-resumo-operacional-item span {
+  margin: 0 !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  color: #475569 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 900px) {
+  .gd-page-content .relatorios-resumo-operacional {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .gd-page-content .relatorios-content {
+    padding: 18px 12px 88px !important;
+  }
+
+  .gd-page-content .relatorios-resumo-operacional {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .relatorios-resumo-operacional-item {
+    justify-content: flex-start !important;
+  }
+}
+
+
+/* ============================================================
+   PADRÃO VISUAL — MESMA REFERÊNCIA DA TELA FERIADOS APROVADA
+   AJUSTES SOMENTE VISUAIS
+   ============================================================ */
+
+/* Área de conteúdo: mesmo recuo horizontal da tela Feriados */
+.gd-page-content .relatorios-content {
+  padding: 2px 20px 92px !important;
+}
+
+/* Título principal da página */
+.gd-page-content .relatorios-heading h1 {
+  margin: 0 0 5px !important;
+  color: #0f172a !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.gd-page-content .relatorios-heading p {
+  margin: 0 !important;
+  color: #68788a !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+/* Títulos dos cards em azul-marinho */
+.gd-page-content .relatorios-content section h2 {
+  color: #173f67 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+/* Labels e textos mantendo o padrão aprovado */
+.gd-page-content .relatorios-content label {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+}
+
+.gd-page-content .relatorios-content select {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 14px !important;
+  color: #0f172a !important;
+}
+
+/* Indicadores */
+.gd-page-content .relatorios-resumo-operacional-item strong,
+.gd-page-content .relatorios-content > div[style*="gridTemplateColumns"] > div strong {
+  color: #173f67 !important;
+}
+
+/* Responsividade: preservar o padrão nos tamanhos menores */
+@media (max-width: 560px) {
+  .gd-page-content .relatorios-content {
+    padding: 2px 12px 88px !important;
+  }
+}
+
+/* ============================================================
+   FASE 5 — PADRONIZAÇÃO GERAL
+   RELATÓRIOS NO MESMO PADRÃO DO DASHBOARD DO ANALISTA
+   Apenas apresentação visual. Nenhuma regra de negócio alterada.
+   ============================================================ */
+
+.relatorios-content {
+  gap: 16px !important;
+}
+
+.relatorios-heading h1 {
+  color: var(--gd-text, #0f172a) !important;
+  font-size: 24px !important;
+  font-weight: 750 !important;
+  letter-spacing: -.3px !important;
+}
+
+.relatorios-heading p {
+  margin-top: 6px !important;
+  color: var(--gd-text-muted, #64748b) !important;
+  font-size: 12px !important;
+}
+
+/* Filtros — geometria e acabamento do Dashboard do Analista */
+.relatorios-content > section:first-of-type {
+  padding: 16px !important;
+  border: 1px solid var(--gd-border, #e2e8f0) !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+  background: var(--gd-surface, #fff) !important;
+  box-shadow: var(--gd-shadow-sm, 0 1px 2px rgba(15,23,42,.04)) !important;
+}
+
+.relatorios-content > section:first-of-type h2 {
+  font-size: 13px !important;
+  color: var(--gd-text, #0f172a) !important;
+}
+
+.relatorios-content > section:first-of-type p {
+  font-size: 10px !important;
+  color: var(--gd-text-muted, #64748b) !important;
+}
+
+.relatorios-content > section:first-of-type > div:last-child {
+  margin-top: 14px !important;
+  gap: 12px !important;
+}
+
+.relatorios-content label {
+  gap: 5px !important;
+  color: var(--gd-text-secondary, #475569) !important;
+  font-size: 10px !important;
+}
+
+.relatorios-content select {
+  height: 38px !important;
+  min-height: 38px !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+  font-size: 11px !important;
+}
+
+/* Indicadores */
+.relatorios-content > div[style*="repeat(4"] {
+  margin: 0 !important;
+  gap: 12px !important;
+}
+
+.relatorios-content > div[style*="repeat(4"] > div {
+  min-height: 108px !important;
+  padding: 16px !important;
+  justify-content: space-between !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+  box-shadow: var(--gd-shadow-sm, 0 1px 2px rgba(15,23,42,.04)) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.relatorios-content > div[style*="repeat(4"] > div::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: #2563eb;
+}
+
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(1) {
+  border-color: #bfdbfe !important;
+  background: linear-gradient(180deg, #eff6ff 0, #fff 34%) !important;
+}
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(1)::before { background: #2563eb; }
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(1) strong { color: #2563eb !important; }
+
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(2) {
+  border-color: #bbf7d0 !important;
+  background: linear-gradient(180deg, #f0fdf4 0, #fff 34%) !important;
+}
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(2)::before { background: #16a34a; }
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(2) strong { color: #15803d !important; }
+
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(3) {
+  border-color: #ddd6fe !important;
+  background: linear-gradient(180deg, #faf5ff 0, #fff 34%) !important;
+}
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(3)::before { background: #9333ea; }
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(3) strong { color: #7e22ce !important; }
+
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(4) {
+  border-color: #fecaca !important;
+  background: linear-gradient(180deg, #fef2f2 0, #fff 34%) !important;
+}
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(4)::before { background: #dc2626; }
+.relatorios-content > div[style*="repeat(4"] > div:nth-child(4) strong { color: #dc2626 !important; }
+
+.relatorios-content > div[style*="repeat(4"] > div strong {
+  font-size: 25px !important;
+  line-height: 1 !important;
+}
+
+.relatorios-content > div[style*="repeat(4"] > div span {
+  color: var(--gd-text-muted, #64748b) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+}
+
+/* Painéis Por Status / Por Prioridade */
+.relatorios-content > div[style*="1fr 1fr"] {
+  gap: 16px !important;
+}
+
+.relatorios-content > div[style*="1fr 1fr"] > section,
+.relatorios-content > section:not(:first-of-type) {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+  box-shadow: var(--gd-shadow-sm, 0 1px 2px rgba(15,23,42,.04)) !important;
+}
+
+.relatorios-content > div[style*="1fr 1fr"] > section > h2,
+.relatorios-content > section:not(:first-of-type) > h2 {
+  min-height: 54px !important;
+  margin: 0 !important;
+  padding: 17px 16px 12px !important;
+  border-bottom: 1px solid var(--gd-border, #e2e8f0) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--gd-text, #0f172a) !important;
+}
+
+.relatorios-content > div[style*="1fr 1fr"] > section > div[style*="display: flex"] {
+  padding: 11px 16px !important;
+}
+
+/* Resumo Operacional */
+.relatorios-resumo-operacional {
+  padding: 0 !important;
+}
+
+.relatorios-resumo-operacional-item {
+  min-height: 58px !important;
+  padding: 12px 16px !important;
+}
+
+.relatorios-resumo-operacional-item strong {
+  color: #2563eb !important;
+  font-size: 18px !important;
+}
+
+.relatorios-resumo-operacional-item span {
+  font-size: 10px !important;
+  color: var(--gd-text-muted, #64748b) !important;
+}
+
+/* Tabela */
+.relatorios-content > section:last-of-type {
+  padding-bottom: 0 !important;
+}
+
+.relatorios-table-wrap {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.relatorios-table-wrap th {
+  padding: 11px 16px !important;
+  font-size: 9px !important;
+}
+
+.relatorios-table-wrap td {
+  padding: 12px 16px !important;
+  font-size: 11px !important;
+}
+
+.relatorios-table-wrap tbody tr:hover td {
+  background: var(--gd-surface-hover, #f8fafc) !important;
+}
+
+@media (max-width: 900px) {
+  .relatorios-content > div[style*="repeat(4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .relatorios-content > div[style*="repeat(4"],
+  .relatorios-content > div[style*="1fr 1fr"],
+  .relatorios-content > section:first-of-type > div:last-child {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ============================================================
+   V3.2 — PADRONIZAÇÃO VISUAL COM CORES
+   Somente apresentação. Nenhuma funcionalidade foi alterada.
+   ============================================================ */
+
+/* Cartão de filtros */
+.relatorios-content > section:first-of-type {
+  border-top: 3px solid #2563eb !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 30%) !important;
+}
+
+.relatorios-content > section:first-of-type h2 {
+  color: #173f67 !important;
+}
+
+/* Indicadores — mesma linguagem visual dos dashboards */
+.relatorios-content > div[style*="gridTemplateColumns"] > div {
+  position: relative !important;
+  overflow: hidden !important;
+  transition: transform .18s ease, box-shadow .18s ease !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] > div::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  height: 3px !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] > div:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, .08) !important;
+}
+
+/* 1 — Demandas no período */
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(1) {
+  border-color: #bfdbfe !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 38%) !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(1)::before {
+  background: #2563eb !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(1) strong {
+  color: #2563eb !important;
+}
+
+/* 2 — Concluídas */
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(2) {
+  border-color: #bbf7d0 !important;
+  background: linear-gradient(180deg, #f7fff9 0%, #ffffff 38%) !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(2)::before {
+  background: #16a34a !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(2) strong {
+  color: #16a34a !important;
+}
+
+/* 3 — Taxa de conclusão */
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(3) {
+  border-color: #e9d5ff !important;
+  background: linear-gradient(180deg, #fcf9ff 0%, #ffffff 38%) !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(3)::before {
+  background: #9333ea !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(3) strong {
+  color: #9333ea !important;
+}
+
+/* 4 — Atrasadas */
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(4) {
+  border-color: #fecaca !important;
+  background: linear-gradient(180deg, #fffafa 0%, #ffffff 38%) !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(4)::before {
+  background: #dc2626 !important;
+}
+.relatorios-content > div[style*="gridTemplateColumns"] > div:nth-child(4) strong {
+  color: #dc2626 !important;
+}
+
+/* Subtítulos dos indicadores */
+.relatorios-content > div[style*="gridTemplateColumns"] > div span {
+  color: #64748b !important;
+  font-size: 12px !important;
+}
+
+/* Painéis Por Status / Por Prioridade */
+.relatorios-content > div[style*="gridTemplateColumns"] section {
+  position: relative !important;
+  overflow: hidden !important;
+  padding-top: 18px !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: #2563eb !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section:nth-child(2)::before {
+  background: #9333ea !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section:first-child h2 {
+  color: #2563eb !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section:nth-child(2) h2 {
+  color: #9333ea !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section > div[style*="display: flex"] {
+  transition: background .16s ease, padding-left .16s ease !important;
+  border-radius: 6px !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section:first-child > div[style*="display: flex"]:hover {
+  background: #eff6ff !important;
+  padding-left: 8px !important;
+}
+
+.relatorios-content > div[style*="gridTemplateColumns"] section:nth-child(2) > div[style*="display: flex"]:hover {
+  background: #faf5ff !important;
+  padding-left: 8px !important;
+}
+
+/* Resumo operacional */
+.relatorios-content section:has(.relatorios-resumo-operacional) {
+  border-top: 3px solid #16a34a !important;
+  background: linear-gradient(180deg, #f8fff9 0%, #ffffff 32%) !important;
+}
+
+.relatorios-content section:has(.relatorios-resumo-operacional) h2 {
+  color: #15803d !important;
+}
+
+.relatorios-resumo-operacional {
+  gap: 10px !important;
+}
+
+.relatorios-resumo-operacional-item {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease !important;
+}
+
+.relatorios-resumo-operacional-item:hover {
+  background: #f8fafc !important;
+  border-color: #bfdbfe !important;
+  transform: translateY(-1px) !important;
+}
+
+.relatorios-resumo-operacional-item strong {
+  color: #2563eb !important;
+}
+
+/* Tabela */
+.relatorios-content section:has(.relatorios-table-wrap) {
+  border-top: 3px solid #2563eb !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 24%) !important;
+}
+
+.relatorios-content section:has(.relatorios-table-wrap) h2 {
+  color: #173f67 !important;
+}
+
+.relatorios-table-wrap th {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-bottom-color: #bfdbfe !important;
+}
+
+.relatorios-table-wrap tbody tr {
+  transition: background .15s ease !important;
+}
+
+.relatorios-table-wrap tbody tr:hover td {
+  background: #f8fbff !important;
+}
+
+.relatorios-table-wrap td:nth-child(5) {
+  font-weight: 600 !important;
+}
+
+.relatorios-table-wrap td:nth-child(6) {
+  font-weight: 600 !important;
+}
+
+/* Botões do rodapé */
+.relatorios-footer .btn-principal {
+  box-shadow: 0 3px 8px rgba(37, 99, 235, .20) !important;
+  transition: background .16s ease, transform .16s ease, box-shadow .16s ease !important;
+}
+
+.relatorios-footer .btn-principal:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 12px rgba(37, 99, 235, .25) !important;
+}
+
+.relatorios-footer .btn-secundario:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+/* ============================================================
+   RELATÓRIOS — BOTÃO VOLTAR AO DASHBOARD
+   PADRÃO VISUAL OFICIAL
+   Mesmo padrão utilizado em Clientes, Responsáveis e Feriados
+   ============================================================ */
+
+.relatorios-footer-voltar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  height: 40px !important;
+  min-height: 40px !important;
+
+  padding: 0 14px !important;
+
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+
+  background: #ffffff !important;
+
+  color: #174f86 !important;
+  -webkit-text-fill-color: #174f86 !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+.relatorios-footer-voltar:hover {
+  background: #f8fbff !important;
+  border-color: #93c5fd !important;
+  color: #174f86 !important;
+  -webkit-text-fill-color: #174f86 !important;
+}
+
+
+/* ============================================================
+   AJUSTE PONTUAL — SOMENTE BOTÃO "EXPORTAR CSV"
+   Não altera o botão "Voltar Ao Dashboard".
+   ============================================================ */
+
+button.relatorios-footer-exportar {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  height: 40px !important;
+  min-height: 40px !important;
+  min-width: max-content !important;
+
+  margin: 0 !important;
+  padding: 0 14px !important;
+  box-sizing: border-box !important;
+
+  background-color: #2563eb !important;
+  background-image: none !important;
+
+  border: 1px solid #2563eb !important;
+  border-radius: 8px !important;
+
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+
+  cursor: pointer !important;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, .20) !important;
+}
+
+button.relatorios-footer-exportar:hover {
+  background-color: #1d4ed8 !important;
+  background-image: none !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 12px rgba(37, 99, 235, .25) !important;
+}
+
+@media (max-width: 700px) {
+  button.relatorios-footer-exportar {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  button.relatorios-footer-exportar {
+    padding: 0 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+
+/* Ajuste pontual — somente o título "Relatórios" */
+.gd-page-content .relatorios-heading h1 {
+  color: #173f67 !important;
+}

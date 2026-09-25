@@ -1,0 +1,189 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   IDENTIDADE VISUAL GLOBAL
+   FASE 5 — PADRONIZAÇÃO GERAL
+   ============================================================ */
+
+:root {
+  /* ==========================================================
+     CORES PRINCIPAIS
+     ========================================================== */
+
+  --gd-primary: #2563eb;
+  --gd-primary-dark: #1d4ed8;
+  --gd-primary-light: #eff6ff;
+
+  /* ==========================================================
+     CORES INSTITUCIONAIS / NAVEGAÇÃO
+     ========================================================== */
+
+  --gd-sidebar: #102a43;
+  --gd-sidebar-dark: #0b2239;
+  --gd-sidebar-light: #173f67;
+
+  /* ==========================================================
+     FUNDOS E SUPERFÍCIES
+     ========================================================== */
+
+  --gd-background: #f8fafc;
+  --gd-surface: #ffffff;
+  --gd-surface-hover: #f8fafc;
+
+  /* ==========================================================
+     TIPOGRAFIA
+     ========================================================== */
+
+  --gd-text: #0f172a;
+  --gd-text-secondary: #475569;
+  --gd-text-muted: #64748b;
+  --gd-text-light: #94a3b8;
+  --gd-text-white: #ffffff;
+
+  /* ==========================================================
+     BORDAS
+     ========================================================== */
+
+  --gd-border: #e2e8f0;
+  --gd-border-strong: #cbd5e1;
+
+  /* ==========================================================
+     STATUS
+     ========================================================== */
+
+  --gd-success: #16a34a;
+  --gd-success-dark: #15803d;
+  --gd-success-light: #f0fdf4;
+
+  --gd-warning: #d97706;
+  --gd-warning-light: #fffbeb;
+
+  --gd-danger: #dc2626;
+  --gd-danger-dark: #b91c1c;
+  --gd-danger-light: #fef2f2;
+
+  --gd-info: #0284c7;
+  --gd-info-light: #f0f9ff;
+
+  --gd-purple: #7c3aed;
+  --gd-purple-light: #f5f3ff;
+
+  /* ==========================================================
+     ESPAÇAMENTOS
+     ========================================================== */
+
+  --gd-space-1: 4px;
+  --gd-space-2: 8px;
+  --gd-space-3: 12px;
+  --gd-space-4: 16px;
+  --gd-space-5: 20px;
+  --gd-space-6: 24px;
+  --gd-space-8: 32px;
+
+  /* ==========================================================
+     BORDER RADIUS
+     ========================================================== */
+
+  --gd-radius-sm: 6px;
+  --gd-radius-md: 8px;
+  --gd-radius-lg: 12px;
+  --gd-radius-pill: 999px;
+
+  /* ==========================================================
+     SOMBRAS
+     ========================================================== */
+
+  --gd-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --gd-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --gd-shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.08);
+
+  /* ==========================================================
+     TIPOGRAFIA — ESCALA BASE
+     ========================================================== */
+
+  --gd-font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  /* ==========================================================
+     TRANSIÇÕES
+     ========================================================== */
+
+  --gd-transition-fast: 0.15s ease;
+  --gd-transition-normal: 0.2s ease;
+}
+
+/* ============================================================
+   RESET GLOBAL
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+html {
+  font-family: var(--gd-font-family);
+  background: var(--gd-background);
+}
+
+body {
+  font-family: var(--gd-font-family);
+  background: var(--gd-background);
+  color: var(--gd-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   CONTROLES NATIVOS
+   ============================================================ */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   LINKS
+   ============================================================ */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================================
+   SELEÇÃO DE TEXTO
+   ============================================================ */
+
+::selection {
+  background: var(--gd-primary-light);
+  color: var(--gd-primary-dark);
+}

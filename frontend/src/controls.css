@@ -1,0 +1,168 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   CONTROLES GLOBAIS
+   FASE 5 — PADRONIZAÇÃO GERAL / BLOCO 2
+   ============================================================ */
+
+:root {
+  --gd-control-height: 40px;
+  --gd-control-radius: var(--gd-radius-md, 8px);
+  --gd-control-padding-x: 14px;
+  --gd-control-font-size: 13px;
+  --gd-control-font-weight: 600;
+  --gd-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.btn-principal {
+  min-height: var(--gd-control-height) !important;
+  height: var(--gd-control-height) !important;
+  padding: 0 var(--gd-control-padding-x) !important;
+  border: 1px solid var(--gd-primary) !important;
+  border-radius: var(--gd-control-radius) !important;
+  background: var(--gd-primary) !important;
+  color: var(--gd-text-white) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-control-font-size) !important;
+  font-weight: 700 !important;
+  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), box-shadow var(--gd-transition-fast), transform var(--gd-transition-fast) !important;
+}
+
+.btn-principal:hover:not(:disabled) {
+  background: var(--gd-primary-dark) !important;
+  border-color: var(--gd-primary-dark) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+  transform: translateY(-1px);
+}
+
+.btn-principal:focus-visible {
+  outline: none !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.btn-principal:disabled {
+  opacity: 0.55;
+  transform: none !important;
+}
+
+.btn-secundario {
+  min-height: var(--gd-control-height) !important;
+  height: var(--gd-control-height) !important;
+  padding: 0 var(--gd-control-padding-x) !important;
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-control-radius) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text-secondary) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-control-font-size) !important;
+  font-weight: var(--gd-control-font-weight) !important;
+  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), color var(--gd-transition-fast), box-shadow var(--gd-transition-fast) !important;
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background: var(--gd-surface-hover) !important;
+  border-color: var(--gd-text-light) !important;
+  color: var(--gd-text) !important;
+}
+
+.btn-secundario:focus-visible {
+  outline: none !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.btn-secundario:disabled {
+  opacity: 0.55;
+}
+
+.btn-primary {
+  border-radius: var(--gd-control-radius) !important;
+  font-family: var(--gd-font-family) !important;
+  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), box-shadow var(--gd-transition-fast), transform var(--gd-transition-fast) !important;
+}
+
+.btn-primary:focus-visible {
+  outline: none !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+input,
+select,
+textarea {
+  font-family: var(--gd-font-family);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-principal,
+  .btn-secundario,
+  .btn-primary {
+    transition: none !important;
+  }
+
+  .btn-principal:hover:not(:disabled) {
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   AÇÕES COMPACTAS DE TABELA — PADRÃO FASE 5
+   ============================================================ */
+
+.btn-acao {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 11px !important;
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-control-radius) !important;
+  background: var(--gd-surface) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  margin-left: 7px !important;
+  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), color var(--gd-transition-fast), box-shadow var(--gd-transition-fast), transform var(--gd-transition-fast) !important;
+}
+
+.btn-acao:first-child {
+  margin-left: 0 !important;
+}
+
+.btn-acao:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+.btn-acao:focus-visible {
+  outline: none !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.btn-acao:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.btn-acao-editar {
+  color: var(--gd-primary) !important;
+}
+
+.btn-acao-inativar {
+  color: #b91c1c !important;
+}
+
+.btn-acao-ativar {
+  color: #15803d !important;
+}

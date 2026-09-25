@@ -1,0 +1,3121 @@
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   ADMINISTRAÇÃO
+   V3.0 — PADRÃO VISUAL OFICIAL DA DASHBOARD
+   ============================================================ */
+
+:root {
+  --gd-primary: #2563eb;
+  --gd-primary-dark: #1d4ed8;
+  --gd-primary-soft: #eff6ff;
+
+  --gd-success: #16a34a;
+  --gd-warning: #d97706;
+  --gd-danger: #dc2626;
+  --gd-purple: #7c3aed;
+
+  --gd-sidebar: 240px;
+  --gd-header: 72px;
+
+  --gd-bg: #f8fafc;
+  --gd-surface: #ffffff;
+
+  --gd-text: #0f172a;
+  --gd-text-secondary: #475569;
+  --gd-text-muted: #64748b;
+
+  --gd-border: #e2e8f0;
+  --gd-border-strong: #cbd5e1;
+
+  --gd-radius-sm: 6px;
+  --gd-radius-md: 8px;
+  --gd-radius-lg: 12px;
+
+  --gd-shadow-sm:
+    0 1px 2px rgba(15, 23, 42, 0.04);
+
+  --gd-shadow-md:
+    0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  background: var(--gd-bg);
+  color: var(--gd-text);
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+/* ============================================================
+   PÁGINA
+   ============================================================ */
+
+.administracao-page {
+  width: 100%;
+  min-height: 100vh;
+
+  background: var(--gd-bg);
+  color: var(--gd-text);
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.adm-sidebar {
+  position: fixed;
+
+  z-index: 1100;
+
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  width: var(--gd-sidebar);
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: var(--gd-header) 12px 18px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: #102a43;
+  color: #ffffff;
+
+  box-shadow:
+    4px 0 18px rgba(15, 23, 42, 0.08);
+}
+
+/* ============================================================
+   MARCA DA SIDEBAR
+   ============================================================ */
+
+.adm-sidebar-brand {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: var(--gd-header);
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 18px;
+
+  gap: 10px;
+
+  background: #0b2239;
+
+  color: #ffffff;
+}
+
+.adm-sidebar-brand-icon {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  color: #ffffff;
+
+  font-size: 16px;
+}
+
+.adm-sidebar-brand strong {
+  display: block;
+
+  max-width: 170px;
+
+  color: #ffffff;
+
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 700;
+
+  letter-spacing: -0.2px;
+}
+
+.adm-sidebar-brand small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #94a3b8;
+
+  font-size: 9px;
+  line-height: 1;
+
+  font-weight: 600;
+
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   NAVEGAÇÃO
+   ============================================================ */
+
+.adm-sidebar-nav {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding-top: 4px;
+}
+
+.adm-nav-section {
+  margin: 14px 10px 5px;
+
+  color: #8fa6bd;
+
+  font-size: 9px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+.adm-nav-button {
+  position: relative;
+
+  width: 100%;
+  min-height: 36px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 11px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #d9e5f0;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1;
+
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.adm-nav-button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.adm-nav-button.active {
+  background: var(--gd-primary);
+  color: #ffffff;
+
+  box-shadow:
+    0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.adm-nav-icon {
+  width: 18px;
+  min-width: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: inherit;
+
+  font-size: 14px;
+  line-height: 1;
+
+  font-weight: 700;
+}
+
+/* ============================================================
+   RODAPÉ SIDEBAR
+   ============================================================ */
+
+.adm-sidebar-footer {
+  margin-top: auto;
+
+  padding: 16px 8px 2px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+
+  color: #7f98b1;
+
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.adm-sidebar-footer strong {
+  margin-bottom: 2px;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   ÁREA PRINCIPAL
+   ============================================================ */
+
+.adm-main {
+  width: calc(100% - var(--gd-sidebar));
+
+  min-height: 100vh;
+
+  margin-left: var(--gd-sidebar);
+
+  background: var(--gd-bg);
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
+.adm-topbar {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 900;
+
+  width: 100%;
+  height: var(--gd-header);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 0 24px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid var(--gd-border);
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+.adm-topbar-left {
+  display: flex;
+  align-items: center;
+
+  min-width: 0;
+
+  gap: 12px;
+}
+
+.adm-menu-toggle {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+.adm-menu-toggle:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+.adm-topbar-left h1 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 16px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  letter-spacing: -0.2px;
+}
+
+.adm-topbar-left p {
+  margin: 3px 0 0;
+
+  color: #64748b;
+
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+/* ============================================================
+   USUÁRIO / TOPO
+   ============================================================ */
+
+.adm-topbar-right {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  flex-shrink: 0;
+}
+
+.adm-notification {
+  position: relative;
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #475569;
+
+  font-size: 15px;
+
+  cursor: pointer;
+}
+
+.adm-notification:hover {
+  background: #f8fafc;
+  color: #2563eb;
+}
+
+.adm-notification > span {
+  position: absolute;
+
+  top: -3px;
+  right: -2px;
+
+  min-width: 15px;
+  height: 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 3px;
+
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+
+  background: #dc2626;
+  color: #ffffff;
+
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.adm-user {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+.adm-user-avatar {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--gd-primary);
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.adm-user-data {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 100px;
+}
+
+.adm-user-data strong {
+  color: #0f172a;
+
+  font-size: 11px;
+  line-height: 1.2;
+
+  font-weight: 700;
+}
+
+.adm-user-data small {
+  margin-top: 2px;
+
+  color: #64748b;
+
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+.adm-logout {
+  height: 34px;
+
+  padding: 0 12px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #475569;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.adm-logout:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* ============================================================
+   CONTEÚDO
+   ============================================================ */
+
+.administracao-content {
+  width: 100%;
+
+  padding: 0;
+
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   TÍTULO DA PÁGINA
+   ============================================================ */
+
+.adm-page-heading {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 18px;
+}
+
+.administracao-breadcrumb {
+  margin: 0 0 5px;
+
+  color: #64748b;
+
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.adm-page-heading h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 24px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  letter-spacing: -0.3px;
+}
+
+.adm-page-heading p {
+  margin: 5px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.adm-page-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   ABAS
+   ============================================================ */
+
+.adm-tabs {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 3px;
+
+  padding: 4px;
+
+  margin-bottom: 12px;
+
+  background: #edf3f9;
+
+  border: 1px solid var(--gd-border);
+  border-radius: 10px;
+
+  overflow-x: auto;
+}
+
+.adm-tabs button {
+  min-height: 40px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #475569;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.adm-tabs button:hover {
+  color: var(--gd-primary);
+
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.adm-tabs button.active {
+  background: #ffffff;
+
+  color: var(--gd-primary);
+
+  box-shadow:
+    0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+/* ============================================================
+   PESQUISA
+   ============================================================ */
+
+.adm-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 14px;
+}
+
+.adm-search {
+  position: relative;
+
+  width: 100%;
+  max-width: 520px;
+}
+
+.adm-search-icon {
+  position: absolute;
+
+  top: 50%;
+  left: 12px;
+
+  transform: translateY(-50%);
+
+  color: #94a3b8;
+
+  font-size: 15px;
+
+  pointer-events: none;
+}
+
+.adm-toolbar input {
+  width: 100%;
+  height: 40px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px 0 34px;
+
+  border: 1px solid var(--gd-border-strong);
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #1f2937;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.adm-toolbar input::placeholder {
+  color: #94a3b8;
+}
+
+.adm-toolbar input:focus {
+  border-color: var(--gd-primary);
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.adm-toolbar > span {
+  color: #64748b;
+
+  font-size: 10px;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.adm-card {
+  width: 100%;
+
+  margin-bottom: 12px;
+
+  background: #ffffff;
+
+  border: 1px solid var(--gd-border);
+  border-radius: 12px;
+
+  box-shadow: var(--gd-shadow-sm);
+
+  overflow: hidden;
+}
+
+.adm-form-card {
+  padding: 18px;
+}
+
+/* ============================================================
+   CABEÇALHO DOS CARDS
+   ============================================================ */
+
+.adm-card-heading {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-bottom: 15px;
+}
+
+.adm-card-heading h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 15px;
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
+.adm-card-heading p {
+  margin: 4px 0 0;
+
+  color: #64748b;
+
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.adm-cancel-edit,
+.adm-refresh-button {
+  flex-shrink: 0;
+
+  padding: 4px 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--gd-primary);
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.adm-cancel-edit:hover,
+.adm-refresh-button:hover {
+  color: var(--gd-primary-dark);
+
+  text-decoration: underline;
+}
+
+/* ============================================================
+   FORMULÁRIOS
+   ============================================================ */
+
+.adm-grid {
+  display: grid;
+
+  gap: 12px;
+}
+
+.adm-grid-4 {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+.adm-grid-2 {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+.adm-grid label,
+.adm-form-footer label {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  min-width: 0;
+
+  color: #475569;
+
+  font-size: 11px;
+  line-height: 1.2;
+
+  font-weight: 700;
+}
+
+.adm-grid input,
+.adm-grid select,
+.adm-form-footer select {
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+
+  box-sizing: border-box;
+
+  padding: 0 11px;
+
+  border: 1px solid var(--gd-border-strong);
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #1f2937;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 400;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.adm-grid input::placeholder {
+  color: #94a3b8;
+}
+
+.adm-grid input:focus,
+.adm-grid select:focus,
+.adm-form-footer select:focus {
+  border-color: var(--gd-primary);
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+/* ============================================================
+   FORM FOOTER
+   ============================================================ */
+
+.adm-form-footer {
+  display: flex;
+
+  align-items: flex-end;
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 14px;
+}
+
+.adm-form-footer label {
+  min-width: 230px;
+}
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+
+.adm-btn-primary {
+  height: 40px;
+  min-height: 40px;
+
+  padding: 0 16px;
+
+  border: 1px solid var(--gd-primary);
+  border-radius: 8px;
+
+  background: var(--gd-primary);
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.adm-btn-primary:hover {
+  background: var(--gd-primary-dark);
+  border-color: var(--gd-primary-dark);
+}
+
+.adm-btn-primary:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.adm-btn-secondary {
+  height: 40px;
+  min-height: 40px;
+
+  padding: 0 13px;
+
+  border: 1px solid var(--gd-border-strong);
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #475569;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.adm-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+/* ============================================================
+   TABELAS
+   ============================================================ */
+
+.adm-table-wrap {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+.adm-table-wrap table {
+  width: 100%;
+
+  min-width: 720px;
+
+  border-collapse: collapse;
+
+  font-family: inherit;
+
+  font-size: 12px;
+}
+
+.adm-table-wrap th {
+  padding: 10px 12px;
+
+  background: #f8fafc;
+
+  border-bottom: 1px solid var(--gd-border);
+
+  color: #64748b;
+
+  font-size: 9px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  text-align: left;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.035em;
+
+  white-space: nowrap;
+}
+
+.adm-table-wrap td {
+  padding: 11px 12px;
+
+  border-bottom: 1px solid #edf2f7;
+
+  color: #334155;
+
+  font-size: 12px;
+  line-height: 1.35;
+
+  vertical-align: middle;
+}
+
+.adm-table-wrap tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.adm-table-wrap tbody tr:hover {
+  background: #f8fafc;
+}
+
+.adm-table-wrap td strong {
+  display: block;
+
+  color: #0f172a;
+
+  font-size: 12px;
+  line-height: 1.3;
+
+  font-weight: 700;
+}
+
+.adm-table-wrap td small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #64748b;
+
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.adm-table-wrap td button {
+  margin-right: 12px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--gd-primary);
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1.2;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.adm-table-wrap td button:last-child {
+  margin-right: 0;
+}
+
+.adm-table-wrap td button:hover {
+  color: var(--gd-primary-dark);
+
+  text-decoration: underline;
+}
+
+/* ============================================================
+   STATUS / PILLS
+   ============================================================ */
+
+.adm-status,
+.adm-pill {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 22px;
+
+  box-sizing: border-box;
+
+  padding: 3px 8px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  line-height: 1;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.adm-status.ativo {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.adm-status.inativo {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.adm-pill {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.adm-audit-action {
+  display: inline-flex;
+
+  padding: 4px 7px;
+
+  border-radius: 6px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+
+.adm-toast {
+  position: fixed;
+
+  right: 24px;
+  bottom: 24px;
+
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 11px 14px;
+
+  border: 1px solid rgba(22, 163, 74, 0.15);
+  border-radius: 9px;
+
+  background: #166534;
+
+  color: #ffffff;
+
+  box-shadow:
+    var(--gd-shadow-md);
+
+  font-family: inherit;
+
+  font-size: 11px;
+  line-height: 1.3;
+
+  font-weight: 600;
+}
+
+.adm-toast-icon {
+  width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.15);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .adm-grid-4 {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .adm-user-data {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --gd-sidebar: 68px;
+  }
+
+  .adm-sidebar {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .adm-sidebar-brand {
+    justify-content: center;
+
+    padding: 0;
+  }
+
+  .adm-sidebar-brand > div:last-child {
+    display: none;
+  }
+
+  .adm-nav-button {
+    justify-content: center;
+
+    padding: 0;
+  }
+
+  .adm-nav-button > span:last-child {
+    display: none;
+  }
+
+  .adm-nav-section {
+    display: none;
+  }
+
+  .adm-sidebar-footer {
+    align-items: center;
+
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .adm-sidebar-footer span {
+    display: none;
+  }
+
+  .adm-main {
+    width: calc(100% - 68px);
+    margin-left: 68px;
+  }
+
+  .adm-page-heading {
+    flex-direction: column;
+  }
+
+  .adm-page-actions {
+    width: 100%;
+  }
+
+  .adm-page-actions button {
+    flex: 1;
+  }
+
+  .adm-topbar {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .administracao-content {
+    padding: 18px 14px 32px;
+  }
+
+  .adm-topbar-left h1 {
+    font-size: 14px;
+  }
+
+  .adm-topbar-left p {
+    font-size: 9px;
+  }
+
+  .adm-notification {
+    display: none;
+  }
+
+  .adm-page-heading h2 {
+    font-size: 21px;
+  }
+
+  .adm-grid-4,
+  .adm-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .adm-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-search {
+    max-width: none;
+  }
+
+  .adm-toolbar > span {
+    align-self: flex-end;
+  }
+
+  .adm-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adm-form-footer label {
+    min-width: 0;
+  }
+
+  .adm-btn-primary {
+    width: 100%;
+  }
+
+  .adm-page-actions {
+    flex-direction: column;
+  }
+
+  .adm-page-actions button {
+    width: 100%;
+  }
+
+  .adm-card-heading {
+    flex-direction: column;
+  }
+
+  .adm-card-heading > button {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .adm-topbar {
+    padding: 0 10px;
+  }
+
+  .adm-logout {
+    padding: 0 9px;
+  }
+
+  .adm-user-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .adm-sidebar-brand-icon {
+    font-size: 15px;
+  }
+
+  .administracao-content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   ADMINISTRAÇÃO — AJUSTE FINAL V3.2
+   ALINHAMENTO COM O PADRÃO VISUAL DA DASHBOARD
+   ============================================================ */
+
+/* ============================================================
+   1. TÍTULO DA SIDEBAR
+   ------------------------------------------------------------
+   Mantém o título completo dentro dos 240px.
+   ============================================================ */
+
+.adm-sidebar-brand {
+  padding: 0 16px !important;
+  gap: 8px !important;
+}
+
+.adm-sidebar-brand-icon {
+  width: 25px !important;
+  min-width: 25px !important;
+  font-size: 15px !important;
+}
+
+.adm-sidebar-brand > div:last-child {
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.adm-sidebar-brand strong {
+  display: block !important;
+
+  width: 100% !important;
+  max-width: none !important;
+
+  color: #ffffff !important;
+
+  font-size: 14px !important;
+  line-height: 1.15 !important;
+
+  font-weight: 700 !important;
+
+  letter-spacing: -0.15px !important;
+
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.adm-sidebar-brand small {
+  margin-top: 4px !important;
+
+  color: #94a3b8 !important;
+
+  font-size: 9px !important;
+  line-height: 1 !important;
+
+  font-weight: 600 !important;
+}
+
+/* ============================================================
+   2. MENU LATERAL — TAMANHO IGUAL AO PADRÃO DA DASHBOARD
+   ============================================================ */
+
+.adm-nav-button {
+  min-height: 40px !important;
+
+  padding: 0 11px !important;
+
+  gap: 11px !important;
+
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 600 !important;
+
+  letter-spacing: -0.05px !important;
+}
+
+.adm-nav-button.active {
+  font-weight: 700 !important;
+}
+
+.adm-nav-icon {
+  width: 19px !important;
+  min-width: 19px !important;
+
+  font-size: 15px !important;
+
+  line-height: 1 !important;
+}
+
+.adm-nav-section {
+  margin: 15px 10px 6px !important;
+
+  color: #94a9bd !important;
+
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 700 !important;
+
+  letter-spacing: 0.08em !important;
+}
+
+/* ============================================================
+   3. RODAPÉ DA SIDEBAR
+   ------------------------------------------------------------
+   Remove completamente:
+   "Tecnologia que aproxima o Pará do futuro"
+   ============================================================ */
+
+.adm-sidebar-footer {
+  padding: 16px 8px 2px !important;
+}
+
+.adm-sidebar-footer strong {
+  display: block !important;
+
+  color: #ffffff !important;
+
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-sidebar-footer span {
+  display: none !important;
+}
+
+/* ============================================================
+   4. RETIRAR AS TRÊS LINHAS DO CABEÇALHO
+   ------------------------------------------------------------
+   O botão ☰ não faz parte do padrão definido.
+   ============================================================ */
+
+.adm-menu-toggle {
+  display: none !important;
+}
+
+/* Como o menu foi retirado, o título do cabeçalho
+   fica alinhado diretamente à esquerda. */
+
+.adm-topbar-left {
+  gap: 0 !important;
+}
+
+.adm-topbar-left h1 {
+  font-size: 20px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 700 !important;
+
+  color: #0f172a !important;
+}
+
+.adm-topbar-left p {
+  font-size: 10px !important;
+
+  color: #64748b !important;
+}
+
+/* ============================================================
+   5. TÍTULO PRINCIPAL DA ADMINISTRAÇÃO
+   ============================================================ */
+
+.adm-page-heading h2 {
+  color: #0f172a !important;
+
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+
+  font-weight: 700 !important;
+
+  letter-spacing: -0.3px !important;
+}
+
+.adm-page-heading p {
+  color: #64748b !important;
+
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+.administracao-breadcrumb {
+  color: #64748b !important;
+
+  font-size: 10px !important;
+}
+
+/* ============================================================
+   6. ABAS — MESMO PADRÃO DA DASHBOARD
+   ============================================================ */
+
+.adm-tabs {
+  background: #edf3f9 !important;
+
+  border: 1px solid #e2e8f0 !important;
+
+  border-radius: 10px !important;
+
+  padding: 4px !important;
+
+  gap: 3px !important;
+}
+
+.adm-tabs button {
+  min-height: 40px !important;
+
+  padding: 0 15px !important;
+
+  border-radius: 8px !important;
+
+  color: #475569 !important;
+
+  font-size: 12px !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-tabs button.active {
+  background: #ffffff !important;
+
+  color: #2563eb !important;
+
+  box-shadow:
+    0 1px 4px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* ============================================================
+   7. PESQUISA
+   ============================================================ */
+
+.adm-toolbar input {
+  height: 40px !important;
+
+  border: 1px solid #cbd5e1 !important;
+
+  border-radius: 8px !important;
+
+  background: #ffffff !important;
+
+  color: #1f2937 !important;
+
+  font-family: Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+
+  font-size: 13px !important;
+}
+
+.adm-toolbar input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.adm-toolbar > span {
+  color: #64748b !important;
+
+  font-size: 10px !important;
+}
+
+/* ============================================================
+   8. CARDS
+   ============================================================ */
+
+.adm-card {
+  background: #ffffff !important;
+
+  border: 1px solid #e2e8f0 !important;
+
+  border-radius: 12px !important;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.adm-form-card {
+  padding: 18px !important;
+}
+
+.adm-card-heading h2 {
+  color: #0f172a !important;
+
+  font-size: 15px !important;
+
+  line-height: 1.3 !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-card-heading p {
+  color: #64748b !important;
+
+  font-size: 11px !important;
+
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   9. LABELS
+   ============================================================ */
+
+.adm-grid label,
+.adm-form-footer label {
+  color: #475569 !important;
+
+  font-size: 11px !important;
+
+  line-height: 1.2 !important;
+
+  font-weight: 700 !important;
+}
+
+/* ============================================================
+   10. INPUTS E SELECTS
+   ============================================================ */
+
+.adm-grid input,
+.adm-grid select,
+.adm-form-footer select {
+  height: 40px !important;
+  min-height: 40px !important;
+
+  padding: 0 11px !important;
+
+  border: 1px solid #cbd5e1 !important;
+
+  border-radius: 8px !important;
+
+  background: #ffffff !important;
+
+  color: #1f2937 !important;
+
+  font-family: Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+
+  font-size: 13px !important;
+
+  font-weight: 400 !important;
+}
+
+.adm-grid input:focus,
+.adm-grid select:focus,
+.adm-form-footer select:focus,
+.adm-toolbar input:focus {
+  outline: none !important;
+
+  border-color: #2563eb !important;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+/* ============================================================
+   11. BOTÃO AZUL
+   ============================================================ */
+
+.adm-btn-primary {
+  height: 40px !important;
+  min-height: 40px !important;
+
+  padding: 0 16px !important;
+
+  border: 1px solid #2563eb !important;
+
+  border-radius: 8px !important;
+
+  background: #2563eb !important;
+
+  color: #ffffff !important;
+
+  font-family: Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+
+  font-size: 11px !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-btn-primary:hover {
+  background: #1d4ed8 !important;
+
+  border-color: #1d4ed8 !important;
+}
+
+/* ============================================================
+   12. BOTÕES SECUNDÁRIOS
+   ============================================================ */
+
+.adm-btn-secondary {
+  height: 40px !important;
+  min-height: 40px !important;
+
+  padding: 0 13px !important;
+
+  border: 1px solid #cbd5e1 !important;
+
+  border-radius: 8px !important;
+
+  background: #ffffff !important;
+
+  color: #475569 !important;
+
+  font-size: 11px !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-btn-secondary:hover {
+  background: #f8fafc !important;
+
+  border-color: #94a3b8 !important;
+
+  color: #334155 !important;
+}
+
+/* ============================================================
+   13. TABELA
+   ============================================================ */
+
+.adm-table-wrap th {
+  padding: 10px 12px !important;
+
+  background: #f8fafc !important;
+
+  border-bottom: 1px solid #e2e8f0 !important;
+
+  color: #64748b !important;
+
+  font-size: 9px !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-table-wrap td {
+  padding: 11px 12px !important;
+
+  border-bottom: 1px solid #edf2f7 !important;
+
+  color: #334155 !important;
+
+  font-size: 12px !important;
+}
+
+.adm-table-wrap td strong {
+  color: #0f172a !important;
+
+  font-size: 12px !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-table-wrap td small {
+  color: #64748b !important;
+
+  font-size: 10px !important;
+}
+
+/* ============================================================
+   14. AÇÕES DE TABELA — PADRÃO FASE 5
+   ============================================================ */
+
+.adm-table-wrap td .adm-table-action {
+  min-width: 74px;
+  height: 32px;
+  min-height: 32px;
+  margin-right: 8px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.adm-table-wrap td .adm-table-action:last-child {
+  margin-right: 0;
+}
+
+.adm-table-wrap td .adm-table-action:hover {
+  text-decoration: none;
+}
+
+.adm-table-wrap td .adm-table-action-danger {
+  border-color: #fecaca !important;
+  background: #fff1f2 !important;
+  color: #dc2626 !important;
+}
+
+.adm-table-wrap td .adm-table-action-danger:hover {
+  border-color: #fca5a5 !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.adm-table-wrap td .adm-table-action-success {
+  border-color: #bbf7d0 !important;
+  background: #f0fdf4 !important;
+  color: #15803d !important;
+}
+
+.adm-table-wrap td .adm-table-action-success:hover {
+  border-color: #86efac !important;
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+/* ============================================================
+   15. STATUS
+   ============================================================ */
+
+.adm-status,
+.adm-pill {
+  font-size: 10px !important;
+
+  font-weight: 700 !important;
+}
+
+.adm-status.ativo {
+  background: #dcfce7 !important;
+
+  color: #166534 !important;
+}
+
+.adm-status.inativo {
+  background: #f1f5f9 !important;
+
+  color: #64748b !important;
+}
+
+.adm-pill {
+  background: #eff6ff !important;
+
+  color: #2563eb !important;
+}
+
+/* ============================================================
+   16. DESKTOP — GARANTE TÍTULO COMPLETO
+   ============================================================ */
+
+@media (min-width: 901px) {
+
+  .adm-sidebar {
+    width: 240px !important;
+  }
+
+  .adm-main {
+    width: calc(100% - 240px) !important;
+
+    margin-left: 240px !important;
+  }
+
+  .adm-sidebar-brand strong {
+    font-size: 14px !important;
+
+    white-space: nowrap !important;
+  }
+
+  .adm-sidebar-brand {
+    padding-left: 14px !important;
+    padding-right: 12px !important;
+  }
+
+  .adm-sidebar-brand-icon {
+    width: 22px !important;
+    min-width: 22px !important;
+  }
+
+  .adm-nav-button {
+    font-size: 13px !important;
+  }
+}
+
+/* ============================================================
+   17. MOBILE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+  .adm-menu-toggle {
+    display: none !important;
+  }
+
+  .adm-sidebar-brand strong {
+    display: none !important;
+  }
+
+  .adm-sidebar-brand small {
+    display: none !important;
+  }
+
+  .adm-sidebar-brand {
+    justify-content: center !important;
+    padding: 0 !important;
+  }
+
+  .adm-nav-button {
+    font-size: 13px !important;
+  }
+}
+
+/* ============================================================
+   MENU PRINCIPAL — CONFIGURAÇÕES / ADMINISTRAÇÃO
+   Estrutura global pertence exclusivamente ao MenuPrincipal.
+   ============================================================ */
+
+.gd-page-content .administracao-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 24px 20px 84px !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+}
+
+/* Garantia: a tela não cria geometria própria de Sidebar/Cabeçalho. */
+.gd-page-content .adm-sidebar,
+.gd-page-content .adm-topbar,
+.gd-page-content .adm-main {
+  display: none !important;
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .administracao-content {
+    padding: 18px 12px 76px !important;
+  }
+}
+
+
+/* ============================================================
+   V1.3 — AÇÕES DE CADASTRO NO RODAPÉ PADRÃO
+   O MenuPrincipal é o responsável pela barra inferior global.
+   ============================================================ */
+
+.gd-shell-footer .adm-footer-acoes-direita {
+  margin-left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+
+.gd-shell-footer .adm-footer-voltar,
+.gd-shell-footer .adm-footer-cadastrar {
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 700px) {
+  .gd-shell-footer .adm-footer-acoes-direita {
+    gap: 8px !important;
+  }
+
+  .gd-shell-footer .adm-footer-voltar,
+  .gd-shell-footer .adm-footer-cadastrar {
+    padding: 0 12px !important;
+  }
+}
+
+/* ============================================================
+   V1.13 — PADRONIZAÇÃO DOS CAMPOS DE SENHA
+   ============================================================ */
+.adm-security-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  color: #475569;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.adm-security-grid label > .adm-password-field {
+  width: 100%;
+}
+
+.adm-security-grid .adm-password-field input {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.adm-cancel-edit {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 13px;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   V1.7 — SEGURANÇA DA CONTA / SENHA INICIAL
+   ============================================================ */
+.adm-security-section {
+  width: 100%;
+  margin-top: 26px;
+  padding: 15px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #f8fbff;
+  box-sizing: border-box;
+}
+
+.adm-security-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.adm-security-heading strong {
+  display: block;
+  color: #0f172a;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.adm-security-heading small {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.adm-security-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.adm-password-field {
+  position: relative;
+  width: 100%;
+}
+
+.adm-password-field input {
+  width: 100%;
+  padding-right: 42px !important;
+  box-sizing: border-box;
+}
+
+.adm-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.adm-password-toggle:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.adm-security-policy {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.adm-security-policy strong {
+  color: #334155;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .adm-security-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* V1.15 — BOTÃO CANCELAR ALTERAÇÃO COM DESTAQUE VISUAL */
+.adm-cancel-edit {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 13px !important;
+  border: 1px solid #fdba74 !important;
+  border-radius: 8px !important;
+  background: #fff7ed !important;
+  color: #9a3412 !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.adm-cancel-edit:hover {
+  background: #ffedd5 !important;
+  border-color: #f97316 !important;
+  color: #9a3412 !important;
+}
+
+.adm-security-grid label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  color: #475569 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+
+/* ============================================================
+   ADMINISTRAÇÃO — PADRONIZAÇÃO OFICIAL
+   V4.0 — MESMO PADRÃO VISUAL DA NOVA DEMANDA / DASHBOARD
+   ------------------------------------------------------------
+   AJUSTE EXCLUSIVAMENTE VISUAL.
+   Toda a lógica e estrutura existente permanecem preservadas.
+   ============================================================ */
+
+/* Área de conteúdo: mesma geometria vertical da Nova Demanda */
+.gd-page-content .administracao-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 2px 20px 92px !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Título principal */
+.gd-page-content .adm-page-heading {
+  margin: 0 0 18px !important;
+  padding: 0 !important;
+}
+
+.gd-page-content .adm-page-heading h2 {
+  margin: 0 !important;
+  color: #173f67 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.gd-page-content .adm-page-heading p {
+  margin: 5px 0 0 !important;
+  color: #68788a !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+.gd-page-content .administracao-breadcrumb {
+  margin: 0 0 5px !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+}
+
+/* Abas */
+.gd-page-content .adm-tabs {
+  width: 100% !important;
+  margin: 0 0 12px !important;
+  padding: 4px !important;
+  gap: 3px !important;
+  background: #edf3f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .adm-tabs button {
+  min-height: 40px !important;
+  padding: 0 15px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #475569 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-tabs button.active {
+  background: #ffffff !important;
+  color: #2563eb !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Pesquisa */
+.gd-page-content .adm-toolbar {
+  margin: 0 0 14px !important;
+}
+
+.gd-page-content .adm-toolbar input {
+  height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+}
+
+.gd-page-content .adm-toolbar input::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Cards */
+.gd-page-content .adm-card {
+  width: 100% !important;
+  margin: 0 0 12px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .adm-form-card {
+  padding: 20px !important;
+}
+
+.gd-page-content .adm-card-heading {
+  margin: 0 0 15px !important;
+}
+
+.gd-page-content .adm-card-heading h2 {
+  margin: 0 !important;
+  color: #0f172a !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-card-heading p {
+  margin: 4px 0 0 !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+/* Campos */
+.gd-page-content .adm-grid {
+  gap: 12px !important;
+}
+
+.gd-page-content .adm-grid label,
+.gd-page-content .adm-form-footer label,
+.gd-page-content .adm-security-grid label {
+  color: #475569 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-grid input,
+.gd-page-content .adm-grid select,
+.gd-page-content .adm-form-footer select,
+.gd-page-content .adm-security-grid input {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .adm-grid input::placeholder,
+.gd-page-content .adm-security-grid input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.gd-page-content .adm-grid input:focus,
+.gd-page-content .adm-grid select:focus,
+.gd-page-content .adm-form-footer select:focus,
+.gd-page-content .adm-security-grid input:focus,
+.gd-page-content .adm-toolbar input:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+/* Seção de segurança */
+.gd-page-content .adm-security-section {
+  margin-top: 18px !important;
+  padding: 15px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 10px !important;
+  background: #f8fbff !important;
+}
+
+.gd-page-content .adm-security-heading {
+  margin: 0 0 12px !important;
+}
+
+.gd-page-content .adm-security-heading strong {
+  color: #0f172a !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-security-heading small,
+.gd-page-content .adm-security-policy {
+  color: #64748b !important;
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+
+/* Botões */
+.gd-page-content .adm-btn-primary {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 8px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-btn-primary:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.gd-page-content .adm-btn-secondary {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 13px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+/* Tabela */
+.gd-page-content .adm-table-wrap th {
+  padding: 10px 12px !important;
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-table-wrap td {
+  padding: 11px 12px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  color: #334155 !important;
+  font-size: 12px !important;
+}
+
+.gd-page-content .adm-table-wrap td strong {
+  color: #0f172a !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-table-wrap td small {
+  color: #64748b !important;
+  font-size: 10px !important;
+}
+
+
+/* Status */
+.gd-page-content .adm-status,
+.gd-page-content .adm-pill {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+/* Responsividade */
+@media (max-width: 700px) {
+  .gd-page-content .administracao-content {
+    padding: 18px 12px 76px !important;
+  }
+}
+
+
+/* ============================================================
+   AJUSTE PONTUAL V4.1 — TÍTULO DA ADMINISTRAÇÃO
+   Sobe somente o cabeçalho da página, sem alterar os demais elementos.
+   ============================================================ */
+
+.gd-page-content .administracao-content {
+  padding-top: 0 !important;
+}
+
+.gd-page-content .adm-page-heading {
+  transform: translateY(-4px);
+  margin-bottom: 14px !important;
+}
+
+
+/* ============================================================
+   ADMINISTRAÇÃO — PADRONIZAÇÃO VISUAL FINAL
+   Base: CSS completo enviado pelo usuário.
+   Somente apresentação visual; nenhuma regra de negócio alterada.
+   ============================================================ */
+
+/* Área principal e título */
+.gd-page-content .administracao-content {
+  padding: 2px 20px 92px !important;
+  background: #f8fafc !important;
+}
+
+.gd-page-content .adm-page-heading {
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+}
+
+.gd-page-content .adm-page-heading h2 {
+  margin: 0 !important;
+  color: #173f67 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.gd-page-content .adm-page-heading p {
+  margin: 5px 0 0 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* Abas */
+.gd-page-content .adm-tabs {
+  margin: 0 0 12px !important;
+  padding: 4px !important;
+  background: #edf3f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  gap: 3px !important;
+}
+
+.gd-page-content .adm-tabs button {
+  min-height: 40px !important;
+  padding: 0 15px !important;
+  border-radius: 8px !important;
+  color: #475569 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-tabs button:hover {
+  background: #f8fbff !important;
+  color: #2563eb !important;
+}
+
+.gd-page-content .adm-tabs button.active {
+  background: #ffffff !important;
+  color: #2563eb !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, .08) !important;
+}
+
+/* Pesquisa */
+.gd-page-content .adm-toolbar {
+  margin: 0 0 14px !important;
+}
+
+.gd-page-content .adm-toolbar input {
+  height: 40px !important;
+  min-height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+}
+
+.gd-page-content .adm-toolbar input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+/* Cards */
+.gd-page-content .adm-card {
+  position: relative !important;
+  margin: 0 0 12px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important;
+  overflow: hidden !important;
+}
+
+.gd-page-content .adm-card::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: #2563eb !important;
+}
+
+.gd-page-content .adm-form-card {
+  padding: 20px !important;
+}
+
+.gd-page-content .adm-card-heading {
+  margin: 0 0 15px !important;
+}
+
+.gd-page-content .adm-card-heading h2 {
+  color: #173f67 !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-card-heading p {
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+/* Formulários */
+.gd-page-content .adm-grid label,
+.gd-page-content .adm-form-footer label,
+.gd-page-content .adm-security-grid label {
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-grid input,
+.gd-page-content .adm-grid select,
+.gd-page-content .adm-form-footer select,
+.gd-page-content .adm-security-grid input {
+  height: 40px !important;
+  min-height: 40px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+}
+
+.gd-page-content .adm-grid input:focus,
+.gd-page-content .adm-grid select:focus,
+.gd-page-content .adm-form-footer select:focus,
+.gd-page-content .adm-security-grid input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+/* Segurança */
+.gd-page-content .adm-security-section {
+  margin-top: 18px !important;
+  padding: 15px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 10px !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
+}
+
+/* Botões */
+.gd-page-content .adm-btn-primary,
+.gd-page-content .adm-footer-cadastrar {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, .18) !important;
+}
+
+.gd-page-content .adm-btn-primary:hover,
+.gd-page-content .adm-footer-cadastrar:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+}
+
+.gd-page-content .adm-btn-secondary,
+.gd-page-content .adm-footer-voltar,
+.gd-page-content .adm-table-action {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #174f86 !important;
+}
+
+.gd-page-content .adm-btn-secondary:hover,
+.gd-page-content .adm-footer-voltar:hover,
+.gd-page-content .adm-table-action:hover {
+  background: #f8fbff !important;
+  border-color: #93c5fd !important;
+  color: #174f86 !important;
+}
+
+/* Tabelas */
+.gd-page-content .adm-table-wrap {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9px !important;
+  overflow-x: auto !important;
+}
+
+.gd-page-content .adm-table-wrap th {
+  padding: 11px 12px !important;
+  background: #eff6ff !important;
+  border-bottom: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-table-wrap td {
+  padding: 11px 12px !important;
+  border-bottom: 1px solid #edf2f7 !important;
+  color: #334155 !important;
+  font-size: 12px !important;
+}
+
+.gd-page-content .adm-table-wrap tbody tr:hover td {
+  background: #f8fbff !important;
+}
+
+.gd-page-content .adm-table-wrap td strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+/* Status */
+.gd-page-content .adm-status.ativo {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.gd-page-content .adm-status.inativo {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.gd-page-content .adm-pill {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+/* Rodapé global */
+.gd-shell-footer .adm-footer-voltar,
+.gd-shell-footer .adm-footer-cadastrar {
+  height: 40px !important;
+  min-height: 40px !important;
+  border-radius: 8px !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* Responsividade */
+@media (max-width: 700px) {
+  .gd-page-content .administracao-content {
+    padding: 18px 12px 82px !important;
+  }
+
+  .gd-page-content .adm-page-heading h2 {
+    font-size: 22px !important;
+  }
+
+  .gd-page-content .adm-card::before {
+    height: 3px !important;
+  }
+}
+
+
+/* ============================================================
+   ADMINISTRAÇÃO — NOVO PADRÃO DE TABELAS
+   Visual mais limpo e próximo das demais telas aprovadas.
+   ============================================================ */
+
+/* Cabeçalho das tabelas — clean, sem bloco azul preenchido */
+.gd-page-content .adm-table-wrap table thead {
+  background: #ffffff !important;
+}
+
+.gd-page-content .adm-table-wrap table thead tr {
+  height: 42px !important;
+}
+
+.gd-page-content .adm-table-wrap table thead th {
+  height: 42px !important;
+  padding: 0 12px !important;
+
+  background: #ffffff !important;
+  color: #173f67 !important;
+
+  border-top: 0 !important;
+  border-bottom: 2px solid #dbeafe !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+
+  text-align: left !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.035em !important;
+
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+/* Pequeno acabamento azul somente sob o cabeçalho */
+.gd-page-content .adm-table-wrap {
+  border-top: 2px solid #2563eb !important;
+}
+
+/* Título da coluna de ações alinhado de forma consistente */
+.gd-page-content .adm-table-wrap th:last-child {
+  text-align: left !important;
+}
+
+/* Célula de ações */
+.gd-page-content .adm-table-wrap td:last-child {
+  white-space: nowrap !important;
+  text-align: left !important;
+}
+
+/* Todos os botões de ação com exatamente o mesmo tamanho */
+.gd-page-content .adm-table-wrap td .adm-table-action {
+  width: 104px !important;
+  min-width: 104px !important;
+  max-width: 104px !important;
+
+  height: 36px !important;
+  min-height: 36px !important;
+
+  margin: 0 8px 0 0 !important;
+  padding: 0 8px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  box-sizing: border-box !important;
+  border-radius: 8px !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+/* Botões neutros */
+.gd-page-content .adm-table-wrap td .adm-table-action.btn-secundario {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #174f86 !important;
+  box-shadow: none !important;
+}
+
+.gd-page-content .adm-table-wrap td .adm-table-action.btn-secundario:hover {
+  background: #f8fbff !important;
+  border-color: #93c5fd !important;
+  color: #174f86 !important;
+}
+
+/* Inativar */
+.gd-page-content .adm-table-wrap td .adm-table-action-danger {
+  border: 1px solid #fecaca !important;
+  background: #ffffff !important;
+  color: #dc2626 !important;
+  box-shadow: none !important;
+}
+
+.gd-page-content .adm-table-wrap td .adm-table-action-danger:hover {
+  background: #fff7f7 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+/* Ativar */
+.gd-page-content .adm-table-wrap td .adm-table-action-success {
+  border: 1px solid #bbf7d0 !important;
+  background: #ffffff !important;
+  color: #15803d !important;
+  box-shadow: none !important;
+}
+
+.gd-page-content .adm-table-wrap td .adm-table-action-success:hover {
+  background: #f7fff9 !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+}
+
+/* Último botão sem margem */
+.gd-page-content .adm-table-wrap td .adm-table-action:last-child {
+  margin-right: 0 !important;
+}
+
+/* Auditoria e demais tabelas continuam com o mesmo cabeçalho */
+.gd-page-content .adm-table-wrap tbody td {
+  background: #ffffff !important;
+}
+
+.gd-page-content .adm-table-wrap tbody tr:hover td {
+  background: #f8fbff !important;
+}
+
+
+/* ============================================================
+   ADMINISTRAÇÃO — AJUSTE VISUAL FINAL
+   - Cabeçalhos das tabelas com fundo muito claro
+   - Espaçamento melhor entre os títulos das abas
+   ============================================================ */
+
+/* Cabeçalhos das tabelas: fundo claro para destacar os títulos */
+.gd-page-content .adm-table-wrap table thead,
+.gd-page-content .adm-table-wrap table thead tr,
+.gd-page-content .adm-table-wrap table thead th {
+  background: #f8fbff !important;
+}
+
+.gd-page-content .adm-table-wrap table thead th {
+  height: 42px !important;
+  padding: 0 12px !important;
+  border-bottom: 1px solid #dbeafe !important;
+  color: #173f67 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.035em !important;
+  vertical-align: middle !important;
+}
+
+/* Mais respiro entre os títulos das abas */
+.gd-page-content .adm-tabs {
+  gap: 6px !important;
+  padding: 5px !important;
+}
+
+.gd-page-content .adm-tabs button {
+  padding: 0 16px !important;
+  min-width: max-content !important;
+}
+
+.gd-page-content .adm-tabs button + button {
+  margin-left: 2px !important;
+}
+
+/* A aba Auditoria recebe um pouco mais de espaço interno */
+.gd-page-content .adm-tabs button:last-child {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+
+/* ============================================================
+   ADMINISTRAÇÃO — AJUSTE FINAL DA AUDITORIA
+   1. Espaçamento correto no título "Auditoria do Sistema".
+   2. Ação com o mesmo tamanho de fonte dos demais dados.
+   ============================================================ */
+
+/* Cabeçalho exclusivo do card de Auditoria */
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-card-heading {
+  margin: 0 !important;
+  padding: 14px 16px 12px !important;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+}
+
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-card-heading h2 {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #173f67 !important;
+  font-size: 15px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-card-heading p {
+  margin: 4px 0 0 !important;
+  padding: 0 !important;
+
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+/* Botão Atualizar alinhado ao cabeçalho */
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-refresh-button {
+  flex-shrink: 0 !important;
+  margin-top: 1px !important;
+  padding: 4px 0 !important;
+
+  color: #2563eb !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+/* Área da tabela de Auditoria */
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-table-wrap {
+  margin-top: 0 !important;
+  border-top: 0 !important;
+  border-radius: 0 0 9px 9px !important;
+}
+
+/* Cabeçalho da tabela de Auditoria */
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-table-wrap th {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+/* Conteúdo da coluna Ação — mesmo tamanho visual dos demais dados */
+.gd-page-content .adm-card:has(.adm-refresh-button) .adm-audit-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  min-height: 22px !important;
+  padding: 3px 8px !important;
+
+  border-radius: 6px !important;
+
+  background: #eff6ff !important;
+  color: #2563eb !important;
+
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+
+  white-space: nowrap !important;
+}

@@ -1,0 +1,1369 @@
+
+/* ============================================================
+   GESTÃO DE DEMANDAS DE TI
+   NOVA DEMANDA — CSS PADRÃO VISUAL
+   BASEADO NO PADRÃO APROVADO DA DASHBOARD
+   ============================================================ */
+
+.nova-demanda-page {
+  min-height: 100vh !important;
+  width: calc(100% - 240px) !important;
+  margin-left: 240px !important;
+  padding: 24px 20px 110px !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* ------------------------------------------------------------
+   CABEÇALHO DA PÁGINA
+   ------------------------------------------------------------ */
+
+.nova-demanda-header {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 0 18px !important;
+}
+
+.nova-demanda-header h1 {
+  margin: 0 0 5px !important;
+  color: #173f67 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -.3px !important;
+}
+
+.nova-demanda-header p {
+  margin: 0 !important;
+  color: #68788a !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* ------------------------------------------------------------
+   CAIXA PRINCIPAL
+   ------------------------------------------------------------ */
+
+.formulario-demanda {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04) !important;
+}
+
+.formulario-titulo {
+  border-bottom: 1px solid #e2e8f0 !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 14px !important;
+}
+
+.formulario-titulo h2 {
+  margin: 0 !important;
+  color: #0f172a !important;
+  font-size: 18px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.formulario-titulo p {
+  margin: 6px 0 0 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* ------------------------------------------------------------
+   CAMPOS
+   ------------------------------------------------------------ */
+
+.campo {
+  display: flex !important;
+  flex-direction: column !important;
+  margin-bottom: 18px !important;
+}
+
+.campo label {
+  margin-bottom: 6px !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+
+  padding: 10px 11px !important;
+
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  font-family: inherit !important;
+
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.campo input,
+.campo select {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+.campo textarea {
+  min-height: 108px !important;
+  resize: vertical !important;
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+/* ------------------------------------------------------------
+   CAMPOS LADO A LADO
+   ------------------------------------------------------------ */
+
+.formulario-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 16px !important;
+  width: 100% !important;
+}
+
+/* ------------------------------------------------------------
+   BLOCO PRAZO / SLA
+   ------------------------------------------------------------ */
+
+.nova-demanda-page .campo[style] {
+  padding: 12px 14px !important;
+  margin-bottom: 18px !important;
+
+  border: 1px solid #dce5ef !important;
+  border-radius: 8px !important;
+
+  background: #f8fafc !important;
+  box-sizing: border-box !important;
+}
+
+.nova-demanda-page .campo[style] label {
+  margin-bottom: 4px !important;
+}
+
+.nova-demanda-page .campo[style] strong {
+  color: #174f86 !important;
+  font-size: 13px !important;
+}
+
+.nova-demanda-page .campo[style] small {
+  margin-top: 4px !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+/* ------------------------------------------------------------
+   BOTÃO VOLTAR
+   ------------------------------------------------------------ */
+
+.btn-voltar {
+  border: none !important;
+  background: transparent !important;
+  color: #2563eb !important;
+
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+
+  cursor: pointer !important;
+
+  padding: 0 !important;
+  margin-bottom: 14px !important;
+}
+
+/* ------------------------------------------------------------
+   BARRA DE AÇÕES FIXA
+   ------------------------------------------------------------ */
+
+.nova-demanda-page > div[style*="position: fixed"] {
+  position: fixed !important;
+
+  left: 240px !important;
+  right: 0 !important;
+  bottom: 0 !important;
+
+  width: calc(100% - 240px) !important;
+  box-sizing: border-box !important;
+
+  z-index: 1200 !important;
+
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+
+  padding: 10px 20px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, .06) !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Todos os botões da barra */
+.nova-demanda-page > div[style*="position: fixed"] button {
+  min-height: 40px !important;
+  height: 40px !important;
+
+  padding: 0 14px !important;
+
+  border-radius: 8px !important;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+
+  box-sizing: border-box !important;
+}
+
+/* Botões secundários */
+.nova-demanda-page > div[style*="position: fixed"] button[style*="background: '#fff'"],
+.nova-demanda-page > div[style*="position: fixed"] button[style*="background: rgb(255, 255, 255)"] {
+  background: #ffffff !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Botão primário */
+.nova-demanda-page > div[style*="position: fixed"] button[style*="background: '#174f86'"],
+.nova-demanda-page > div[style*="position: fixed"] button[style*="#174f86"] {
+  background: #2563eb !important;
+  border: 1px solid #2563eb !important;
+  color: #ffffff !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button:hover {
+  filter: brightness(.97) !important;
+}
+
+/* ------------------------------------------------------------
+   FORMULÁRIO — BOTÃO INTERNO
+   Fica oculto porque a ação oficial é a barra fixa inferior.
+   ------------------------------------------------------------ */
+
+.formulario-acoes {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------
+   SIDEBAR — GARANTIR MESMO PADRÃO DA DASHBOARD
+   ------------------------------------------------------------ */
+
+.gd-global-sidebar {
+  width: 240px !important;
+  background: #102a43 !important;
+}
+
+.gd-global-sidebar-title {
+  height: 72px !important;
+  min-height: 72px !important;
+
+  background: #0b2239 !important;
+  color: #ffffff !important;
+
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+.gd-global-sidebar-button {
+  min-height: 42px !important;
+  height: 42px !important;
+
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  font-weight: 500 !important;
+}
+
+.gd-global-sidebar-button.gd-global-active {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.gd-global-menu-icon {
+  font-size: 16px !important;
+}
+
+/* ------------------------------------------------------------
+   CABEÇALHO GLOBAL
+   ------------------------------------------------------------ */
+
+.gd-global-header {
+  margin-left: 240px !important;
+
+  min-height: 68px !important;
+  height: 68px !important;
+
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.gd-global-brand h1 {
+  color: #0f172a !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+}
+
+.gd-global-brand p {
+  color: #64748b !important;
+  font-size: 12px !important;
+}
+
+.gd-global-user-data strong {
+  color: #0f172a !important;
+  font-size: 13px !important;
+}
+
+.gd-global-user-data small {
+  color: #64748b !important;
+  font-size: 11px !important;
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVIDADE
+   ------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .nova-demanda-page {
+    margin-left: 220px !important;
+    width: calc(100% - 220px) !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] {
+    left: 220px !important;
+    width: calc(100% - 220px) !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .gd-global-sidebar {
+    width: 220px !important;
+  }
+
+  .gd-global-header {
+    margin-left: 220px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .nova-demanda-page {
+    margin-left: 68px !important;
+    width: calc(100% - 68px) !important;
+    padding: 18px 12px 110px !important;
+  }
+
+  .formulario-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] {
+    left: 68px !important;
+    width: calc(100% - 68px) !important;
+    padding: 10px 12px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] > div {
+    gap: 7px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] button {
+    padding: 0 11px !important;
+    font-size: 11px !important;
+  }
+
+  .gd-global-sidebar {
+    width: 68px !important;
+  }
+
+  .gd-global-sidebar-title {
+    font-size: 0 !important;
+  }
+
+  .gd-global-sidebar-button {
+    font-size: 0 !important;
+  }
+
+  .gd-global-header {
+    margin-left: 68px !important;
+  }
+}
+
+
+/* ============================================================
+   CORREÇÃO DEFINITIVA — NOVA DEMANDA
+   Base: Dashboard
+   ============================================================ */
+
+body {
+  background: #f8fafc !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+.formulario-demanda {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] {
+  left: 240px !important;
+  right: 0 !important;
+  width: calc(100% - 240px) !important;
+  padding: 10px 20px !important;
+  box-sizing: border-box !important;
+  z-index: 1200 !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button:last-child {
+  background: #2563eb !important;
+  border: 1px solid #2563eb !important;
+  color: #ffffff !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button:hover {
+  transform: none !important;
+  filter: brightness(.97) !important;
+}
+
+.gd-global-sidebar {
+  width: 240px !important;
+  background: #102a43 !important;
+}
+
+.gd-global-sidebar-title {
+  min-height: 72px !important;
+  height: 72px !important;
+  background: #0b2239 !important;
+  font-size: 15px !important;
+}
+
+.gd-global-sidebar-button {
+  min-height: 42px !important;
+  height: 42px !important;
+  font-size: 13px !important;
+}
+
+.gd-global-sidebar-button.gd-global-active {
+  background: #2563eb !important;
+}
+
+.gd-global-header {
+  margin-left: 240px !important;
+  min-height: 68px !important;
+  height: 68px !important;
+}
+
+.gd-global-brand h1 {
+  font-size: 20px !important;
+}
+
+.gd-global-user-data strong {
+  font-size: 13px !important;
+}
+
+.gd-global-user-data small {
+  font-size: 11px !important;
+  color: #64748b !important;
+}
+
+@media (max-width: 900px) {
+  .nova-demanda-page {
+    width: calc(100% - 220px) !important;
+    margin-left: 220px !important;
+    padding: 20px 16px 110px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] {
+    left: 220px !important;
+    width: calc(100% - 220px) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .nova-demanda-page {
+    width: calc(100% - 68px) !important;
+    margin-left: 68px !important;
+    padding: 18px 12px 110px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] {
+    left: 68px !important;
+    width: calc(100% - 68px) !important;
+    padding: 10px 12px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] > div {
+    gap: 7px !important;
+  }
+
+  .nova-demanda-page > div[style*="position: fixed"] button {
+    padding: 0 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+
+/* ============================================================
+   V3.1 — NOVA DEMANDA
+   TOPO COLADO + CONTEÚDO ABAIXO DO CABEÇALHO
+   ============================================================ */
+
+html,
+body,
+#root {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100% !important;
+  background: #f8fafc !important;
+}
+
+/* O shell NÃO possui margem/padding: permite que o cabeçalho
+   global fique colado no topo da área útil. */
+.nova-demanda-shell {
+  width: 100% !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+}
+
+/* Cabeçalho global: exatamente à direita da sidebar */
+.nova-demanda-shell .gd-global-root {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.nova-demanda-shell .gd-global-header {
+  width: calc(100% - 240px) !important;
+  margin-left: 240px !important;
+  min-height: 68px !important;
+  height: 68px !important;
+  box-sizing: border-box !important;
+  padding: 12px 28px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04) !important;
+}
+
+/* Conteúdo começa DEPOIS do cabeçalho */
+.nova-demanda-shell > .nova-demanda-page {
+  width: calc(100% - 240px) !important;
+  margin-left: 240px !important;
+  min-height: calc(100vh - 68px) !important;
+
+  padding: 24px 20px 110px !important;
+  box-sizing: border-box !important;
+
+  background: #f8fafc !important;
+}
+
+/* Título e caixa principal ocupam a área disponível */
+.nova-demanda-shell .nova-demanda-header,
+.nova-demanda-shell .formulario-demanda {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.nova-demanda-shell .nova-demanda-header {
+  margin-top: 0 !important;
+  margin-bottom: 18px !important;
+}
+
+.nova-demanda-shell .nova-demanda-header h1 {
+  margin: 0 0 5px !important;
+  color: #173f67 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.nova-demanda-shell .nova-demanda-header p {
+  margin: 0 !important;
+  color: #68788a !important;
+  font-size: 13px !important;
+}
+
+/* Caixa principal */
+.nova-demanda-shell .formulario-demanda {
+  margin: 0 !important;
+  padding: 24px !important;
+  box-sizing: border-box !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,.04) !important;
+}
+
+/* Campos */
+.nova-demanda-shell .campo {
+  margin-bottom: 18px !important;
+}
+
+.nova-demanda-shell .campo label {
+  margin-bottom: 6px !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.nova-demanda-shell .campo input,
+.nova-demanda-shell .campo select,
+.nova-demanda-shell .campo textarea {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 12px !important;
+}
+
+.nova-demanda-shell .campo input,
+.nova-demanda-shell .campo select {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+.nova-demanda-shell .campo textarea {
+  min-height: 108px !important;
+}
+
+.nova-demanda-shell .campo input:focus,
+.nova-demanda-shell .campo select:focus,
+.nova-demanda-shell .campo textarea:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.10) !important;
+}
+
+/* SLA */
+.nova-demanda-shell .campo[style] {
+  box-sizing: border-box !important;
+}
+
+/* Barra inferior: alinhada à área útil */
+.nova-demanda-shell > div[style*="position: fixed"] {
+  left: 240px !important;
+  right: 0 !important;
+  width: calc(100% - 240px) !important;
+  bottom: 0 !important;
+  padding: 10px 20px !important;
+  box-sizing: border-box !important;
+  min-height: 60px !important;
+  z-index: 1200 !important;
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -4px 16px rgba(15,23,42,.06) !important;
+}
+
+.nova-demanda-shell > div[style*="position: fixed"] button {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.nova-demanda-shell > div[style*="position: fixed"] > div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Botão principal com o azul oficial */
+.nova-demanda-shell > div[style*="position: fixed"] button:last-child {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Sidebar: mesmas medidas da Dashboard */
+.nova-demanda-shell .gd-global-sidebar {
+  width: 240px !important;
+  background: #102a43 !important;
+}
+
+.nova-demanda-shell .gd-global-sidebar-title {
+  height: 72px !important;
+  min-height: 72px !important;
+  font-size: 15px !important;
+  background: #0b2239 !important;
+}
+
+.nova-demanda-shell .gd-global-sidebar-button {
+  height: 42px !important;
+  min-height: 42px !important;
+  font-size: 13px !important;
+}
+
+.nova-demanda-shell .gd-global-sidebar-button.gd-global-active {
+  background: #2563eb !important;
+}
+
+@media (max-width: 900px) {
+  .nova-demanda-shell .gd-global-sidebar {
+    width: 220px !important;
+  }
+
+  .nova-demanda-shell .gd-global-header {
+    width: calc(100% - 220px) !important;
+    margin-left: 220px !important;
+  }
+
+  .nova-demanda-shell > .nova-demanda-page {
+    width: calc(100% - 220px) !important;
+    margin-left: 220px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .nova-demanda-shell > div[style*="position: fixed"] {
+    left: 220px !important;
+    width: calc(100% - 220px) !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .nova-demanda-shell .gd-global-sidebar {
+    width: 68px !important;
+  }
+
+  .nova-demanda-shell .gd-global-header {
+    width: calc(100% - 68px) !important;
+    margin-left: 68px !important;
+  }
+
+  .nova-demanda-shell > .nova-demanda-page {
+    width: calc(100% - 68px) !important;
+    margin-left: 68px !important;
+    padding: 18px 12px 110px !important;
+  }
+
+  .nova-demanda-shell > div[style*="position: fixed"] {
+    left: 68px !important;
+    width: calc(100% - 68px) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+
+/* ============================================================
+   V2.9 — INTEGRAÇÃO EXCLUSIVA COM O MENU PRINCIPAL
+   ------------------------------------------------------------
+   NovaDemanda.tsx não cria mais Sidebar nem Cabeçalho.
+   O shell global é responsabilidade exclusiva do MenuPrincipal.
+   Este arquivo estiliza somente o conteúdo da tela.
+   ============================================================ */
+
+/* A página é filha direta de .gd-page-content.
+   Não deve criar uma segunda margem para a Sidebar. */
+.nova-demanda-page {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 2px 20px 92px !important;
+  box-sizing: border-box !important;
+  min-height: calc(100vh - 72px) !important;
+  background: transparent !important;
+  color: #0f172a !important;
+}
+
+/* O MenuPrincipal já fornece o shell, portanto estes estilos
+   antigos não devem interferir na estrutura global. */
+.nova-demanda-shell {
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* Cabeçalho específico da tela */
+.nova-demanda-header {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 0 18px !important;
+}
+
+/* Formulário ocupa toda a largura disponível do conteúdo */
+.nova-demanda-page .formulario-demanda {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Barra de ações: agora pertence ao MenuPrincipal.
+   A tela fornece apenas os botões através de rodapeAcoes. */
+.nova-demanda-acoes-direita {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+}
+
+.gd-shell-footer .nova-demanda-acoes-direita {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Os botões do rodapé seguem o mesmo padrão do shell global. */
+.gd-shell-footer .btn-secundario,
+.gd-shell-footer .btn-principal {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+}
+
+.gd-shell-footer .btn-secundario {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+}
+
+.gd-shell-footer .btn-secundario:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+
+.gd-shell-footer .btn-principal {
+  border: 1px solid #2563eb !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .16) !important;
+}
+
+.gd-shell-footer .btn-principal:hover {
+  background: #1d4ed8 !important;
+}
+
+/* Evita que o formulário interno concorra com a barra oficial. */
+.nova-demanda-page .formulario-acoes {
+  display: none !important;
+}
+
+/* Responsividade pertence ao conteúdo; a Sidebar/Header continuam
+   sendo controlados exclusivamente pelo MenuPrincipal. */
+@media (max-width: 900px) {
+  .nova-demanda-page {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 20px 16px 92px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .nova-demanda-page {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 18px 12px 88px !important;
+  }
+
+  .nova-demanda-acoes-direita {
+    gap: 7px !important;
+  }
+
+  .gd-shell-footer .btn-secundario,
+  .gd-shell-footer .btn-principal {
+    padding: 0 11px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .gd-shell-footer {
+    gap: 8px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .gd-shell-footer .btn-secundario,
+  .gd-shell-footer .btn-principal {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 0 8px !important;
+  }
+}
+
+/* ============================================================
+   V3.0 — PADRONIZAÇÃO VISUAL DO CONTEÚDO
+   ------------------------------------------------------------
+   Referência: Dashboard / Todas as Demandas / Clientes.
+   Não altera estrutura, navegação ou funcionalidades.
+   Apenas uniformiza fonte, tamanhos e cores do conteúdo da tela.
+   ============================================================ */
+
+.nova-demanda-page,
+.nova-demanda-page * {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+/* Título principal — mesmo padrão das telas principais */
+.nova-demanda-page .nova-demanda-header h1 {
+  margin: 0 0 5px !important;
+  color: #0f172a !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -.3px !important;
+}
+
+/* Descrição da página */
+.nova-demanda-page .nova-demanda-header p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+/* Título da caixa principal — padrão de Clientes */
+.nova-demanda-page .formulario-titulo h2 {
+  margin: 0 !important;
+  color: #173f67 !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+/* Descrição da caixa principal */
+.nova-demanda-page .formulario-titulo p {
+  margin: 6px 0 0 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 400 !important;
+}
+
+/* Labels dos campos — padrão de Clientes */
+.nova-demanda-page .campo label {
+  margin-bottom: 6px !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+/* Campos de entrada */
+.nova-demanda-page .campo input,
+.nova-demanda-page .campo select,
+.nova-demanda-page .campo textarea {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Placeholder */
+.nova-demanda-page .campo input::placeholder,
+.nova-demanda-page .campo textarea::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+/* Bloco de SLA — mesma hierarquia visual do sistema */
+.nova-demanda-page .campo[style] label {
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.nova-demanda-page .campo[style] strong {
+  color: #174f86 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.nova-demanda-page .campo[style] small {
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+  font-weight: 400 !important;
+}
+
+/* Mantém os botões do rodapé no padrão oficial */
+.nova-demanda-page + .gd-shell-footer .btn-secundario,
+.nova-demanda-page + .gd-shell-footer .btn-principal,
+.gd-shell-footer .btn-secundario,
+.gd-shell-footer .btn-principal {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+
+/* ============================================================
+   FASE 5 — PADRONIZAÇÃO GERAL
+   BLOCO 3 — APLICAÇÃO EM NOVA DEMANDA
+   ------------------------------------------------------------
+   Padronização visual complementar. A lógica e a estrutura
+   funcional da tela permanecem preservadas.
+   ============================================================ */
+
+.nova-demanda-page {
+  background: var(--gd-bg) !important;
+  color: var(--gd-text) !important;
+}
+
+.nova-demanda-shell {
+  background: var(--gd-surface) !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+.nova-demanda-header {
+  border-bottom-color: var(--gd-border) !important;
+}
+
+.nova-demanda-header h1,
+.formulario-titulo {
+  color: var(--gd-text) !important;
+}
+
+.formulario-demanda {
+  background: var(--gd-surface) !important;
+  border-color: var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+}
+
+.campo label {
+  color: var(--gd-text-secondary) !important;
+  font-weight: 600 !important;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  border-color: var(--gd-border) !important;
+  border-radius: var(--gd-radius-md) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: var(--gd-primary) !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.campo small,
+.campo .ajuda,
+.campo .texto-ajuda {
+  color: var(--gd-text-muted) !important;
+}
+
+.formulario-acoes {
+  border-top-color: var(--gd-border) !important;
+}
+
+.nova-demanda-acoes-direita {
+  gap: var(--gd-space-8) !important;
+}
+
+.btn-voltar,
+.btn-secundario {
+  border-radius: var(--gd-radius-md) !important;
+}
+
+.btn-principal {
+  border-radius: var(--gd-radius-md) !important;
+}
+
+@media (max-width: 768px) {
+  .nova-demanda-shell {
+    border-radius: var(--gd-radius-md) !important;
+  }
+
+  .formulario-demanda {
+    border-radius: var(--gd-radius-md) !important;
+  }
+}
+
+/* ============================================================
+   FASE 5 — PADRONIZAÇÃO GERAL
+   NOVA DEMANDA — BOTÕES
+   ------------------------------------------------------------
+   Mantém as classes e ações existentes e apenas garante que
+   os botões da tela utilizem o mesmo padrão visual aprovado.
+   ============================================================ */
+
+.gd-shell-footer .btn-principal,
+.gd-shell-footer .btn-secundario {
+  box-sizing: border-box !important;
+  height: var(--gd-control-height) !important;
+  min-height: var(--gd-control-height) !important;
+  padding: 0 var(--gd-control-padding-x) !important;
+  border-radius: var(--gd-control-radius) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-control-font-size) !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    transform var(--gd-transition-fast) !important;
+}
+
+.gd-shell-footer .btn-principal {
+  border: 1px solid var(--gd-primary) !important;
+  background: var(--gd-primary) !important;
+  color: var(--gd-text-white) !important;
+  box-shadow: none !important;
+}
+
+.gd-shell-footer .btn-principal:hover:not(:disabled) {
+  background: var(--gd-primary-dark) !important;
+  border-color: var(--gd-primary-dark) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+  transform: translateY(-1px) !important;
+}
+
+.gd-shell-footer .btn-principal:focus-visible,
+.gd-shell-footer .btn-secundario:focus-visible {
+  outline: none !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.gd-shell-footer .btn-secundario {
+  border: 1px solid var(--gd-border-strong) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text-secondary) !important;
+}
+
+.gd-shell-footer .btn-secundario:hover:not(:disabled) {
+  background: var(--gd-surface-hover) !important;
+  border-color: var(--gd-text-light) !important;
+  color: var(--gd-text) !important;
+}
+
+.gd-shell-footer .btn-principal:disabled,
+.gd-shell-footer .btn-secundario:disabled {
+  opacity: 0.55 !important;
+  transform: none !important;
+  cursor: not-allowed !important;
+}
+
+@media (max-width: 700px) {
+  .gd-shell-footer .btn-principal,
+  .gd-shell-footer .btn-secundario {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .gd-shell-footer .btn-principal,
+  .gd-shell-footer .btn-secundario {
+    padding: 0 9px !important;
+  }
+}
+
+/* ============================================================
+   PADRONIZAÇÃO VISUAL — NOVA DEMANDA
+   Baseada no padrão visual aprovado em Relatórios.
+   Somente apresentação visual; nenhuma regra de negócio alterada.
+   ============================================================ */
+
+.nova-demanda-page {
+  background: #f8fafc !important;
+}
+
+.nova-demanda-header h1 {
+  color: #0f172a !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+}
+
+.nova-demanda-header p {
+  color: #64748b !important;
+  font-size: 13px !important;
+}
+
+.formulario-demanda {
+  position: relative !important;
+  border: 1px solid #dbe5f0 !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .04) !important;
+  overflow: hidden !important;
+}
+
+.formulario-demanda::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 3px !important;
+  background: #2563eb !important;
+}
+
+.formulario-titulo {
+  margin-bottom: 18px !important;
+  padding: 2px 0 14px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.formulario-titulo h2 {
+  color: #0f172a !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.formulario-titulo p {
+  color: #64748b !important;
+  font-size: 12px !important;
+}
+
+.campo label {
+  color: #334155 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  border-color: #cbd5e1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  transition: border-color .16s ease, box-shadow .16s ease !important;
+}
+
+.campo input:hover,
+.campo select:hover,
+.campo textarea:hover {
+  border-color: #94a3b8 !important;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+.nova-demanda-page .campo[style] {
+  border-color: #d8e3f0 !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #f8fafc 100%) !important;
+}
+
+.nova-demanda-page .campo[style] label {
+  color: #475569 !important;
+}
+
+.nova-demanda-page .campo[style] strong {
+  color: #2563eb !important;
+}
+
+.nova-demanda-page .campo[style] small {
+  color: #64748b !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] {
+  border-top: 1px solid #dbe5f0 !important;
+  background: rgba(255, 255, 255, .98) !important;
+  box-shadow: 0 -4px 18px rgba(15, 23, 42, .06) !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button:last-child {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .18) !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button:last-child:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  filter: none !important;
+}
+
+.nova-demanda-page > div[style*="position: fixed"] button:not(:last-child):hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  filter: none !important;
+}
