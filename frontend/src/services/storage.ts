@@ -7,6 +7,7 @@ import type {
   Cliente,
   Demanda,
   Notificacao,
+  PerfilUsuario,
   RegistroAuditoria,
   Sistema,
   TipoDemanda,
@@ -175,7 +176,7 @@ export function salvarAuditoria(registros: RegistroAuditoria[]) {
 export type SessaoUsuario = {
   usuarioId: number
   nome: string
-  perfil: 'Gestor/Administrador' | 'Analista'
+  perfil: PerfilUsuario
   login: string
 }
 

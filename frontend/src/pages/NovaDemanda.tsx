@@ -332,7 +332,7 @@ export default function NovaDemanda({
               </div>
 
               <div className="campo">
-                <label htmlFor="responsavel">Analista / Responsável</label>
+                <label htmlFor="responsavel">Responsável</label>
                 <select id="responsavel" name="responsavel" defaultValue="">
                   <option value="">
                     Não Atribuir Agora — Ficará Aguardando

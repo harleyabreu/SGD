@@ -11,7 +11,7 @@
 // - Persistência das demandas
 // - Criação de demandas
 // - Alteração de status
-// - Distribuição / redistribuição para Analistas
+// - Distribuição / redistribuição para Responsáveis
 // - Alteração de prioridade
 // - Alteração manual de prazo
 // - Reabertura
@@ -128,7 +128,7 @@ const STATUS_OFICIAIS = [
 const TRANSICOES_PERMITIDAS: Record<string, string[]> = {
   Nova: ['Aguardando', 'Em Atendimento', 'Cancelada'],
   Aguardando: ['Em Atendimento', 'Cancelada'],
-  'Em Atendimento': ['Com Pendências', 'Concluída', 'Cancelada'],
+  'Em Atendimento': ['Aguardando', 'Com Pendências', 'Concluída', 'Cancelada'],
   'Com Pendências': ['Em Atendimento', 'Concluída', 'Cancelada'],
   Concluída: [],
   Cancelada: [],
@@ -136,6 +136,24 @@ const TRANSICOES_PERMITIDAS: Record<string, string[]> = {
 
 function ehGestor(sessaoAtual: SessaoUsuario | null): boolean {
   return sessaoAtual?.perfil === 'Gestor/Administrador' || String(sessaoAtual?.perfil) === 'Gestor'
+}
+
+// Perfis que podem ser definidos como Responsável pela Demanda.
+// Mantemos a validação centralizada para que criação, redistribuição,
+// reabertura e alteração de status utilizem exatamente a mesma regra.
+const PERFIS_RESPONSAVEIS = new Set([
+  'Gestor/Administrador',
+  'Gestor',
+  'Analista',
+  'Desenvolvedor',
+  'Estagiário',
+])
+
+function podeSerResponsavel(usuario: Usuario): boolean {
+  return (
+    usuario.status === 'Ativo' &&
+    PERFIS_RESPONSAVEIS.has(String(usuario.perfil))
+  )
 }
 
 function transicaoPermitida(statusAnterior: string, novoStatus: string): boolean {
@@ -772,13 +790,12 @@ function App() {
   const tiposCadastrados =
     carregarTipos()
 
+  // A lista abaixo mantém o nome interno original para preservar
+  // a compatibilidade com as telas existentes, mas agora contém
+  // todos os perfis ativos que podem ser Responsável pela Demanda.
   const analistasAtivos =
     usuariosCadastrados.filter(
-      (usuario) =>
-        usuario.perfil ===
-          'Analista' &&
-        usuario.status ===
-          'Ativo'
+      podeSerResponsavel
     )
 
   // ==========================================================
@@ -1063,7 +1080,7 @@ function App() {
       )
     ) {
       window.alert(
-        'Selecione um Analista ativo cadastrado no sistema.'
+        'Selecione um Responsável ativo cadastrado no sistema.'
       )
       return
     }
@@ -1116,7 +1133,7 @@ function App() {
             descricao:
               responsavel
                 ? 'A demanda foi cadastrada e atribuída para atendimento.'
-                : 'A demanda foi cadastrada e permanece como Nova, aguardando triagem e atribuição de Analista.',
+                : 'A demanda foi cadastrada e permanece como Nova, aguardando triagem e atribuição de um Responsável.',
 
             data:
               agoraTexto,
@@ -1521,7 +1538,7 @@ function App() {
           )
         ) {
           window.alert(
-            'A demanda precisa ter um Analista ativo definido para ser reaberta.'
+            'A demanda precisa ter um Responsável ativo definido para ser reaberta.'
           )
           return demanda
         }
@@ -1890,7 +1907,7 @@ function App() {
       !demandaAtual.responsavel?.trim()
     ) {
       window.alert(
-        'Defina um Analista antes de colocar a demanda Em Atendimento.'
+        'Defina um Responsável antes de colocar a demanda Em Atendimento.'
       )
       return
     }
@@ -1905,18 +1922,7 @@ function App() {
       )
     ) {
       window.alert(
-        'O Analista responsável precisa estar ativo e cadastrado no sistema.'
-      )
-      return
-    }
-
-    if (
-      novoStatus ===
-        'Aguardando' &&
-      demandaAtual.responsavel?.trim()
-    ) {
-      window.alert(
-        'Para colocar a demanda em Aguardando, remova primeiro o Analista responsável.'
+        'O Responsável precisa estar ativo e cadastrado no sistema.'
       )
       return
     }
@@ -2173,6 +2179,12 @@ function App() {
           status:
             novoStatus,
 
+          responsavel:
+            statusAnterior === 'Em Atendimento' &&
+            novoStatus === 'Aguardando'
+              ? ''
+              : demanda.responsavel,
+
           dataConclusao:
             novoStatus ===
             'Concluída'
@@ -2426,7 +2438,7 @@ function App() {
   }
 
   // ==========================================================
-  // ALTERAR ANALISTA
+  // ALTERAR RESPONSÁVEL
   // ==========================================================
 
   function alterarResponsavel(
@@ -2455,7 +2467,7 @@ function App() {
       !analistaValido
     ) {
       window.alert(
-        'Selecione um Analista ativo cadastrado no sistema.'
+        'Selecione um Responsável ativo cadastrado no sistema.'
       )
 
       return
@@ -2491,11 +2503,11 @@ function App() {
 
         const anterior =
           demanda.responsavel ||
-          'Sem Analista'
+          'Sem Responsável'
 
         const novo =
           nomeNovo ||
-          'Sem Analista'
+          'Sem Responsável'
 
         let statusNovo =
           demanda.status
@@ -2524,7 +2536,7 @@ function App() {
         ) {
           if (!nomeNovo) {
             window.alert(
-              'Uma demanda em Com Pendências precisa permanecer com um Analista definido.'
+              'Uma demanda em Com Pendências precisa permanecer com um Responsável definido.'
             )
             return demanda
           }
@@ -2543,8 +2555,8 @@ function App() {
         const historico =
           criarHistorico(
             'redistribuicao',
-            'Analista alterado',
-            `Analista alterado de "${anterior}" para "${novo}".`,
+            'Responsável alterado',
+            `Responsável alterado de "${anterior}" para "${novo}".`,
             id,
             {
               valorAnterior:

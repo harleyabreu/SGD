@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useMemo, useState, type CSSProperties } from 'react'
-import type { Usuario } from '../types'
+import { PERFIS_RESPONSAVEIS, ROTULOS_PERFIL, type Usuario } from '../types'
 import { carregarUsuarios } from '../services/storage'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Responsaveis.css'
@@ -42,11 +42,11 @@ export default function Responsaveis({
   const [pesquisa, setPesquisa] = useState('')
   const [somenteAtivos, setSomenteAtivos] = useState(true)
 
-  const analistas = useMemo(() => {
+  const responsaveis = useMemo(() => {
     const termo = pesquisa.trim().toLowerCase()
 
     return usuarios
-      .filter((usuario) => usuario.perfil === 'Analista')
+      .filter((usuario) => PERFIS_RESPONSAVEIS.includes(usuario.perfil))
       .filter(
         (usuario) =>
           !somenteAtivos ||
@@ -63,12 +63,12 @@ export default function Responsaveis({
 
   const ativos = usuarios.filter(
     (item) =>
-      item.perfil === 'Analista' &&
+      PERFIS_RESPONSAVEIS.includes(item.perfil) &&
       item.status === 'Ativo'
   ).length
 
   const total = usuarios.filter(
-    (item) => item.perfil === 'Analista'
+    (item) => PERFIS_RESPONSAVEIS.includes(item.perfil)
   ).length
 
   return (
@@ -106,7 +106,7 @@ export default function Responsaveis({
               }
 
               window.alert(
-                'Para cadastrar ou editar um Analista, utilize o menu Administração.'
+                'Para cadastrar ou editar um Responsável, utilize o menu Administração.'
               )
             }}
             style={botaoPrimario}
@@ -126,7 +126,7 @@ export default function Responsaveis({
           </h1>
 
           <p style={subtituloStyle}>
-            Consulte os Analistas Cadastrados e Disponíveis para Atendimento.
+            Consulte os Responsáveis Cadastrados e Disponíveis para Atendimento.
           </p>
         </div>
 
@@ -138,7 +138,7 @@ export default function Responsaveis({
             </strong>
 
             <span style={textoResumo}>
-              Total de Analistas
+              Total de Responsáveis
             </span>
           </div>
 
@@ -148,7 +148,7 @@ export default function Responsaveis({
             </strong>
 
             <span style={textoResumo}>
-              Analistas Ativos
+              Responsáveis Ativos
             </span>
           </div>
 
@@ -158,7 +158,7 @@ export default function Responsaveis({
             </strong>
 
             <span style={textoResumo}>
-              Analistas Inativos
+              Responsáveis Inativos
             </span>
           </div>
 
@@ -169,12 +169,12 @@ export default function Responsaveis({
           <div className="responsaveis-card-header" style={barraTopo}>
             <div className="responsaveis-section-title" style={cabecalhoAnalistas}>
               <h2 className="responsaveis-section-heading" style={tituloSecao}>
-                Analistas
+                Responsáveis
               </h2>
 
               <p className="responsaveis-section-description" style={textoSecao}>
                 A distribuição das demandas utiliza
-                somente Analistas Ativos.
+                somente Responsáveis Ativos.
               </p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function Responsaveis({
               onChange={(event) =>
                 setPesquisa(event.target.value)
               }
-              placeholder="Pesquisar Analista..."
+              placeholder="Pesquisar Responsável..."
               className="responsaveis-search" style={campoPesquisa}
             />
 
@@ -208,7 +208,8 @@ export default function Responsaveis({
             <table className="responsaveis-table" style={tabela}>
               <thead>
                 <tr>
-                  <th style={cabecalhoTabela}>Analista</th>
+                  <th style={cabecalhoTabela}>Responsável</th>
+                  <th style={cabecalhoTabela}>Perfil</th>
                   <th style={cabecalhoTabela}>Login</th>
                   <th style={cabecalhoTabela}>E-Mail</th>
                   <th style={{ ...cabecalhoTabela, textAlign: 'center' }}>Status</th>
@@ -217,39 +218,43 @@ export default function Responsaveis({
               </thead>
 
               <tbody>
-                {analistas.map((analista) => (
-                  <tr className="responsaveis-table-row" key={analista.id}>
+                {responsaveis.map((responsavel) => (
+                  <tr className="responsaveis-table-row" key={responsavel.id}>
 
                     <td style={celulaPrincipal}>
                       <strong style={textoTabelaPrincipal}>
-                        {analista.nome}
+                        {responsavel.nome}
                       </strong>
                     </td>
 
                     <td style={textoTabela}>
-                      {analista.login}
+                      {ROTULOS_PERFIL[responsavel.perfil]}
                     </td>
 
                     <td style={textoTabela}>
-                      {analista.email || '-'}
+                      {responsavel.login}
+                    </td>
+
+                    <td style={textoTabela}>
+                      {responsavel.email || '-'}
                     </td>
 
                     <td>
                       <span
                         style={
-                          analista.status === 'Ativo'
+                          responsavel.status === 'Ativo'
                             ? statusAtivo
                             : statusInativo
                         }
                       >
-                        {analista.status}
+                        {responsavel.status}
                       </span>
                     </td>
 
                     <td style={textoTabela}>
-                      {analista.ultimoAcesso
+                      {responsavel.ultimoAcesso
                         ? new Date(
-                            analista.ultimoAcesso
+                            responsavel.ultimoAcesso
                           ).toLocaleString('pt-BR')
                         : '-'}
                     </td>
@@ -257,13 +262,13 @@ export default function Responsaveis({
                   </tr>
                 ))}
 
-                {analistas.length === 0 && (
+                {responsaveis.length === 0 && (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       style={tabelaVazia}
                     >
-                      Nenhum Analista Encontrado.
+                      Nenhum Responsável Encontrado.
                     </td>
                   </tr>
                 )}

@@ -9,7 +9,7 @@
 // - Alteração de status
 // - Com Pendências com motivo obrigatório
 // - Conclusão com comentário obrigatório
-// - Distribuição / redistribuição para Analista
+// - Distribuição / redistribuição para Responsável
 // - Alteração de prioridade
 // - Alteração manual de prazo
 // - Reabertura com motivo obrigatório
@@ -41,6 +41,14 @@ import './DetalheDemanda.css'
 // ============================================================
 // PROPS
 // ============================================================
+
+function perfilOperacional(perfil?: string) {
+  return (
+    perfil === 'Analista' ||
+    perfil === 'Desenvolvedor (a)' ||
+    perfil === 'Estagiário (a)'
+  )
+}
 
 type Props = {
   demanda: Demanda
@@ -911,7 +919,7 @@ export function DetalheDemandaPage({
       !responsavelSelecionado.trim()
     ) {
       alert(
-        'A demanda precisa ter um Analista definido para entrar em atendimento.'
+        'A demanda precisa ter um Responsável definido para entrar em atendimento.'
       )
 
       return
@@ -1361,13 +1369,13 @@ export function DetalheDemandaPage({
           login: '',
           email: '',
           perfil:
-            perfilUsuarioGlobal === 'Analista'
-              ? 'Analista'
+            perfilOperacional(perfilUsuarioGlobal)
+              ? perfilUsuarioGlobal as Usuario['perfil']
               : 'Gestor/Administrador',
           status: 'Ativo',
           criadoEm: '',
         }}
-        ativo={perfilUsuarioGlobal === 'Analista' ? 'minhas-demandas' : 'todas-demandas'}
+        ativo={perfilOperacional(perfilUsuarioGlobal) ? 'minhas-demandas' : 'todas-demandas'}
         onDashboard={onDashboard}
         onMinhasDemandas={onMinhasDemandas}
         onTodasDemandas={onTodasDemandas}
@@ -1377,7 +1385,7 @@ export function DetalheDemandaPage({
         onFeriados={onFeriados}
         onRelatorios={onRelatorios}
         onConfiguracoes={onConfiguracoes}
-        onMinhaConta={perfilUsuarioGlobal === 'Analista' ? onConfiguracoes : undefined}
+        onMinhaConta={perfilOperacional(perfilUsuarioGlobal) ? onConfiguracoes : undefined}
         onSair={onLogout}
         subtitulo="Detalhamento e acompanhamento da demanda"
         rodapeAcoes={
@@ -1492,7 +1500,7 @@ export function DetalheDemandaPage({
             <div>
 
               <span>
-                ANALISTA
+                RESPONSÁVEL
               </span>
 
               <strong>
@@ -2075,7 +2083,7 @@ export function DetalheDemandaPage({
             <div className="campo-acao">
 
               <label>
-                Analista
+                Responsável
               </label>
 
               <select
@@ -2141,7 +2149,7 @@ export function DetalheDemandaPage({
                       !responsavelSelecionado.trim()
                     ) {
                       alert(
-                        'Defina um Analista antes de retomar o atendimento.'
+                        'Defina um Responsável antes de retomar o atendimento.'
                       )
 
                       return

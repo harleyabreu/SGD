@@ -108,6 +108,21 @@ function formatarNomeComposto(nome: string) {
 }
 
 
+function rotuloPerfil(perfil: Usuario['perfil']) {
+  switch (perfil) {
+    case 'Gestor/Administrador':
+      return 'Gestor (a)'
+    case 'Analista':
+      return 'Analista'
+    case 'Desenvolvedor':
+      return 'Desenvolvedor (a)'
+    case 'Estagiário':
+      return 'Estagiário (a)'
+    default:
+      return perfil
+  }
+}
+
 function normalizarPartesNome(nome: string) {
   return nome
     .normalize('NFD')
@@ -527,10 +542,34 @@ function Administracao({
     )
 
     if (duplicado) {
-      window.alert(
-        'Já existe um usuário com este login ou e-mail.'
-      )
-      return
+      const loginDuplicado =
+        duplicado.login.trim().toLowerCase() ===
+        loginPadrao.trim().toLowerCase()
+
+      const emailDuplicado =
+        duplicado.email.trim().toLowerCase() ===
+        emailUsuario.trim().toLowerCase()
+
+      if (loginDuplicado && emailDuplicado) {
+        window.alert(
+          `Já existem dados cadastrados com estas informações:\n\nLogin: ${loginPadrao}\nE-mail: ${emailUsuario.trim()}`
+        )
+        return
+      }
+
+      if (loginDuplicado) {
+        window.alert(
+          `O Login informado já está cadastrado:\n\n${loginPadrao}`
+        )
+        return
+      }
+
+      if (emailDuplicado) {
+        window.alert(
+          `O E-mail informado já está cadastrado:\n\n${emailUsuario.trim()}`
+        )
+        return
+      }
     }
 
     const agora = dataAtualISO()
@@ -576,10 +615,10 @@ function Administracao({
         {
           valorAnterior: modoAlterarSenha
             ? 'Senha: cadastrada anteriormente'
-            : `Nome: ${editUsuario.nome} | Login: ${editUsuario.login} | E-mail: ${editUsuario.email} | Telefone: ${editUsuario.telefone || '—'} | Perfil: ${editUsuario.perfil === 'Gestor/Administrador' ? 'Gestor' : 'Analista'}`,
+            : `Nome: ${editUsuario.nome} | Login: ${editUsuario.login} | E-mail: ${editUsuario.email} | Telefone: ${editUsuario.telefone || '—'} | Perfil: ${rotuloPerfil(editUsuario.perfil)}`,
           valorNovo: modoAlterarSenha
             ? 'Senha: alterada'
-            : `Nome: ${nomeUsuario.trim()} | Login: ${loginPadrao} | E-mail: ${emailUsuario.trim()} | Telefone: ${telefoneUsuario.trim() || '—'} | Perfil: ${perfilUsuario === 'Gestor/Administrador' ? 'Gestor' : 'Analista'}`,
+            : `Nome: ${nomeUsuario.trim()} | Login: ${loginPadrao} | E-mail: ${emailUsuario.trim()} | Telefone: ${telefoneUsuario.trim() || '—'} | Perfil: ${rotuloPerfil(perfilUsuario)}`,
         }
       )
 
@@ -1502,6 +1541,14 @@ function Administracao({
                       <option value="Analista">
                         Analista
                       </option>
+
+                      <option value="Desenvolvedor">
+                        Desenvolvedor (a)
+                      </option>
+
+                      <option value="Estagiário">
+                        Estagiário (a)
+                      </option>
                     </select>
                   </label>
 
@@ -1549,10 +1596,7 @@ function Administracao({
 
                             <td>
                               <span className="adm-pill">
-                                {item.perfil ===
-                                'Gestor/Administrador'
-                                  ? 'Gestor'
-                                  : 'Analista'}
+                                {rotuloPerfil(item.perfil)}
                               </span>
                             </td>
 

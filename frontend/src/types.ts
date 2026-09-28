@@ -6,10 +6,28 @@
 export type PerfilUsuario =
   | 'Gestor/Administrador'
   | 'Analista'
+  | 'Desenvolvedor'
+  | 'Estagiário'
 
 export type StatusUsuario =
   | 'Ativo'
   | 'Inativo'
+
+// Perfis que podem ser selecionados como Responsável pela Demanda.
+export const PERFIS_RESPONSAVEIS: PerfilUsuario[] = [
+  'Gestor/Administrador',
+  'Analista',
+  'Desenvolvedor',
+  'Estagiário',
+]
+
+// Rótulos apresentados na interface.
+export const ROTULOS_PERFIL: Record<PerfilUsuario, string> = {
+  'Gestor/Administrador': 'Gestor (a)',
+  Analista: 'Analista',
+  Desenvolvedor: 'Desenvolvedor (a)',
+  Estagiário: 'Estagiário (a)',
+}
 
 // ============================================================
 // COMENTÁRIOS
