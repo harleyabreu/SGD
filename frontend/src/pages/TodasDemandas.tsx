@@ -2301,6 +2301,7 @@ export default function TodasDemandas({
 
                                             if (demanda.status === 'Em Atendimento') {
                                               return (
+                                                item === 'Aguardando' ||
                                                 item === 'Com Pendências' ||
                                                 item === 'Concluída'
                                               )

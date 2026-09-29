@@ -1056,3 +1056,362 @@
     min-height: auto !important;
   }
 }
+
+
+/* ============================================================
+   MINHAS DEMANDAS — NOVO LAYOUT OPERACIONAL
+   ------------------------------------------------------------
+   Somente apresentação/organização.
+   Toda a lógica existente permanece preservada.
+   ============================================================ */
+
+.gd-page-content .md-summary {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  min-height: 28px !important;
+  margin: 0 0 8px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: 10px !important;
+}
+
+.gd-page-content .md-summary > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.gd-page-content .md-summary strong {
+  color: var(--gd-text) !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .md-summary-alert {
+  padding: 4px 9px !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-pill) !important;
+  background: var(--gd-surface) !important;
+}
+
+.gd-page-content .md-summary-alert strong {
+  color: var(--gd-success-dark) !important;
+}
+
+.gd-page-content .md-summary-alert.is-danger {
+  border-color: #fecaca !important;
+  background: #fff7f7 !important;
+}
+
+.gd-page-content .md-summary-alert.is-danger strong {
+  color: var(--gd-danger) !important;
+}
+
+.gd-page-content .md-indicators {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 0 0 16px !important;
+}
+
+.gd-page-content .md-indicator {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 96px !important;
+  padding: 14px 15px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  text-align: left !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease !important;
+}
+
+.gd-page-content .md-indicator:hover {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-surface-hover) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07) !important;
+  transform: translateY(-1px) !important;
+}
+
+.gd-page-content .md-indicator.is-active {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-primary-light) !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08) !important;
+}
+
+.gd-page-content .md-indicator span {
+  margin: 0 !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-indicator strong {
+  margin: 5px 0 0 !important;
+  color: var(--gd-primary) !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .md-indicator small {
+  margin-top: 5px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: 9px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-indicator-warning strong {
+  color: var(--gd-warning) !important;
+}
+
+.gd-page-content .md-indicator-warning:hover,
+.gd-page-content .md-indicator-warning.is-active {
+  border-color: var(--gd-warning) !important;
+}
+
+.gd-page-content .md-indicator-muted strong {
+  color: var(--gd-text-secondary) !important;
+}
+
+.gd-page-content .md-indicator-muted:hover,
+.gd-page-content .md-indicator-muted.is-active {
+  border-color: var(--gd-text-secondary) !important;
+}
+
+.gd-page-content .md-indicator-success strong {
+  color: var(--gd-success-dark) !important;
+}
+
+.gd-page-content .md-filter-card {
+  grid-template-columns: minmax(280px, 2fr) repeat(3, minmax(135px, 1fr)) auto !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  margin: 0 0 16px !important;
+  border-radius: var(--gd-radius-lg) !important;
+}
+
+.gd-page-content .md-filter-heading {
+  grid-column: 1 / -1 !important;
+  min-height: 38px !important;
+  padding: 0 0 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  border-bottom: 1px solid var(--gd-border) !important;
+}
+
+.gd-page-content .md-filter-heading h3 {
+  margin: 0 !important;
+  color: #173f67 !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-filter-heading span {
+  margin-top: 3px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: 9px !important;
+  line-height: 1.2 !important;
+}
+
+.gd-page-content .md-table-header {
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+.gd-page-content .md-table-count {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 24px !important;
+  padding: 4px 9px !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-pill) !important;
+  background: var(--gd-bg) !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.gd-page-content .md-action-primary {
+  color: var(--gd-primary) !important;
+  border-color: #bfdbfe !important;
+}
+
+.gd-page-content .md-action-primary:hover {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-primary-light) !important;
+}
+
+@media (max-width: 1100px) {
+  .gd-page-content .md-indicators {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .gd-page-content .md-filter-card {
+    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+  }
+
+  .gd-page-content .md-filter-heading {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .md-summary {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .gd-page-content .md-indicators {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .md-filter-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .md-filter-heading {
+    grid-column: auto !important;
+  }
+
+  .gd-page-content .md-table-header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .gd-page-content .md-table-count {
+    align-self: flex-start !important;
+  }
+}
+
+/* ============================================================
+   AJUSTE FINAL — CORES DOS CARDS DE MINHAS DEMANDAS
+   Mesmo padrão visual dos cards de indicadores do Dashboard.
+   Somente apresentação; nenhuma lógica é alterada.
+   ============================================================ */
+
+.gd-page-content .md-indicator {
+  position: relative !important;
+  overflow: hidden !important;
+  border: 1px solid var(--gd-border) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+  text-align: left !important;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.gd-page-content .md-indicator::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 auto 0 0 !important;
+  width: 4px !important;
+  background: var(--gd-primary) !important;
+}
+
+.gd-page-content .md-indicator:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--gd-shadow-md) !important;
+}
+
+/* EM ATENDIMENTO — azul */
+.gd-page-content .md-indicator:nth-child(1) {
+  border-color: #bfdbfe !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 44%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(1)::before {
+  background: #2563eb !important;
+}
+
+.gd-page-content .md-indicator:nth-child(1) span {
+  color: #1d4ed8 !important;
+}
+
+.gd-page-content .md-indicator:nth-child(1) strong {
+  color: #2563eb !important;
+}
+
+/* COM PENDÊNCIAS — laranja */
+.gd-page-content .md-indicator:nth-child(2) {
+  border-color: #fed7aa !important;
+  background: linear-gradient(180deg, #fffbf5 0%, #ffffff 44%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2)::before {
+  background: #f59e0b !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2) span {
+  color: #b45309 !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2) strong {
+  color: #d97706 !important;
+}
+
+/* AGUARDANDO — roxo */
+.gd-page-content .md-indicator:nth-child(3) {
+  border-color: #e9d5ff !important;
+  background: linear-gradient(180deg, #fcfaff 0%, #ffffff 44%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3)::before {
+  background: #9333ea !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3) span {
+  color: #7e22ce !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3) strong {
+  color: #9333ea !important;
+}
+
+/* CONCLUÍDAS — verde */
+.gd-page-content .md-indicator:nth-child(4) {
+  border-color: #bbf7d0 !important;
+  background: linear-gradient(180deg, #f8fff9 0%, #ffffff 44%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4)::before {
+  background: #16a34a !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4) span {
+  color: #15803d !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4) strong {
+  color: #16a34a !important;
+}
+
+/* Estado selecionado mantém a identidade da cor do card. */
+.gd-page-content .md-indicator:nth-child(1).is-active {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.10), var(--gd-shadow-sm) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2).is-active {
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.12), var(--gd-shadow-sm) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3).is-active {
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.12), var(--gd-shadow-sm) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4).is-active {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.12), var(--gd-shadow-sm) !important;
+}

@@ -29,6 +29,24 @@ async function hashSenha(senha: string): Promise<string> {
     .join('')
 }
 
+function aplicarMascaraTelefone(valor: string): string {
+  const numeros = valor.replace(/\D/g, '').slice(0, 11)
+
+  if (numeros.length <= 2) {
+    return numeros.length ? `(${numeros}` : ''
+  }
+
+  if (numeros.length <= 6) {
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`
+  }
+
+  if (numeros.length <= 10) {
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`
+  }
+
+  return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`
+}
+
 export default function ConfiguracoesAnalista({
   usuario,
   onDashboard,
@@ -42,10 +60,12 @@ export default function ConfiguracoesAnalista({
   const [confirmacao, setConfirmacao] = useState('')
   const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
 
   useEffect(() => {
     setEmail(usuario.email || '')
-    setTelefone(usuario.telefone || '')
+    setTelefone(aplicarMascaraTelefone(usuario.telefone || ''))
   }, [usuario])
 
   async function salvar(event: FormEvent<HTMLFormElement>) {
@@ -90,10 +110,12 @@ export default function ConfiguracoesAnalista({
       return
     }
 
+    const telefonePersistido = telefoneLimpo.replace(/\D/g, '')
+
     let atualizado: UsuarioSeguranca = {
       ...atual,
       email: emailLimpo,
-      telefone: telefoneLimpo,
+      telefone: telefonePersistido,
       atualizadoEm: new Date().toISOString(),
     }
 
@@ -122,14 +144,14 @@ export default function ConfiguracoesAnalista({
       )
     }
 
-    if ((atual.telefone || '') !== telefoneLimpo) {
+    if ((atual.telefone || '').replace(/\D/g, '') !== telefonePersistido) {
       registrarAlteracao(
         'usuario',
         usuario.id,
         'alteracao_telefone',
         `O usuário ${usuario.nome} alterou o próprio telefone.`,
         usuario.nome,
-        { valorAnterior: atual.telefone || '', valorNovo: telefoneLimpo }
+        { valorAnterior: atual.telefone || '', valorNovo: telefonePersistido }
       )
     }
 
@@ -160,31 +182,36 @@ export default function ConfiguracoesAnalista({
       onSair={onSair}
     >
       <div className="analista-config-page">
-        <section className="analista-config-header">
-          <div>
-            <h2>Configurações</h2>
-            <span>Atualize seus dados de contato e sua senha.</span>
-          </div>
-        </section>
+        <div className="analista-config-heading">
+          <h2>Configurações</h2>
+          <p>Atualize Seus Dados De Contato E Sua Senha.</p>
+        </div>
 
         <form className="analista-config-card" onSubmit={salvar}>
-          <div className="analista-config-section">
-            <h3>Dados pessoais e contato</h3>
-            <p>Essas informações são utilizadas para identificar e contatar você.</p>
+          <section className="analista-config-section">
+            <div className="analista-config-section-header">
+              <div className="analista-config-section-title">
+                <span className="analista-config-section-marker" />
+                <div>
+                  <h3>Dados Pessoais E Contato</h3>
+                  <p>Essas informações são utilizadas para identificar e contatar você.</p>
+                </div>
+              </div>
+            </div>
 
             <div className="analista-config-grid">
               <label>
-                Nome
+                <span>Nome</span>
                 <input value={usuario.nome} readOnly />
               </label>
 
               <label>
-                Login
+                <span>Login</span>
                 <input value={usuario.login} readOnly />
               </label>
 
               <label>
-                E-mail
+                <span>E-mail</span>
                 <input
                   type="email"
                   value={email}
@@ -194,60 +221,130 @@ export default function ConfiguracoesAnalista({
               </label>
 
               <label>
-                Telefone / Contato
+                <span>Contato</span>
                 <input
                   value={telefone}
-                  onChange={(event) => setTelefone(event.target.value)}
+                  onChange={(event) => setTelefone(aplicarMascaraTelefone(event.target.value))}
                   placeholder="(91) 99999-9999"
                   autoComplete="tel"
                 />
               </label>
             </div>
-          </div>
+          </section>
 
-          <div className="analista-config-section">
-            <h3>Segurança</h3>
-            <p>Deixe os campos vazios se não quiser alterar sua senha.</p>
+          <section className="analista-config-section">
+            <div className="analista-config-section-header">
+              <div className="analista-config-section-title">
+                <span className="analista-config-section-marker security" />
+                <div>
+                  <h3>Segurança</h3>
+                  <p>Deixe os campos vazios se não quiser alterar sua senha.</p>
+                </div>
+              </div>
+            </div>
 
             <div className="analista-config-grid">
               <label>
-                Nova senha
-                <input
-                  type="password"
-                  value={novaSenha}
-                  onChange={(event) => setNovaSenha(event.target.value)}
-                  minLength={MINIMO_SENHA}
-                  placeholder={`Mínimo ${MINIMO_SENHA} caracteres`}
-                  autoComplete="new-password"
-                />
+                <span>Nova Senha</span>
+                <div className="analista-password-field">
+                  <input
+                    type={mostrarNovaSenha ? 'text' : 'password'}
+                    value={novaSenha}
+                    onChange={(event) => setNovaSenha(event.target.value)}
+                    minLength={MINIMO_SENHA}
+                    placeholder={`Mínimo ${MINIMO_SENHA} Caracteres`}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="analista-password-toggle"
+                    onClick={() => setMostrarNovaSenha((valor) => !valor)}
+                    aria-label={mostrarNovaSenha ? 'Ocultar Nova Senha' : 'Mostrar Nova Senha'}
+                    title={mostrarNovaSenha ? 'Ocultar Senha' : 'Mostrar Senha'}
+                  >
+                    {mostrarNovaSenha ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                        <circle cx="12" cy="12" r="2.8" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 3l18 18" />
+                        <path d="M9.7 5.2A10.9 10.9 0 0 1 12 5c6 0 9.5 7 9.5 7a16.9 16.9 0 0 1-3.2 3.9" />
+                        <path d="M6.3 6.3C3.9 7.8 2.5 12 2.5 12s3.5 7 9.5 7a10.4 10.4 0 0 0 4.4-1" />
+                        <path d="M10.2 10.2a2.8 2.8 0 0 0 3.6 3.6" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </label>
 
               <label>
-                Confirmar nova senha
-                <input
-                  type="password"
-                  value={confirmacao}
-                  onChange={(event) => setConfirmacao(event.target.value)}
-                  minLength={MINIMO_SENHA}
-                  placeholder="Repita a nova senha"
-                  autoComplete="new-password"
-                />
+                <span>Confirmar Nova Senha</span>
+                <div className="analista-password-field">
+                  <input
+                    type={mostrarConfirmacao ? 'text' : 'password'}
+                    value={confirmacao}
+                    onChange={(event) => setConfirmacao(event.target.value)}
+                    minLength={MINIMO_SENHA}
+                    placeholder="Repita A Nova Senha"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="analista-password-toggle"
+                    onClick={() => setMostrarConfirmacao((valor) => !valor)}
+                    aria-label={mostrarConfirmacao ? 'Ocultar Confirmação Da Senha' : 'Mostrar Confirmação Da Senha'}
+                    title={mostrarConfirmacao ? 'Ocultar Senha' : 'Mostrar Senha'}
+                  >
+                    {mostrarConfirmacao ? (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                        <circle cx="12" cy="12" r="2.8" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 3l18 18" />
+                        <path d="M9.7 5.2A10.9 10.9 0 0 1 12 5c6 0 9.5 7 9.5 7a16.9 16.9 0 0 1-3.2 3.9" />
+                        <path d="M6.3 6.3C3.9 7.8 2.5 12 2.5 12s3.5 7 9.5 7a10.4 10.4 0 0 0 4.4-1" />
+                        <path d="M10.2 10.2a2.8 2.8 0 0 0 3.6 3.6" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </label>
             </div>
 
             <div className="analista-password-note">
               Sua senha deve possuir pelo menos {MINIMO_SENHA} caracteres.
             </div>
-          </div>
+          </section>
 
-          {erro && <div className="analista-config-error">{erro}</div>}
-          {mensagem && <div className="analista-config-success">{mensagem}</div>}
+          {erro && (
+            <div className="analista-config-message analista-config-error" role="alert">
+              {erro}
+            </div>
+          )}
+
+          {mensagem && (
+            <div className="analista-config-message analista-config-success" role="status">
+              {mensagem}
+            </div>
+          )}
 
           <div className="analista-config-actions">
-            <button type="button" className="analista-config-secondary" onClick={onMinhasDemandas}>
+            <button
+              type="button"
+              className="analista-config-secondary"
+              onClick={onMinhasDemandas}
+            >
               Cancelar
             </button>
-            <button type="submit" className="analista-config-primary">
+
+            <button
+              type="submit"
+              className="analista-config-primary"
+            >
               Salvar Alterações
             </button>
           </div>

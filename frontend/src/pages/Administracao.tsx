@@ -85,6 +85,24 @@ async function hashSenha(senha: string): Promise<string> {
     .join('')
 }
 
+function aplicarMascaraTelefone(valor: string): string {
+  const numeros = valor.replace(/\D/g, '').slice(0, 11)
+
+  if (numeros.length <= 2) {
+    return numeros.length ? `(${numeros}` : ''
+  }
+
+  if (numeros.length <= 6) {
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`
+  }
+
+  if (numeros.length <= 10) {
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`
+  }
+
+  return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`
+}
+
 function dataAtualISO() {
   return new Date().toISOString()
 }
@@ -446,7 +464,7 @@ function Administracao({
     setNomeUsuario(item.nome)
     setLoginUsuario(gerarLoginPadrao(item.nome, usuarios, item.id))
     setEmailUsuario(item.email)
-    setTelefoneUsuario(item.telefone || '')
+    setTelefoneUsuario(aplicarMascaraTelefone(item.telefone || ''))
     setPerfilUsuario(item.perfil)
 
     window.scrollTo({
@@ -573,6 +591,7 @@ function Administracao({
     }
 
     const agora = dataAtualISO()
+    const telefonePersistido = telefoneUsuario.replace(/\D/g, '')
 
     let atualizados: Usuario[]
 
@@ -591,7 +610,7 @@ function Administracao({
                 nome: nomeUsuario.trim(),
                 login: loginPadrao,
                 email: emailUsuario.trim(),
-                telefone: telefoneUsuario.trim(),
+                telefone: telefonePersistido,
                 perfil: perfilUsuario,
                 atualizadoEm: agora,
                 ...(senhaHashNova
@@ -637,7 +656,7 @@ function Administracao({
         nome: nomeUsuario.trim(),
         login: loginPadrao,
         email: emailUsuario.trim(),
-        telefone: telefoneUsuario.trim(),
+        telefone: telefonePersistido,
         perfil: perfilUsuario,
         status: 'Ativo',
         criadoEm: agora,
@@ -1439,13 +1458,13 @@ function Administracao({
                   </label>
 
                   <label>
-                    Telefone
+                    Contato
 
                     <input
                       value={telefoneUsuario}
                       onChange={(e) =>
                         setTelefoneUsuario(
-                          e.target.value
+                          aplicarMascaraTelefone(e.target.value)
                         )
                       }
                       placeholder="Opcional"
@@ -1483,10 +1502,22 @@ function Administracao({
                             type="button"
                             className="adm-password-toggle"
                             onClick={() => setMostrarSenhaUsuario((valor) => !valor)}
-                            title={mostrarSenhaUsuario ? 'Ocultar senha' : 'Visualizar senha'}
-                            aria-label={mostrarSenhaUsuario ? 'Ocultar senha' : 'Visualizar senha'}
+                            title={mostrarSenhaUsuario ? 'Ocultar Senha' : 'Visualizar Senha'}
+                            aria-label={mostrarSenhaUsuario ? 'Ocultar Senha' : 'Visualizar Senha'}
                           >
-                            🔍
+                            {mostrarSenhaUsuario ? (
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                                <circle cx="12" cy="12" r="2.8" />
+                              </svg>
+                            ) : (
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18" />
+                                <path d="M9.7 5.2A10.9 10.9 0 0 1 12 5c6 0 9.5 7 9.5 7a16.9 16.9 0 0 1-3.2 3.9" />
+                                <path d="M6.3 6.3C3.9 7.8 2.5 12 2.5 12s3.5 7 9.5 7a10.4 10.4 0 0 0 4.4-1" />
+                                <path d="M10.2 10.2a2.8 2.8 0 0 0 3.6 3.6" />
+                              </svg>
+                            )}
                           </button>
                         </div>
                       </label>
@@ -1506,10 +1537,22 @@ function Administracao({
                             type="button"
                             className="adm-password-toggle"
                             onClick={() => setMostrarConfirmarSenhaUsuario((valor) => !valor)}
-                            title={mostrarConfirmarSenhaUsuario ? 'Ocultar senha' : 'Visualizar senha'}
-                            aria-label={mostrarConfirmarSenhaUsuario ? 'Ocultar senha' : 'Visualizar senha'}
+                            title={mostrarConfirmarSenhaUsuario ? 'Ocultar Senha' : 'Visualizar Senha'}
+                            aria-label={mostrarConfirmarSenhaUsuario ? 'Ocultar Senha' : 'Visualizar Senha'}
                           >
-                            🔍
+                            {mostrarConfirmarSenhaUsuario ? (
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                                <circle cx="12" cy="12" r="2.8" />
+                              </svg>
+                            ) : (
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18" />
+                                <path d="M9.7 5.2A10.9 10.9 0 0 1 12 5c6 0 9.5 7 9.5 7a16.9 16.9 0 0 1-3.2 3.9" />
+                                <path d="M6.3 6.3C3.9 6.3 2.5 12 2.5 12s3.5 7 9.5 7a10.4 10.4 0 0 0 4.4-1" />
+                                <path d="M10.2 10.2a2.8 2.8 0 0 0 3.6 3.6" />
+                              </svg>
+                            )}
                           </button>
                         </div>
                       </label>

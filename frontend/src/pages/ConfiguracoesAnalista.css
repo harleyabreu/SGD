@@ -1,281 +1,347 @@
-.analista-config-page {
-  width: 100%;
-  max-width: none;
-  margin: 0 auto;
-}
-
-.analista-config-header {
-  margin-bottom: 18px;
-}
-
-.analista-config-header p {
-  margin: 0 0 5px;
-  color: var(--gd-primary);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .08em;
-}
-
-.analista-config-header h2 {
-  margin: 0;
-  color: var(--gd-text);
-  font-size: 24px;
-}
-
-.analista-config-header span {
-  display: block;
-  margin-top: 6px;
-  color: var(--gd-text-muted);
-  font-size: 12px;
-}
-
-.analista-config-card {
-  background: var(--gd-surface);
-  border: 1px solid var(--gd-border);
-  border-radius: var(--gd-radius-lg);
-  box-shadow: var(--gd-shadow-sm);
-  overflow: hidden;
-}
-
-.analista-config-section {
-  padding: 20px;
-  border-bottom: 1px solid var(--gd-border);
-}
-
-.analista-config-section h3 {
-  margin: 0;
-  color: var(--gd-text);
-  font-size: 14px;
-}
-
-.analista-config-section > p {
-  margin: 5px 0 16px;
-  color: var(--gd-text-muted);
-  font-size: 11px;
-}
-
-.analista-config-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.analista-config-grid label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: var(--gd-text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.analista-config-grid input {
-  min-height: 40px;
-  padding: 0 11px;
-  border: 1px solid var(--gd-border);
-  border-radius: var(--gd-radius-md);
-  background: var(--gd-surface);
-  color: var(--gd-text);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.analista-config-grid input:focus {
-  outline: none;
-  border-color: var(--gd-primary);
-  box-shadow: var(--gd-focus-ring);
-}
-
-.analista-config-grid input[readonly] {
-  background: var(--gd-bg);
-  color: var(--gd-text-muted);
-}
-
-.analista-password-note {
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-radius: var(--gd-radius-md);
-  background: var(--gd-primary-light);
-  color: var(--gd-text-secondary);
-  font-size: 10px;
-}
-
-.analista-config-error,
-.analista-config-success {
-  margin: 16px 20px 0;
-  padding: 10px 12px;
-  border-radius: var(--gd-radius-md);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.analista-config-error {
-  background: var(--gd-danger-light);
-  color: var(--gd-danger-dark);
-  border: 1px solid #fecaca;
-}
-
-.analista-config-success {
-  background: var(--gd-success-light);
-  color: var(--gd-success-dark);
-  border: 1px solid #bbf7d0;
-}
-
-.analista-config-actions {
-  padding: 16px 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.analista-config-actions button {
-  min-height: 38px;
-  padding: 0 14px;
-  border-radius: var(--gd-radius-md);
-  font: inherit;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.analista-config-secondary {
-  border: 1px solid var(--gd-border-strong);
-  background: var(--gd-surface);
-  color: var(--gd-text-secondary);
-}
-
-.analista-config-secondary:hover {
-  background: var(--gd-bg);
-}
-
-.analista-config-primary {
-  border: 1px solid var(--gd-primary);
-  background: var(--gd-primary);
-  color: #fff;
-}
-
-.analista-config-primary:hover {
-  background: var(--gd-primary-dark);
-}
-
-@media (max-width: 650px) {
-  .analista-config-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .analista-config-actions {
-    flex-direction: column-reverse;
-  }
-
-  .analista-config-actions button {
-    width: 100%;
-  }
-}
-
-
 /* ============================================================
-   FASE 5 — CONFIGURAÇÕES DO ANALISTA USA TODA A ÁREA DISPONÍVEL
-   O shell já controla sidebar/cabeçalho; esta tela não cria
-   uma segunda centralização ou limitação de largura.
+   GESTÃO DE DEMANDAS DE TI
+   CONFIGURAÇÕES DO ANALISTA — PADRÃO VISUAL FASE 5
+   ------------------------------------------------------------
+   Lógica e funcionalidades preservadas no TSX.
    ============================================================ */
+
 .gd-page-content .analista-config-page {
   width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
+  padding: 0 20px 92px !important;
   box-sizing: border-box !important;
-}
-
-.gd-page-content .analista-config-card {
-  width: 100% !important;
-  max-width: none !important;
 }
 
 /* ============================================================
-   FASE 5 — PADRONIZAÇÃO DO ENQUADRAMENTO DAS 3 TELAS DO ANALISTA
-   Dashboard | Minhas Demandas | Configurações
-
-   Objetivo:
-   - mesma distância lateral em relação à barra azul;
-   - mesma área útil horizontal;
-   - mesma altura visual do cabeçalho interno;
-   - preservar todo o conteúdo e comportamento existentes.
+   CABEÇALHO
    ============================================================ */
 
-.gd-page-content .analista-dashboard,
-.gd-page-content .minhas-demandas-page,
-.gd-page-content .analista-config-page {
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* Todos os cabeçalhos internos começam e terminam no mesmo ritmo visual. */
-.gd-page-content .analista-dashboard-header,
-.gd-page-content .minhas-demandas-heading,
-.gd-page-content .analista-config-header {
-  min-height: 58px !important;
-  margin-top: 0 !important;
-  margin-bottom: 16px !important;
-  box-sizing: border-box !important;
-}
-
-/* Dashboard */
-.gd-page-content .analista-dashboard-header {
-  width: 100% !important;
-}
-
-/* Minhas Demandas:
-   o padding lateral próprio da tela estava criando ~20px extras,
-   deixando os cards mais afastados da barra azul que nas outras telas. */
-.gd-page-content .minhas-demandas-page {
-  padding-top: 0 !important;
-  padding-right: 0 !important;
-  padding-bottom: 88px !important;
-  padding-left: 0 !important;
-}
-
-/* Configurações */
-.gd-page-content .analista-config-page {
+.gd-page-content .analista-config-heading {
+  margin: 0 0 16px !important;
   padding: 0 !important;
 }
 
-/* Os blocos principais das três telas ocupam a mesma largura útil. */
-.gd-page-content .analista-dashboard > *,
-.gd-page-content .minhas-demandas-page > *,
-.gd-page-content .analista-config-page > * {
+.gd-page-content .analista-config-heading h2 {
+  margin: 0 !important;
+  color: var(--gd-text) !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.gd-page-content .analista-config-heading p {
+  margin: 5px 0 0 !important;
+  color: var(--gd-text-muted) !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   CARD PRINCIPAL
+   ============================================================ */
+
+.gd-page-content .analista-config-card {
+  width: 100% !important;
+  overflow: hidden !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+  background: var(--gd-surface) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
   box-sizing: border-box !important;
 }
 
-/* Mantém responsividade sem recriar espaçamentos diferentes. */
+/* ============================================================
+   SEÇÕES
+   ============================================================ */
+
+.gd-page-content .analista-config-section {
+  padding: 18px 18px 19px !important;
+  border-bottom: 1px solid var(--gd-border) !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .analista-config-section-header {
+  margin: 0 0 15px !important;
+}
+
+.gd-page-content .analista-config-section-title {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+
+.gd-page-content .analista-config-section-marker {
+  width: 4px !important;
+  min-width: 4px !important;
+  height: 30px !important;
+  margin-top: 1px !important;
+  border-radius: 4px !important;
+  background: var(--gd-primary) !important;
+}
+
+.gd-page-content .analista-config-section-marker.security {
+  background: #64748b !important;
+}
+
+.gd-page-content .analista-config-section h3 {
+  margin: 0 !important;
+  color: var(--gd-text) !important;
+  font-size: 14px !important;
+  line-height: 1.25 !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .analista-config-section-header p {
+  margin: 4px 0 0 !important;
+  color: var(--gd-text-muted) !important;
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   CAMPOS
+   ============================================================ */
+
+.gd-page-content .analista-config-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px 16px !important;
+}
+
+.gd-page-content .analista-config-grid label {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .analista-config-grid label > span {
+  display: block !important;
+}
+
+.gd-page-content .analista-config-grid input {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 11px !important;
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: 8px !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: border-color .15s ease, box-shadow .15s ease !important;
+}
+
+.gd-page-content .analista-config-grid input::placeholder {
+  color: var(--gd-text-muted) !important;
+}
+
+.gd-page-content .analista-config-grid input:focus {
+  border-color: var(--gd-primary) !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.gd-page-content .analista-config-grid input[readonly] {
+  background: var(--gd-bg) !important;
+  color: var(--gd-text-muted) !important;
+  border-color: var(--gd-border) !important;
+}
+
+/* ============================================================
+   AVISO DA SENHA
+   ============================================================ */
+
+.gd-page-content .analista-password-field {
+  position: relative !important;
+  width: 100% !important;
+}
+
+.gd-page-content .analista-password-field input {
+  padding-right: 42px !important;
+}
+
+.gd-page-content .analista-password-toggle {
+  position: absolute !important;
+  top: 50% !important;
+  right: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translateY(-50%) !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .analista-password-toggle:hover {
+  background: #f1f5f9 !important;
+  color: #2563eb !important;
+}
+
+.gd-page-content .analista-password-toggle:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14) !important;
+}
+
+.gd-page-content .analista-password-toggle svg {
+  width: 17px !important;
+  height: 17px !important;
+  display: block !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.gd-page-content .analista-password-toggle svg circle {
+  fill: none !important;
+}
+
+.gd-page-content .analista-password-note {
+  margin-top: 12px !important;
+  padding: 10px 11px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 8px !important;
+  background: var(--gd-primary-light) !important;
+  color: #1e40af !important;
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+}
+
+/* ============================================================
+   MENSAGENS
+   ============================================================ */
+
+.gd-page-content .analista-config-message {
+  margin: 14px 18px 0 !important;
+  padding: 10px 11px !important;
+  border-radius: 8px !important;
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .analista-config-error {
+  background: var(--gd-danger-light) !important;
+  color: var(--gd-danger-dark) !important;
+  border: 1px solid #fecaca !important;
+}
+
+.gd-page-content .analista-config-success {
+  background: var(--gd-success-light) !important;
+  color: var(--gd-success-dark) !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+/* ============================================================
+   BOTÕES — PADRÃO OFICIAL DO SISTEMA
+   40px de altura / azul #2563EB / radius 8px
+   ============================================================ */
+
+.gd-page-content .analista-config-actions {
+  padding: 16px 18px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .analista-config-actions button {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 15px !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .analista-config-secondary {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+}
+
+.gd-page-content .analista-config-secondary:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+
+.gd-page-content .analista-config-primary {
+  border: 1px solid #2563eb !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.gd-page-content .analista-config-primary:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
 @media (max-width: 900px) {
-  .gd-page-content .analista-dashboard,
-  .gd-page-content .minhas-demandas-page,
   .gd-page-content .analista-config-page {
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 
-  .gd-page-content .analista-dashboard-header,
-  .gd-page-content .minhas-demandas-heading,
-  .gd-page-content .analista-config-header {
-    min-height: 58px !important;
-    margin-bottom: 14px !important;
+  .gd-page-content .analista-config-section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .gd-page-content .analista-config-actions {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .gd-page-content .analista-config-grid {
+    gap: 12px !important;
   }
 }
 
 @media (max-width: 700px) {
-  .gd-page-content .analista-dashboard-header,
-  .gd-page-content .minhas-demandas-heading,
-  .gd-page-content .analista-config-header {
-    min-height: auto !important;
+  .gd-page-content .analista-config-page {
+    padding: 0 12px 76px !important;
   }
 
-  .gd-page-content .minhas-demandas-page,
-  .gd-page-content .analista-config-page {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+  .gd-page-content .analista-config-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .analista-config-actions {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+  }
+
+  .gd-page-content .analista-config-actions button {
+    width: 100% !important;
   }
 }

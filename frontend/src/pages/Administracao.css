@@ -2214,17 +2214,36 @@ select {
   justify-content: center;
   padding: 0;
   border: 0;
+  border-radius: 6px;
   background: transparent;
   color: #64748b;
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
-  border-radius: 6px;
+  box-sizing: border-box;
 }
 
 .adm-password-toggle:hover {
   background: #eff6ff;
   color: #2563eb;
+}
+
+.adm-password-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+}
+
+.adm-password-toggle svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.adm-password-toggle svg circle {
+  fill: none;
 }
 
 .adm-security-policy {

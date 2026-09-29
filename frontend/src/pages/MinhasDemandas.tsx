@@ -176,6 +176,7 @@ export default function MinhasDemandas({
   const indicadores = useMemo(() => ({
     total: minhasDemandas.length,
     abertas: minhasDemandas.filter((item) => item.status !== 'Concluída' && item.status !== 'Cancelada').length,
+    aguardando: minhasDemandas.filter((item) => item.status === 'Aguardando').length,
     atendimento: minhasDemandas.filter((item) => item.status === 'Em Atendimento').length,
     pendencias: minhasDemandas.filter((item) => item.status === 'Com Pendências').length,
     atrasadas: minhasDemandas.filter(estaAtrasada).length,
@@ -321,16 +322,70 @@ export default function MinhasDemandas({
           </div>
         </div>
 
-        <section className="md-indicators" aria-label="Indicadores Das Minhas Demandas">
-          <div className="md-indicator"><span>Total Atribuídas</span><strong>{indicadores.total}</strong></div>
-          <div className="md-indicator"><span>Em Aberto</span><strong>{indicadores.abertas}</strong></div>
-          <div className="md-indicator"><span>Em Atendimento</span><strong>{indicadores.atendimento}</strong></div>
-          <div className="md-indicator"><span>Com Pendências</span><strong>{indicadores.pendencias}</strong></div>
-          <div className="md-indicator md-indicator-danger"><span>Atrasadas</span><strong>{indicadores.atrasadas}</strong></div>
-          <div className="md-indicator md-indicator-success"><span>Concluídas</span><strong>{indicadores.concluidas}</strong></div>
+        <div className="md-summary">
+          <span>
+            <strong>{indicadores.total}</strong>{' '}
+            {indicadores.total === 1 ? 'Demanda Atribuída' : 'Demandas Atribuídas'}
+          </span>
+          <span className={`md-summary-alert ${indicadores.atrasadas > 0 ? 'is-danger' : ''}`}>
+            <strong>{indicadores.atrasadas}</strong>{' '}
+            {indicadores.atrasadas === 1 ? 'Demanda Atrasada' : 'Demandas Atrasadas'}
+          </span>
+        </div>
+
+        <section className="md-indicators" aria-label="Resumo Das Minhas Demandas">
+          <button
+            type="button"
+            className={`md-indicator ${statusFiltro === 'Em Atendimento' ? 'is-active' : ''}`}
+            onClick={() => setStatusFiltro(statusFiltro === 'Em Atendimento' ? 'Todos' : 'Em Atendimento')}
+            aria-pressed={statusFiltro === 'Em Atendimento'}
+          >
+            <span>Em Atendimento</span>
+            <strong>{indicadores.atendimento}</strong>
+            <small>Ver Demandas</small>
+          </button>
+
+          <button
+            type="button"
+            className={`md-indicator md-indicator-warning ${statusFiltro === 'Com Pendências' ? 'is-active' : ''}`}
+            onClick={() => setStatusFiltro(statusFiltro === 'Com Pendências' ? 'Todos' : 'Com Pendências')}
+            aria-pressed={statusFiltro === 'Com Pendências'}
+          >
+            <span>Com Pendências</span>
+            <strong>{indicadores.pendencias}</strong>
+            <small>Ver Pendências</small>
+          </button>
+
+          <button
+            type="button"
+            className={`md-indicator md-indicator-muted ${statusFiltro === 'Aguardando' ? 'is-active' : ''}`}
+            onClick={() => setStatusFiltro(statusFiltro === 'Aguardando' ? 'Todos' : 'Aguardando')}
+            aria-pressed={statusFiltro === 'Aguardando'}
+          >
+            <span>Aguardando</span>
+            <strong>{indicadores.aguardando}</strong>
+            <small>Ver Aguardando</small>
+          </button>
+
+          <button
+            type="button"
+            className={`md-indicator md-indicator-success ${statusFiltro === 'Concluída' ? 'is-active' : ''}`}
+            onClick={() => setStatusFiltro(statusFiltro === 'Concluída' ? 'Todos' : 'Concluída')}
+            aria-pressed={statusFiltro === 'Concluída'}
+          >
+            <span>Concluídas</span>
+            <strong>{indicadores.concluidas}</strong>
+            <small>Ver Concluídas</small>
+          </button>
         </section>
 
         <section className="md-filter-card">
+          <div className="md-filter-heading">
+            <div>
+              <h3>Filtros</h3>
+              <span>Use Os Filtros Para Encontrar Rapidamente Uma Demanda.</span>
+            </div>
+          </div>
           <div className="md-filter-search">
             <label htmlFor="md-pesquisa">Pesquisar</label>
             <input
@@ -371,9 +426,16 @@ export default function MinhasDemandas({
         <section className="md-table-card">
           <div className="md-table-header">
             <div>
-              <h3>Demandas Atribuídas</h3>
-              <p>{demandasFiltradas.length} {demandasFiltradas.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}</p>
+              <h3>Minhas Demandas</h3>
+              <p>
+                {demandasFiltradas.length}{' '}
+                {demandasFiltradas.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}
+              </p>
             </div>
+
+            <span className="md-table-count">
+              {demandasFiltradas.length === 1 ? '1 Demanda' : `${demandasFiltradas.length} Demandas`}
+            </span>
           </div>
 
           {demandasFiltradas.length === 0 ? (
@@ -428,12 +490,24 @@ export default function MinhasDemandas({
                         <td>
                           <div className="md-actions">
                             <button type="button" onClick={() => onAbrirDetalhe(demanda)}>Detalhes</button>
+
+                            {demanda.status === 'Aguardando' && (
+                              <button
+                                type="button"
+                                className="md-action-primary"
+                                onClick={() => onAlterarStatus(demanda.id, 'Em Atendimento')}
+                              >
+                                Atender
+                              </button>
+                            )}
+
                             {demanda.status !== 'Concluída' && demanda.status !== 'Cancelada' && (
                               <>
                                 <button type="button" className="md-action-warning" onClick={() => {
                                   const motivo = window.prompt('Informe O Motivo Da Pendência:')
                                   if (motivo?.trim()) onAlterarStatus(demanda.id, 'Com Pendências', motivo)
                                 }}>Pendência</button>
+
                                 <button type="button" className="md-action-success" onClick={() => {
                                   const comentario = window.prompt('Informe O Comentário De Conclusão:')
                                   if (comentario?.trim()) onAlterarStatus(demanda.id, 'Concluída', comentario)

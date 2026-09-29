@@ -2323,14 +2323,6 @@ function App() {
             return demandaNormalizada
           }
 
-          if (
-            novoStatus ===
-              'Aguardando' &&
-            demandaNormalizada.responsavel?.trim()
-          ) {
-            return demandaNormalizada
-          }
-
           let periodosPendencia = [
             ...(demandaNormalizada.periodosPendencia || []),
           ]
@@ -2410,6 +2402,12 @@ function App() {
 
             status:
               novoStatus,
+
+            responsavel:
+              demandaNormalizada.status === 'Em Atendimento' &&
+              novoStatus === 'Aguardando'
+                ? ''
+                : demandaNormalizada.responsavel,
 
             periodosPendencia,
 
