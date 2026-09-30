@@ -2,9 +2,11 @@
    GESTÃO DE DEMANDAS DE TI
    IDENTIDADE VISUAL GLOBAL
    FASE 5 — PADRONIZAÇÃO GERAL
+   FASE 7 — REVISÃO VISUAL COMPLETA
    ============================================================ */
 
 :root {
+
   /* ==========================================================
      CORES PRINCIPAIS
      ========================================================== */
@@ -17,9 +19,21 @@
      CORES INSTITUCIONAIS / NAVEGAÇÃO
      ========================================================== */
 
+  /*
+     IMPORTANTE:
+     --gd-sidebar permanece como já utilizado atualmente
+     para preservar compatibilidade com as telas existentes.
+  */
   --gd-sidebar: #102a43;
   --gd-sidebar-dark: #0b2239;
   --gd-sidebar-light: #173f67;
+
+  /*
+     Novas variáveis dimensionais.
+     Serão utilizadas progressivamente nas telas.
+  */
+  --gd-sidebar-width: 240px;
+  --gd-header-height: 72px;
 
   /* ==========================================================
      FUNDOS E SUPERFÍCIES
@@ -38,6 +52,35 @@
   --gd-text-muted: #64748b;
   --gd-text-light: #94a3b8;
   --gd-text-white: #ffffff;
+
+  /* ==========================================================
+     ESCALA DE TIPOGRAFIA
+     ========================================================== */
+
+  /*
+     Padrão visual global.
+     Os valores existentes das telas não são sobrescritos
+     automaticamente nesta etapa.
+  */
+
+  --gd-font-size-xs: 11px;
+  --gd-font-size-sm: 12px;
+  --gd-font-size-md: 13px;
+  --gd-font-size-base: 14px;
+  --gd-font-size-lg: 16px;
+  --gd-font-size-xl: 18px;
+  --gd-font-size-2xl: 20px;
+  --gd-font-size-3xl: 24px;
+  --gd-font-size-4xl: 26px;
+
+  --gd-line-height-tight: 1.2;
+  --gd-line-height-normal: 1.5;
+  --gd-line-height-relaxed: 1.6;
+
+  --gd-font-weight-regular: 400;
+  --gd-font-weight-medium: 500;
+  --gd-font-weight-semibold: 600;
+  --gd-font-weight-bold: 700;
 
   /* ==========================================================
      BORDAS
@@ -80,6 +123,17 @@
   --gd-space-8: 32px;
 
   /* ==========================================================
+     DIMENSÕES PADRONIZADAS DE CONTROLES
+     ========================================================== */
+
+  /*
+     Mantém os valores compatíveis com o padrão já adotado.
+  */
+
+  --gd-control-height: 40px;
+  --gd-control-height-compact: 34px;
+
+  /* ==========================================================
      BORDER RADIUS
      ========================================================== */
 
@@ -97,7 +151,7 @@
   --gd-shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.08);
 
   /* ==========================================================
-     TIPOGRAFIA — ESCALA BASE
+     TIPOGRAFIA — FAMÍLIA
      ========================================================== */
 
   --gd-font-family:
@@ -114,7 +168,26 @@
 
   --gd-transition-fast: 0.15s ease;
   --gd-transition-normal: 0.2s ease;
+
+  /* ==========================================================
+     FOCO / ACESSIBILIDADE
+     ========================================================== */
+
+  --gd-focus-ring:
+    0 0 0 3px rgba(37, 99, 235, 0.15);
+
+  /* ==========================================================
+     LARGURA DE CONTEÚDO
+     ========================================================== */
+
+  /*
+     Valores de referência para a padronização progressiva
+     dos conteúdos das telas.
+  */
+
+  --gd-content-max-width: 1600px;
 }
+
 
 /* ============================================================
    RESET GLOBAL
@@ -144,9 +217,13 @@ body {
   font-family: var(--gd-font-family);
   background: var(--gd-background);
   color: var(--gd-text);
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  text-rendering: optimizeLegibility;
 }
+
 
 /* ============================================================
    CONTROLES NATIVOS
@@ -170,6 +247,26 @@ textarea:disabled {
   cursor: not-allowed;
 }
 
+
+/* ============================================================
+   FOCO DOS CONTROLES
+   ============================================================ */
+
+/*
+   Apenas define o padrão global para os elementos que utilizarem
+   :focus-visible. Não altera os controles existentes que ainda
+   não utilizam esta regra.
+*/
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--gd-primary);
+  outline-offset: 1px;
+}
+
+
 /* ============================================================
    LINKS
    ============================================================ */
@@ -179,6 +276,7 @@ a {
   text-decoration: none;
 }
 
+
 /* ============================================================
    SELEÇÃO DE TEXTO
    ============================================================ */
@@ -186,4 +284,118 @@ a {
 ::selection {
   background: var(--gd-primary-light);
   color: var(--gd-primary-dark);
+}
+
+
+/* ============================================================
+   ELEMENTOS DE FORMULÁRIO
+   ============================================================ */
+
+input,
+select,
+textarea {
+  color: var(--gd-text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--gd-text-muted);
+}
+
+
+/* ============================================================
+   IMAGENS E MÍDIA
+   ============================================================ */
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+
+/* ============================================================
+   TABELAS
+   ============================================================ */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+
+button {
+  border: 0;
+  background: none;
+}
+
+
+/* ============================================================
+   UTILITÁRIOS VISUAIS GLOBAIS
+   ============================================================ */
+
+.gd-text-primary {
+  color: var(--gd-primary);
+}
+
+.gd-text-secondary {
+  color: var(--gd-text-secondary);
+}
+
+.gd-text-muted {
+  color: var(--gd-text-muted);
+}
+
+.gd-text-success {
+  color: var(--gd-success);
+}
+
+.gd-text-warning {
+  color: var(--gd-warning);
+}
+
+.gd-text-danger {
+  color: var(--gd-danger);
+}
+
+.gd-text-info {
+  color: var(--gd-info);
+}
+
+.gd-text-purple {
+  color: var(--gd-purple);
+}
+
+
+/* ============================================================
+   FUNDO GLOBAL
+   ============================================================ */
+
+.gd-background {
+  background: var(--gd-background);
+}
+
+.gd-surface {
+  background: var(--gd-surface);
+}
+
+
+/* ============================================================
+   ACESSIBILIDADE
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

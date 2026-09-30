@@ -7,17 +7,17 @@
 :root {
   --gd-primary: #2563eb;
   --gd-primary-dark: #1d4ed8;
-  --gd-primary-soft: #eff6ff;
+  --gd-primary-light: #eff6ff;
 
   --gd-success: #16a34a;
   --gd-warning: #d97706;
   --gd-danger: #dc2626;
   --gd-purple: #7c3aed;
 
-  --gd-sidebar: 240px;
-  --gd-header: 72px;
+  --gd-sidebar-width: 240px;
+  --gd-header-height: 72px;
 
-  --gd-bg: #f8fafc;
+  --gd-background: #f8fafc;
   --gd-surface: #ffffff;
 
   --gd-text: #0f172a;
@@ -51,7 +51,7 @@ body {
   margin: 0;
   padding: 0;
 
-  background: var(--gd-bg);
+  background: var(--gd-background);
   color: var(--gd-text);
 
   font-family:
@@ -79,7 +79,7 @@ select {
   width: 100%;
   min-height: 100vh;
 
-  background: var(--gd-bg);
+  background: var(--gd-background);
   color: var(--gd-text);
 
   font-family:
@@ -103,13 +103,13 @@ select {
   left: 0;
   bottom: 0;
 
-  width: var(--gd-sidebar);
+  width: var(--gd-sidebar-width);
   height: 100vh;
 
   display: flex;
   flex-direction: column;
 
-  padding: var(--gd-header) 12px 18px;
+  padding: var(--gd-header-height) 12px 18px;
 
   overflow-y: auto;
   overflow-x: hidden;
@@ -132,7 +132,7 @@ select {
   left: 0;
 
   width: 100%;
-  height: var(--gd-header);
+  height: var(--gd-header-height);
 
   display: flex;
   align-items: center;
@@ -317,13 +317,13 @@ select {
    ============================================================ */
 
 .adm-main {
-  width: calc(100% - var(--gd-sidebar));
+  width: calc(100% - var(--gd-sidebar-width));
 
   min-height: 100vh;
 
-  margin-left: var(--gd-sidebar);
+  margin-left: var(--gd-sidebar-width);
 
-  background: var(--gd-bg);
+  background: var(--gd-background);
 }
 
 /* ============================================================
@@ -338,7 +338,7 @@ select {
   z-index: 900;
 
   width: 100%;
-  height: var(--gd-header);
+  height: var(--gd-header-height);
 
   display: flex;
   align-items: center;
@@ -1290,7 +1290,7 @@ select {
 
 @media (max-width: 900px) {
   :root {
-    --gd-sidebar: 68px;
+    --gd-sidebar-width: 68px;
   }
 
   .adm-sidebar {
@@ -3137,4 +3137,484 @@ select {
   font-weight: 600 !important;
 
   white-space: nowrap !important;
+}
+
+
+/* ============================================================
+   FASE 7 — REVISÃO VISUAL COMPLETA
+   ADMINISTRAÇÃO
+   ------------------------------------------------------------
+   Somente apresentação.
+   Lógica, handlers, estrutura e funcionalidades existentes
+   permanecem preservados.
+   ============================================================ */
+
+/* ============================================================
+   1. BASE VISUAL
+   ============================================================ */
+
+.gd-page-content .administracao-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 0 84px !important;
+
+  background: var(--gd-background) !important;
+  color: var(--gd-text) !important;
+  font-family: var(--gd-font-family) !important;
+}
+
+/* ============================================================
+   2. TÍTULO DA PÁGINA
+   ============================================================ */
+
+.gd-page-content .adm-page-heading {
+  margin: 0 0 20px !important;
+}
+
+.gd-page-content .adm-page-heading h2 {
+  color: var(--gd-text) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-3xl, 24px) !important;
+  line-height: var(--gd-line-height-tight, 1.2) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+.gd-page-content .adm-page-heading p {
+  margin-top: 6px !important;
+  color: var(--gd-text-muted) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+  line-height: var(--gd-line-height-normal, 1.5) !important;
+}
+
+.gd-page-content .administracao-breadcrumb {
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+/* ============================================================
+   3. ABAS
+   ============================================================ */
+
+.gd-page-content .adm-tabs {
+  gap: 4px !important;
+  padding: 4px !important;
+  margin-bottom: 16px !important;
+
+  background: #eef4fa !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+}
+
+.gd-page-content .adm-tabs button {
+  min-height: var(--gd-control-height, 40px) !important;
+  height: var(--gd-control-height, 40px) !important;
+  padding: 0 16px !important;
+
+  border-radius: var(--gd-radius-md) !important;
+
+  color: var(--gd-text-secondary) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-tabs button:hover {
+  color: var(--gd-primary) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.gd-page-content .adm-tabs button.active {
+  background: var(--gd-surface) !important;
+  color: var(--gd-primary) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+/* ============================================================
+   4. PESQUISA
+   ============================================================ */
+
+.gd-page-content .adm-toolbar {
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.gd-page-content .adm-search {
+  max-width: 560px !important;
+}
+
+.gd-page-content .adm-search-icon {
+  font-size: 16px !important;
+  color: var(--gd-text-light) !important;
+}
+
+.gd-page-content .adm-toolbar input {
+  height: var(--gd-control-height, 40px) !important;
+  padding: 0 12px 0 36px !important;
+
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-radius-md) !important;
+
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+}
+
+.gd-page-content .adm-toolbar input:focus {
+  border-color: var(--gd-primary) !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.gd-page-content .adm-toolbar > span {
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+/* ============================================================
+   5. CARDS
+   ============================================================ */
+
+.gd-page-content .adm-card {
+  margin-bottom: 16px !important;
+  background: var(--gd-surface) !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+.gd-page-content .adm-form-card {
+  padding: 20px !important;
+}
+
+.gd-page-content .adm-card-heading {
+  margin-bottom: 16px !important;
+}
+
+.gd-page-content .adm-card-heading h2 {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-lg, 16px) !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-card-heading p {
+  margin-top: 5px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: var(--gd-line-height-normal, 1.5) !important;
+}
+
+/* ============================================================
+   6. LABELS
+   ============================================================ */
+
+.gd-page-content .adm-grid label,
+.gd-page-content .adm-form-footer label,
+.gd-page-content .adm-security-grid label {
+  color: var(--gd-text-secondary) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================
+   7. INPUTS E SELECTS
+   ============================================================ */
+
+.gd-page-content .adm-grid input,
+.gd-page-content .adm-grid select,
+.gd-page-content .adm-form-footer select,
+.gd-page-content .adm-security-grid .adm-password-field input {
+  height: var(--gd-control-height, 40px) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+
+  padding: 0 12px !important;
+
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-radius-md) !important;
+
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+  font-weight: 400 !important;
+}
+
+.gd-page-content .adm-grid input:focus,
+.gd-page-content .adm-grid select:focus,
+.gd-page-content .adm-form-footer select:focus {
+  outline: none !important;
+  border-color: var(--gd-primary) !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+/* ============================================================
+   8. BOTÕES ADMINISTRATIVOS
+   ============================================================ */
+
+.gd-page-content .adm-btn-primary,
+.gd-page-content .adm-btn-secondary {
+  height: var(--gd-control-height, 40px) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+
+  border-radius: var(--gd-radius-md) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+  font-weight: 700 !important;
+
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    transform var(--gd-transition-fast) !important;
+}
+
+.gd-page-content .adm-btn-primary {
+  padding: 0 16px !important;
+  border: 1px solid var(--gd-primary) !important;
+  background: var(--gd-primary) !important;
+  color: var(--gd-text-white) !important;
+}
+
+.gd-page-content .adm-btn-primary:hover {
+  background: var(--gd-primary-dark) !important;
+  border-color: var(--gd-primary-dark) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+  transform: translateY(-1px);
+}
+
+.gd-page-content .adm-btn-secondary {
+  padding: 0 14px !important;
+  border: 1px solid var(--gd-border-strong) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text-secondary) !important;
+}
+
+.gd-page-content .adm-btn-secondary:hover {
+  background: var(--gd-surface-hover) !important;
+  border-color: var(--gd-text-light) !important;
+  color: var(--gd-text) !important;
+}
+
+/* ============================================================
+   9. AÇÕES DE TABELA
+   ============================================================ */
+
+.gd-page-content .adm-table-wrap td .adm-table-action {
+  min-width: 74px !important;
+  height: var(--gd-control-height-compact, 34px) !important;
+  min-height: var(--gd-control-height-compact, 34px) !important;
+
+  margin-right: 8px !important;
+  padding: 0 10px !important;
+
+  border-radius: var(--gd-radius-md) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+/* ============================================================
+   10. TABELAS
+   ============================================================ */
+
+.gd-page-content .adm-table-wrap table {
+  font-family: var(--gd-font-family) !important;
+}
+
+.gd-page-content .adm-table-wrap th {
+  padding: 11px 12px !important;
+
+  background: var(--gd-background) !important;
+  border-bottom: 1px solid var(--gd-border-strong) !important;
+
+  color: var(--gd-text-secondary) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-table-wrap td {
+  padding: 12px !important;
+
+  border-bottom: 1px solid var(--gd-border) !important;
+
+  color: var(--gd-text-secondary) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+  line-height: 1.35 !important;
+}
+
+.gd-page-content .adm-table-wrap td strong {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-table-wrap td small {
+  margin-top: 4px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+.gd-page-content .adm-table-wrap tbody tr:hover {
+  background: var(--gd-surface-hover) !important;
+}
+
+/* ============================================================
+   11. STATUS E BADGES
+   ============================================================ */
+
+.gd-page-content .adm-status,
+.gd-page-content .adm-pill {
+  min-height: 24px !important;
+  padding: 4px 9px !important;
+  border-radius: var(--gd-radius-pill) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .adm-status.ativo {
+  background: var(--gd-success-light) !important;
+  color: var(--gd-success-dark) !important;
+}
+
+.gd-page-content .adm-status.inativo {
+  background: #f1f5f9 !important;
+  color: var(--gd-text-muted) !important;
+}
+
+.gd-page-content .adm-pill {
+  background: var(--gd-primary-light) !important;
+  color: var(--gd-primary-dark) !important;
+}
+
+/* ============================================================
+   12. SEGURANÇA / SENHAS
+   ============================================================ */
+
+.gd-page-content .adm-security-section {
+  margin-top: 24px !important;
+  padding: 16px !important;
+
+  border: 1px solid #dbeafe !important;
+  border-radius: var(--gd-radius-lg) !important;
+
+  background: #f8fbff !important;
+}
+
+.gd-page-content .adm-security-heading strong {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+}
+
+.gd-page-content .adm-security-heading small,
+.gd-page-content .adm-security-policy {
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.45 !important;
+}
+
+.gd-page-content .adm-password-toggle {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: var(--gd-radius-sm) !important;
+  color: var(--gd-text-muted) !important;
+}
+
+.gd-page-content .adm-password-toggle:hover {
+  background: var(--gd-primary-light) !important;
+  color: var(--gd-primary) !important;
+}
+
+/* ============================================================
+   13. CANCELAR ALTERAÇÃO
+   ============================================================ */
+
+.gd-page-content .adm-cancel-edit {
+  height: var(--gd-control-height, 40px) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+
+  padding: 0 14px !important;
+
+  border-radius: var(--gd-radius-md) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+  font-weight: 700 !important;
+}
+
+/* ============================================================
+   14. TOAST
+   ============================================================ */
+
+.gd-page-content + .adm-toast,
+.adm-toast {
+  border-radius: var(--gd-radius-md) !important;
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+/* ============================================================
+   15. REDUÇÃO DE MOVIMENTO
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .gd-page-content .adm-btn-primary,
+  .gd-page-content .adm-btn-secondary {
+    transition: none !important;
+  }
+
+  .gd-page-content .adm-btn-primary:hover {
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   16. RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .gd-page-content .administracao-content {
+    padding-bottom: 76px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .administracao-content {
+    padding: 0 0 76px !important;
+  }
+
+  .gd-page-content .adm-page-heading h2 {
+    font-size: var(--gd-font-size-2xl, 20px) !important;
+  }
+
+  .gd-page-content .adm-page-heading p {
+    font-size: var(--gd-font-size-sm, 12px) !important;
+  }
+
+  .gd-page-content .adm-form-card {
+    padding: 16px !important;
+  }
+
+  .gd-page-content .adm-table-wrap td {
+    font-size: var(--gd-font-size-sm, 12px) !important;
+  }
+
+  .gd-page-content .adm-table-wrap td strong {
+    font-size: var(--gd-font-size-sm, 12px) !important;
+  }
 }

@@ -179,12 +179,42 @@ const inputStyle: CSSProperties = {
 }
 
 const statusColors: Record<string, { bg: string; color: string; border: string; dot: string }> = {
-  Nova: { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe', dot: '#2563eb' },
-  Aguardando: { bg: '#f8fafc', color: '#475569', border: '#cbd5e1', dot: '#64748b' },
-  'Em Atendimento': { bg: '#ecfeff', color: '#0e7490', border: '#a5f3fc', dot: '#0891b2' },
-  'Com Pendências': { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa', dot: '#f97316' },
-  Concluída: { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0', dot: '#16a34a' },
-  Cancelada: { bg: '#fef2f2', color: '#b91c1c', border: '#fecaca', dot: '#dc2626' },
+  Nova: {
+    bg: '#eff6ff',
+    color: '#1d4ed8',
+    border: '#bfdbfe',
+    dot: '#2563eb',
+  },
+  Aguardando: {
+    bg: '#f5f3ff',
+    color: '#6d28d9',
+    border: '#ddd6fe',
+    dot: '#7c3aed',
+  },
+  'Em Atendimento': {
+    bg: '#eff6ff',
+    color: '#1d4ed8',
+    border: '#bfdbfe',
+    dot: '#2563eb',
+  },
+  'Com Pendências': {
+    bg: '#fff7ed',
+    color: '#c2410c',
+    border: '#fed7aa',
+    dot: '#f97316',
+  },
+  Concluída: {
+    bg: '#f0fdf4',
+    color: '#15803d',
+    border: '#bbf7d0',
+    dot: '#16a34a',
+  },
+  Cancelada: {
+    bg: '#fef2f2',
+    color: '#b91c1c',
+    border: '#fecaca',
+    dot: '#dc2626',
+  },
 }
 
 export default function Configuracoes({
@@ -216,6 +246,19 @@ export default function Configuracoes({
       sla: {
         ...atual.sla,
         [campo]: Number.isFinite(numero) && numero > 0 ? Math.min(365, Math.floor(numero)) : 1,
+      },
+    }))
+  }
+
+  function ajustarSLA(campo: keyof ConfiguracoesSistema['sla'], delta: number) {
+    setConfiguracoes((atual) => ({
+      ...atual,
+      sla: {
+        ...atual.sla,
+        [campo]: Math.min(
+          365,
+          Math.max(1, atual.sla[campo] + delta)
+        ),
       },
     }))
   }
@@ -373,9 +416,44 @@ export default function Configuracoes({
                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: cor }} />
                   <span style={{ ...labelStyle, margin: 0, color: cor }}>{nome}</span>
                 </div>
-                <div style={{ position: 'relative' }}>
-                  <input type="number" min={1} max={365} value={configuracoes.sla[campo]} onChange={(e) => alterarSLA(campo, e.target.value)} style={{ ...inputStyle, paddingRight: 76, background: fundo, borderColor: `${cor}35` }} />
-                  <span style={{ position: 'absolute', right: 10, top: 11, color: '#64748b', fontSize: 10, pointerEvents: 'none' }}>dias úteis</span>
+                <div className="config-sla-input-wrap" style={{ position: 'relative' }}>
+                  <input
+                    className="config-sla-input"
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={configuracoes.sla[campo]}
+                    onChange={(e) => alterarSLA(campo, e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      paddingRight: 118,
+                      background: fundo,
+                      borderColor: `${cor}35`,
+                    }}
+                  />
+
+                  <span className="config-sla-suffix">
+                    dias úteis
+                  </span>
+
+                  <div className="config-sla-spinner" aria-hidden="true">
+                    <button
+                      type="button"
+                      className="config-sla-spinner-btn"
+                      onClick={() => ajustarSLA(campo, 1)}
+                      aria-label={`Aumentar ${nome}`}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      className="config-sla-spinner-btn config-sla-spinner-btn-down"
+                      onClick={() => ajustarSLA(campo, -1)}
+                      aria-label={`Diminuir ${nome}`}
+                    >
+                      ▼
+                    </button>
+                  </div>
                 </div>
               </label>
             ))}
@@ -492,6 +570,82 @@ export default function Configuracoes({
           select:focus {
             border-color: #60a5fa !important;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+          }
+
+          /* SLA — controle numérico customizado.
+             Ordem visual: valor → dias úteis → setas. */
+          .configuracoes-page .config-sla-input {
+            -moz-appearance: textfield !important;
+          }
+
+          .configuracoes-page .config-sla-input::-webkit-inner-spin-button,
+          .configuracoes-page .config-sla-input::-webkit-outer-spin-button {
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            margin: 0 !important;
+          }
+
+          .configuracoes-page .config-sla-input-wrap {
+            position: relative !important;
+          }
+
+          .configuracoes-page .config-sla-suffix {
+            position: absolute !important;
+            right: 38px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            margin: 0 !important;
+            color: #64748b !important;
+            font-size: 10px !important;
+            line-height: 1 !important;
+            font-weight: 400 !important;
+            white-space: nowrap !important;
+            pointer-events: none !important;
+            z-index: 2 !important;
+          }
+
+          .configuracoes-page .config-sla-spinner {
+            position: absolute !important;
+            top: 1px !important;
+            right: 1px !important;
+            bottom: 1px !important;
+            width: 28px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            border-left: 1px solid #cbd5e1 !important;
+            border-radius: 0 7px 7px 0 !important;
+            background: rgba(248, 250, 252, .92) !important;
+            z-index: 3 !important;
+          }
+
+          .configuracoes-page .config-sla-spinner-btn {
+            flex: 1 1 50% !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            color: #64748b !important;
+            font-size: 8px !important;
+            line-height: 1 !important;
+            font-weight: 800 !important;
+            cursor: pointer !important;
+          }
+
+          .configuracoes-page .config-sla-spinner-btn + .config-sla-spinner-btn {
+            border-top: 1px solid #cbd5e1 !important;
+          }
+
+          .configuracoes-page .config-sla-spinner-btn:hover {
+            background: #e2e8f0 !important;
+            color: #2563eb !important;
+          }
+
+          .configuracoes-page .config-sla-spinner-btn:active {
+            background: #dbeafe !important;
           }
 
           @media (max-width: 900px) {

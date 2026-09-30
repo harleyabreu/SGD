@@ -590,7 +590,7 @@
 
 .md-table th {
   padding: 9px 10px !important;
-  background: var(--gd-bg) !important;
+  background: var(--gd-background) !important;
   border-bottom: 1px solid var(--gd-border-strong) !important;
   color: var(--gd-text-secondary) !important;
   font-size: 9px !important;
@@ -694,7 +694,7 @@
   margin: 0 !important;
   padding: 2px 20px 92px !important;
   box-sizing: border-box !important;
-  background: var(--gd-bg) !important;
+  background: var(--gd-background) !important;
   color: var(--gd-text) !important;
 }
 
@@ -860,7 +860,7 @@
 
 .gd-page-content .md-table th {
   padding: 10px 12px !important;
-  background: var(--gd-bg) !important;
+  background: var(--gd-background) !important;
   border-bottom: 1px solid var(--gd-border) !important;
   color: var(--gd-text-muted) !important;
   font-size: 9px !important;
@@ -886,7 +886,7 @@
 }
 
 .gd-page-content .md-table tbody tr:hover {
-  background: var(--gd-bg) !important;
+  background: var(--gd-background) !important;
 }
 
 .gd-page-content .md-id {
@@ -1237,7 +1237,7 @@
   padding: 4px 9px !important;
   border: 1px solid var(--gd-border) !important;
   border-radius: var(--gd-radius-pill) !important;
-  background: var(--gd-bg) !important;
+  background: var(--gd-background) !important;
   color: var(--gd-text-secondary) !important;
   font-size: 9px !important;
   line-height: 1 !important;
@@ -1414,4 +1414,508 @@
 
 .gd-page-content .md-indicator:nth-child(4).is-active {
   box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.12), var(--gd-shadow-sm) !important;
+}
+/* ============================================================
+   FASE 7 — REVISÃO VISUAL COMPLETA
+   MINHAS DEMANDAS
+   ------------------------------------------------------------
+   Somente apresentação.
+   Estrutura, filtros, ações, status e funcionamento permanecem.
+   Este bloco entra ao final para prevalecer sobre regras antigas
+   acumuladas neste arquivo sem remover as regras existentes.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   PÁGINA / ENQUADRAMENTO
+   ------------------------------------------------------------ */
+
+.gd-page-content .minhas-demandas-page {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 0 92px !important;
+  background: transparent !important;
+  color: var(--gd-text) !important;
+  box-sizing: border-box !important;
+}
+
+/* ------------------------------------------------------------
+   CABEÇALHO
+   ------------------------------------------------------------ */
+
+.gd-page-content .minhas-demandas-heading {
+  width: 100% !important;
+  min-height: 58px !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.gd-page-content .minhas-demandas-heading h2 {
+  margin: 0 !important;
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-3xl, 24px) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.35px !important;
+}
+
+.gd-page-content .minhas-demandas-heading p {
+  margin: 5px 0 0 !important;
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.4 !important;
+}
+
+/* ------------------------------------------------------------
+   RESUMO
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-summary {
+  min-height: 28px !important;
+  margin: 0 0 10px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.4 !important;
+}
+
+.gd-page-content .md-summary strong {
+  color: var(--gd-text) !important;
+  font-weight: 700 !important;
+}
+
+/* ------------------------------------------------------------
+   CARDS DE STATUS
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-indicators {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin: 0 0 16px !important;
+}
+
+.gd-page-content .md-indicator {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 96px !important;
+  padding: 14px 16px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+
+  overflow: hidden !important;
+
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+
+  box-shadow: var(--gd-shadow-sm) !important;
+
+  font-family: var(--gd-font-family) !important;
+}
+
+.gd-page-content .md-indicator span {
+  margin: 0 !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-indicator strong {
+  margin: 5px 0 0 !important;
+  color: var(--gd-primary) !important;
+  font-size: var(--gd-font-size-4xl, 26px) !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-indicator small {
+  margin-top: 5px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-xs, 11px) !important;
+  line-height: 1.25 !important;
+  font-weight: 600 !important;
+}
+
+/* Cores operacionais já definidas no sistema. */
+.gd-page-content .md-indicator:nth-child(1) {
+  border-color: #bfdbfe !important;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 48%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(1)::before {
+  background: var(--gd-primary) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(1) span,
+.gd-page-content .md-indicator:nth-child(1) strong {
+  color: var(--gd-primary) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2) {
+  border-color: #fed7aa !important;
+  background: linear-gradient(180deg, #fffbf5 0%, #ffffff 48%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2)::before {
+  background: var(--gd-warning) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(2) span,
+.gd-page-content .md-indicator:nth-child(2) strong {
+  color: var(--gd-warning) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3) {
+  border-color: #e9d5ff !important;
+  background: linear-gradient(180deg, #fcfaff 0%, #ffffff 48%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3)::before {
+  background: var(--gd-purple) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(3) span,
+.gd-page-content .md-indicator:nth-child(3) strong {
+  color: var(--gd-purple) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4) {
+  border-color: #bbf7d0 !important;
+  background: linear-gradient(180deg, #f8fff9 0%, #ffffff 48%) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4)::before {
+  background: var(--gd-success) !important;
+}
+
+.gd-page-content .md-indicator:nth-child(4) span,
+.gd-page-content .md-indicator:nth-child(4) strong {
+  color: var(--gd-success-dark) !important;
+}
+
+.gd-page-content .md-indicator:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--gd-shadow-md) !important;
+}
+
+/* ------------------------------------------------------------
+   FILTROS
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-filter-card {
+  width: 100% !important;
+  margin: 0 0 16px !important;
+  padding: 15px 16px !important;
+
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+
+  background: var(--gd-surface) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+.gd-page-content .md-filter-search label,
+.gd-page-content .md-filter-field label {
+  margin-bottom: 6px !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-filter-search input,
+.gd-page-content .md-filter-field select {
+  height: 38px !important;
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+.gd-page-content .md-filter-search input:focus,
+.gd-page-content .md-filter-field select:focus {
+  outline: none !important;
+  border-color: var(--gd-primary) !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+.gd-page-content .md-clear-button {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-clear-button:hover {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-primary-light) !important;
+  color: var(--gd-primary-dark) !important;
+}
+
+/* ------------------------------------------------------------
+   TABELA
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-table-card {
+  width: 100% !important;
+  max-width: none !important;
+  overflow: hidden !important;
+
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+
+  background: var(--gd-surface) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+.gd-page-content .md-table-header {
+  min-height: 58px !important;
+  padding: 12px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  background: var(--gd-surface) !important;
+  border-bottom: 1px solid var(--gd-border) !important;
+}
+
+.gd-page-content .md-table-header h3 {
+  margin: 0 !important;
+  color: var(--gd-text) !important;
+  font-size: 15px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-table-header p {
+  margin: 3px 0 0 !important;
+  color: var(--gd-text-muted) !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+.gd-page-content .md-table th {
+  padding: 10px 12px !important;
+  background: var(--gd-background) !important;
+  border-bottom: 1px solid var(--gd-border-strong) !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-xs, 11px) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-table td {
+  padding: 12px !important;
+  border-bottom: 1px solid var(--gd-border) !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  line-height: 1.35 !important;
+}
+
+.gd-page-content .md-table td strong {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .md-table td small {
+  margin-top: 3px !important;
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-xs, 11px) !important;
+}
+
+.gd-page-content .md-table tbody tr:hover {
+  background: var(--gd-surface-hover) !important;
+}
+
+/* ------------------------------------------------------------
+   BADGES DE STATUS / PRIORIDADE / SLA
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-priority,
+.gd-page-content .md-status,
+.gd-page-content .md-sla {
+  min-height: 22px !important;
+  padding: 4px 8px !important;
+  border-radius: var(--gd-radius-pill, 999px) !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+/* ------------------------------------------------------------
+   AÇÕES
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-actions {
+  gap: 8px !important;
+}
+
+.gd-page-content .md-actions button {
+  min-height: 32px !important;
+  padding: 0 9px !important;
+
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+
+  background: var(--gd-surface) !important;
+  color: var(--gd-primary) !important;
+
+  font-size: var(--gd-font-size-xs, 11px) !important;
+  font-weight: 700 !important;
+
+  text-decoration: none !important;
+}
+
+.gd-page-content .md-actions button:hover {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-primary-light) !important;
+  color: var(--gd-primary-dark) !important;
+}
+
+.gd-page-content .md-actions .md-action-warning {
+  border-color: #fed7aa !important;
+  background: #fffaf5 !important;
+  color: var(--gd-warning) !important;
+}
+
+.gd-page-content .md-actions .md-action-success {
+  border-color: #bbf7d0 !important;
+  background: var(--gd-success-light) !important;
+  color: var(--gd-success-dark) !important;
+}
+
+/* ------------------------------------------------------------
+   MODAL — COMPATIBILIDADE COM A CONTA
+   ------------------------------------------------------------ */
+
+.gd-page-content .md-modal {
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg, 12px) !important;
+  background: var(--gd-surface) !important;
+  box-shadow: var(--gd-shadow-lg) !important;
+}
+
+.md-modal-header h3 {
+  font-size: 18px !important;
+  line-height: 1.25 !important;
+}
+
+.md-modal-header p {
+  font-size: 11px !important;
+}
+
+.md-account-grid label {
+  margin-bottom: 6px !important;
+  font-size: 12px !important;
+}
+
+.md-account-grid input {
+  height: 40px !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+  font-size: 13px !important;
+}
+
+.md-password-wrap button {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.md-account-note,
+.md-account-error {
+  font-size: 11px !important;
+}
+
+.md-modal-actions {
+  gap: 10px !important;
+}
+
+.md-cancel-button,
+.md-save-button {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+  font-size: 13px !important;
+}
+
+/* ------------------------------------------------------------
+   ESTADO VAZIO / TOAST
+   ------------------------------------------------------------ */
+
+.md-empty h3 {
+  font-size: 16px !important;
+}
+
+.md-empty p {
+  font-size: 12px !important;
+}
+
+.md-toast {
+  font-size: 12px !important;
+  padding: 11px 14px !important;
+  border-radius: var(--gd-radius-md, 8px) !important;
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVIDADE
+   ------------------------------------------------------------ */
+
+@media (max-width: 1100px) {
+  .gd-page-content .md-indicators {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .gd-page-content .md-filter-card {
+    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .minhas-demandas-page {
+    padding: 0 0 76px !important;
+  }
+
+  .gd-page-content .md-indicators {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .md-filter-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .md-table-header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .gd-page-content .md-actions {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gd-page-content .md-indicator {
+    transition: none !important;
+  }
+
+  .gd-page-content .md-indicator:hover {
+    transform: none !important;
+  }
 }

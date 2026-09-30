@@ -2,35 +2,67 @@
    GESTÃO DE DEMANDAS DE TI
    CONTROLES GLOBAIS
    FASE 5 — PADRONIZAÇÃO GERAL / BLOCO 2
+   FASE 7 — REVISÃO VISUAL COMPLETA
+   ============================================================ */
+
+/* ============================================================
+   CONFIGURAÇÕES DOS CONTROLES
    ============================================================ */
 
 :root {
-  --gd-control-height: 40px;
+  /*
+    Mantém compatibilidade com o padrão existente,
+    utilizando os tokens definidos no index.css.
+  */
   --gd-control-radius: var(--gd-radius-md, 8px);
   --gd-control-padding-x: 14px;
   --gd-control-font-size: 13px;
   --gd-control-font-weight: 600;
-  --gd-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+
+/* ============================================================
+   BOTÃO PRINCIPAL
+   ============================================================ */
+
 .btn-principal {
-  min-height: var(--gd-control-height) !important;
-  height: var(--gd-control-height) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+  height: var(--gd-control-height, 40px) !important;
+
   padding: 0 var(--gd-control-padding-x) !important;
+
   border: 1px solid var(--gd-primary) !important;
   border-radius: var(--gd-control-radius) !important;
+
   background: var(--gd-primary) !important;
   color: var(--gd-text-white) !important;
+
   font-family: var(--gd-font-family) !important;
   font-size: var(--gd-control-font-size) !important;
   font-weight: 700 !important;
-  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), box-shadow var(--gd-transition-fast), transform var(--gd-transition-fast) !important;
+  line-height: 1 !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  white-space: nowrap;
+
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    transform var(--gd-transition-fast) !important;
 }
 
 .btn-principal:hover:not(:disabled) {
   background: var(--gd-primary-dark) !important;
   border-color: var(--gd-primary-dark) !important;
+
   box-shadow: var(--gd-shadow-sm) !important;
+
   transform: translateY(-1px);
 }
 
@@ -41,21 +73,46 @@
 
 .btn-principal:disabled {
   opacity: 0.55;
+
   transform: none !important;
+
+  cursor: not-allowed !important;
 }
 
+
+/* ============================================================
+   BOTÃO SECUNDÁRIO
+   ============================================================ */
+
 .btn-secundario {
-  min-height: var(--gd-control-height) !important;
-  height: var(--gd-control-height) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+  height: var(--gd-control-height, 40px) !important;
+
   padding: 0 var(--gd-control-padding-x) !important;
+
   border: 1px solid var(--gd-border-strong) !important;
   border-radius: var(--gd-control-radius) !important;
+
   background: var(--gd-surface) !important;
   color: var(--gd-text-secondary) !important;
+
   font-family: var(--gd-font-family) !important;
   font-size: var(--gd-control-font-size) !important;
   font-weight: var(--gd-control-font-weight) !important;
-  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), color var(--gd-transition-fast), box-shadow var(--gd-transition-fast) !important;
+  line-height: 1 !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  white-space: nowrap;
+
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast) !important;
 }
 
 .btn-secundario:hover:not(:disabled) {
@@ -71,18 +128,42 @@
 
 .btn-secundario:disabled {
   opacity: 0.55;
+  cursor: not-allowed !important;
 }
+
+
+/* ============================================================
+   COMPATIBILIDADE — btn-primary
+   ============================================================ */
+
+/*
+   Esta classe já existe no sistema.
+   Não substituímos sua aparência globalmente para evitar
+   quebrar componentes que possuam estilos próprios.
+ */
 
 .btn-primary {
   border-radius: var(--gd-control-radius) !important;
+
   font-family: var(--gd-font-family) !important;
-  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), box-shadow var(--gd-transition-fast), transform var(--gd-transition-fast) !important;
+
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    transform var(--gd-transition-fast) !important;
 }
 
 .btn-primary:focus-visible {
   outline: none !important;
   box-shadow: var(--gd-focus-ring) !important;
 }
+
+
+/* ============================================================
+   CAMPOS DE FORMULÁRIO
+   ============================================================ */
 
 input,
 select,
@@ -102,37 +183,52 @@ textarea:disabled {
   opacity: 0.65;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .btn-principal,
-  .btn-secundario,
-  .btn-primary {
-    transition: none !important;
-  }
-
-  .btn-principal:hover:not(:disabled) {
-    transform: none !important;
-  }
-}
 
 /* ============================================================
-   AÇÕES COMPACTAS DE TABELA — PADRÃO FASE 5
+   AÇÕES COMPACTAS DE TABELA
+   PADRÃO FASE 5 / FASE 7
    ============================================================ */
 
 .btn-acao {
-  min-height: 34px !important;
-  height: 34px !important;
+  min-height: var(--gd-control-height-compact, 34px) !important;
+  height: var(--gd-control-height-compact, 34px) !important;
+
   padding: 0 11px !important;
+
   border: 1px solid var(--gd-border-strong) !important;
   border-radius: var(--gd-control-radius) !important;
+
   background: var(--gd-surface) !important;
+  color: var(--gd-text-secondary) !important;
+
   font-family: var(--gd-font-family) !important;
-  font-size: 11px !important;
+
+  /*
+    Aumentado de 11px para 12px para melhorar a legibilidade
+    das ações sem comprometer o formato compacto da tabela.
+  */
+  font-size: 12px !important;
+
   font-weight: 700 !important;
   line-height: 1 !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
   cursor: pointer !important;
+
   white-space: nowrap !important;
+
   margin-left: 7px !important;
-  transition: background-color var(--gd-transition-fast), border-color var(--gd-transition-fast), color var(--gd-transition-fast), box-shadow var(--gd-transition-fast), transform var(--gd-transition-fast) !important;
+
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    transform var(--gd-transition-fast) !important;
 }
 
 .btn-acao:first-child {
@@ -140,7 +236,11 @@ textarea:disabled {
 }
 
 .btn-acao:hover:not(:disabled) {
+  background: var(--gd-surface-hover) !important;
+  border-color: var(--gd-text-light) !important;
+
   transform: translateY(-1px) !important;
+
   box-shadow: var(--gd-shadow-sm) !important;
 }
 
@@ -151,18 +251,90 @@ textarea:disabled {
 
 .btn-acao:disabled {
   opacity: 0.55 !important;
+
   cursor: not-allowed !important;
+
   transform: none !important;
 }
+
+
+/* ============================================================
+   AÇÃO — EDITAR
+   ============================================================ */
 
 .btn-acao-editar {
   color: var(--gd-primary) !important;
 }
 
-.btn-acao-inativar {
-  color: #b91c1c !important;
+.btn-acao-editar:hover:not(:disabled) {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-primary-light) !important;
 }
 
+
+/* ============================================================
+   AÇÃO — INATIVAR
+   ============================================================ */
+
+.btn-acao-inativar {
+  color: var(--gd-danger-dark) !important;
+}
+
+.btn-acao-inativar:hover:not(:disabled) {
+  border-color: var(--gd-danger) !important;
+  background: var(--gd-danger-light) !important;
+}
+
+
+/* ============================================================
+   AÇÃO — ATIVAR
+   ============================================================ */
+
 .btn-acao-ativar {
-  color: #15803d !important;
+  color: var(--gd-success-dark) !important;
+}
+
+.btn-acao-ativar:hover:not(:disabled) {
+  border-color: var(--gd-success) !important;
+  background: var(--gd-success-light) !important;
+}
+
+
+/* ============================================================
+   ÍCONES DOS CONTROLES
+   ============================================================ */
+
+.btn-principal svg,
+.btn-secundario svg,
+.btn-primary svg,
+.btn-acao svg {
+  flex: 0 0 auto;
+
+  width: 16px;
+  height: 16px;
+}
+
+.btn-acao svg {
+  width: 14px;
+  height: 14px;
+}
+
+
+/* ============================================================
+   REDUÇÃO DE MOVIMENTO
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .btn-principal,
+  .btn-secundario,
+  .btn-primary,
+  .btn-acao {
+    transition: none !important;
+  }
+
+  .btn-principal:hover:not(:disabled),
+  .btn-acao:hover:not(:disabled) {
+    transform: none !important;
+  }
 }

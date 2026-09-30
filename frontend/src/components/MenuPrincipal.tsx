@@ -4,7 +4,7 @@ import type { Usuario } from '../types'
 /**
  * ============================================================
  * GESTÃO DE DEMANDAS DE TI
- * MENU PRINCIPAL — V1.0
+ * MENU PRINCIPAL — V1.1 / FASE 7 — REVISÃO VISUAL
  * ============================================================
  *
  * Componente único responsável por:
@@ -78,8 +78,8 @@ const ESTILOS = `
   }
 
   .gd-menu-shell {
-    --gd-sidebar-width: 240px;
-    --gd-header: 72px;
+    --gd-shell-sidebar-width: var(--gd-sidebar-width, 240px);
+    --gd-shell-header-height: var(--gd-header-height, 72px);
 
     width: 100%;
     min-height: 100vh;
@@ -107,13 +107,13 @@ const ESTILOS = `
     left: 0;
     bottom: 0;
 
-    width: var(--gd-sidebar-width);
+    width: var(--gd-shell-sidebar-width);
     height: 100vh;
 
     display: flex;
     flex-direction: column;
 
-    padding: var(--gd-header) 12px 18px;
+    padding: var(--gd-shell-header-height) 12px 18px;
 
     overflow-y: auto;
     overflow-x: hidden;
@@ -130,13 +130,13 @@ const ESTILOS = `
     left: 0;
 
     width: 100%;
-    height: var(--gd-header);
+    height: var(--gd-shell-header-height);
 
     display: flex;
     align-items: center;
 
-    padding: 0 18px;
-    gap: 10px;
+    padding: 0 16px;
+    gap: 11px;
 
     background: var(--gd-sidebar-dark);
     color: var(--gd-text-white);
@@ -152,16 +152,16 @@ const ESTILOS = `
     justify-content: center;
 
     color: var(--gd-text-white);
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .gd-sidebar-brand strong {
     display: block;
-    max-width: 170px;
+    max-width: 185px;
 
     color: var(--gd-text-white);
     font-size: 14px;
-    line-height: 1.2;
+    line-height: 1.25;
     font-weight: 700;
     letter-spacing: -0.2px;
   }
@@ -175,10 +175,10 @@ const ESTILOS = `
   }
 
   .gd-nav-section {
-    margin: 14px 10px 5px;
+    margin: 16px 10px 6px;
 
     color: #8fa6bd;
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1.2;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -188,7 +188,7 @@ const ESTILOS = `
     position: relative;
 
     width: 100%;
-    min-height: 36px;
+    min-height: 40px;
 
     display: flex;
     align-items: center;
@@ -197,14 +197,14 @@ const ESTILOS = `
     padding: 0 11px;
 
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--gd-radius-md, 8px);
 
     background: transparent;
     color: #d9e5f0;
 
     font-family: inherit;
-    font-size: 11px;
-    line-height: 1;
+    font-size: 13px;
+    line-height: 1.2;
     font-weight: 600;
 
     text-align: left;
@@ -227,15 +227,15 @@ const ESTILOS = `
   }
 
   .gd-nav-icon {
-    width: 22px;
-    min-width: 22px;
+    width: 24px;
+    min-width: 24px;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
     color: inherit;
-    font-size: 20px;
+    font-size: 21px;
     line-height: 1;
     font-weight: 700;
   }
@@ -249,14 +249,14 @@ const ESTILOS = `
     gap: 2px;
 
     color: #7f98b1;
-    font-size: 8px;
-    line-height: 1.2;
+    font-size: 10px;
+    line-height: 1.3;
   }
 
   .gd-sidebar-footer strong {
     margin-bottom: 2px;
     color: var(--gd-text-white);
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
   }
 
@@ -265,9 +265,9 @@ const ESTILOS = `
      ============================================================ */
 
   .gd-main {
-    width: calc(100% - var(--gd-sidebar-width));
+    width: calc(100% - var(--gd-shell-sidebar-width));
     min-height: 100vh;
-    margin-left: var(--gd-sidebar-width);
+    margin-left: var(--gd-shell-sidebar-width);
     background: var(--gd-background);
   }
 
@@ -277,7 +277,7 @@ const ESTILOS = `
     z-index: 900;
 
     width: 100%;
-    height: var(--gd-header);
+    height: var(--gd-shell-header-height);
 
     display: flex;
     align-items: center;
@@ -299,8 +299,8 @@ const ESTILOS = `
   }
 
   .gd-menu-toggle {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
 
     display: flex;
     align-items: center;
@@ -313,7 +313,7 @@ const ESTILOS = `
     background: transparent;
     color: var(--gd-text-muted);
 
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
   }
 
@@ -335,8 +335,8 @@ const ESTILOS = `
   .gd-system-subtitle {
     margin: 3px 0 0;
     color: var(--gd-text-muted);
-    font-size: 10px;
-    line-height: 1.2;
+    font-size: 12px;
+    line-height: 1.3;
   }
 
   .gd-topbar-right {
@@ -346,11 +346,15 @@ const ESTILOS = `
     flex-shrink: 0;
   }
 
+  .gd-notification-wrap {
+    position: relative;
+  }
+
   .gd-notification {
     position: relative;
 
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
 
     display: flex;
     align-items: center;
@@ -364,7 +368,7 @@ const ESTILOS = `
     background: var(--gd-surface);
     color: var(--gd-text-secondary);
 
-    font-size: 15px;
+    font-size: 17px;
     cursor: pointer;
   }
 
@@ -388,12 +392,12 @@ const ESTILOS = `
     padding: 0 3px;
 
     border: 2px solid #ffffff;
-    border-radius: 999px;
+    border-radius: var(--gd-radius-pill, 999px);
 
     background: var(--gd-danger);
     color: var(--gd-text-white);
 
-    font-size: 8px;
+    font-size: 9px;
     line-height: 1;
     font-weight: 700;
   }
@@ -402,13 +406,13 @@ const ESTILOS = `
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    width: 390px;
+    width: 400px;
     max-width: calc(100vw - 28px);
     max-height: 520px;
     overflow: auto;
     background: var(--gd-surface);
     border: 1px solid var(--gd-border);
-    border-radius: 12px;
+    border-radius: var(--gd-radius-lg, 12px);
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
     z-index: 1300;
   }
@@ -469,7 +473,7 @@ const ESTILOS = `
     color: var(--gd-primary);
     padding: 4px 0;
     font-family: inherit;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
@@ -519,7 +523,7 @@ const ESTILOS = `
     max-width: 250px;
     color: var(--gd-text-muted);
     line-height: 1.45;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .gd-global-notification-item {
@@ -578,21 +582,21 @@ const ESTILOS = `
 
   .gd-global-notification-body strong {
     color: #243b53;
-    font-size: 11px;
-    line-height: 1.25;
+    font-size: 12px;
+    line-height: 1.3;
     font-weight: 700;
   }
 
   .gd-global-notification-body > span {
     color: var(--gd-text-secondary);
-    font-size: 10px;
-    line-height: 1.4;
+    font-size: 11px;
+    line-height: 1.45;
   }
 
   .gd-global-notification-body small {
     color: #94a3b8;
-    font-size: 9px;
-    line-height: 1.25;
+    font-size: 10px;
+    line-height: 1.3;
   }
 
   .gd-global-notification-dot {
@@ -631,8 +635,8 @@ const ESTILOS = `
     padding: 9px 16px;
     border-top: 1px solid #e2e8f0;
     color: var(--gd-text-muted);
-    font-size: 9px;
-    line-height: 1.3;
+    font-size: 10px;
+    line-height: 1.35;
   }
 
   .gd-global-notification-channel {
@@ -643,6 +647,21 @@ const ESTILOS = `
     line-height: 1.2;
   }
 
+  .gd-user-button {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .gd-user-button:focus-visible {
+    outline: none;
+    border-radius: var(--gd-radius-md, 8px);
+    box-shadow: var(--gd-focus-ring);
+  }
+
   .gd-user {
     display: flex;
     align-items: center;
@@ -650,8 +669,8 @@ const ESTILOS = `
   }
 
   .gd-user-avatar {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
 
     display: flex;
     align-items: center;
@@ -662,7 +681,7 @@ const ESTILOS = `
     background: var(--gd-primary);
     color: var(--gd-text-white);
 
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
   }
 
@@ -674,30 +693,31 @@ const ESTILOS = `
 
   .gd-user-data strong {
     color: var(--gd-text);
-    font-size: 11px;
-    line-height: 1.2;
+    font-size: 12px;
+    line-height: 1.25;
     font-weight: 700;
   }
 
   .gd-user-data small {
     margin-top: 2px;
     color: var(--gd-text-muted);
-    font-size: 9px;
-    line-height: 1.2;
+    font-size: 10px;
+    line-height: 1.25;
   }
 
   .gd-logout {
-    height: 34px;
-    padding: 0 12px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 14px;
 
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: var(--gd-radius-md, 8px);
 
     background: var(--gd-surface);
     color: var(--gd-text-secondary);
 
     font-family: inherit;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
 
     cursor: pointer;
@@ -714,8 +734,8 @@ const ESTILOS = `
 
   .gd-page-content {
     width: 100%;
-    min-height: calc(100vh - var(--gd-header));
-    padding: 22px 20px 42px;
+    min-height: calc(100vh - var(--gd-shell-header-height));
+    padding: 24px 24px 48px;
   }
 
   /* ============================================================
@@ -726,7 +746,7 @@ const ESTILOS = `
 
   .gd-shell-footer {
     position: fixed;
-    left: var(--gd-sidebar-width);
+    left: var(--gd-shell-sidebar-width);
     right: 0;
     bottom: 0;
     z-index: 1000;
@@ -752,7 +772,7 @@ const ESTILOS = `
     padding: 0 16px;
     border-radius: 8px;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     box-sizing: border-box;
   }
@@ -822,7 +842,7 @@ const ESTILOS = `
   }
 
   .gd-menu-shell.menu-fechado {
-    --gd-sidebar-width: 68px;
+    --gd-shell-sidebar-width: 68px;
   }
 
   .gd-menu-shell.menu-fechado .gd-sidebar {
@@ -856,10 +876,10 @@ const ESTILOS = `
   .gd-menu-overlay { display: none; }
 
   @media (max-width: 900px) {
-    .gd-menu-shell { --gd-sidebar-width: 0px; }
+    .gd-menu-shell { --gd-shell-sidebar-width: 0px; }
 
     .gd-sidebar {
-      width: 240px;
+      width: var(--gd-sidebar-width, 240px);
       padding-left: 12px;
       padding-right: 12px;
       transform: translateX(-100%);
@@ -2040,7 +2060,7 @@ export default function MenuPrincipal({
           </div>
 
           <div className="gd-topbar-right">
-            <div style={{ position: 'relative' }}>
+            <div className="gd-notification-wrap">
               <button
                 type="button"
                 className="gd-notification"
@@ -2105,17 +2125,9 @@ export default function MenuPrincipal({
             {onMinhaConta ? (
               <button
                 type="button"
-                className="gd-user"
+                className="gd-user gd-user-button"
                 onClick={onMinhaConta}
                 aria-label="Abrir Minha Conta"
-                style={{
-                  border: 0,
-                  margin: 0,
-                  padding: 0,
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
               >
                 <span
                   className="gd-user-avatar"

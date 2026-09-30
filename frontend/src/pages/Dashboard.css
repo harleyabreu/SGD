@@ -4709,3 +4709,18 @@ body {
   border-left-color: transparent !important;
   border-left-style: none !important;
 }
+
+
+/* ============================================================
+   AJUSTE PONTUAL — ALINHAMENTO COM NOVA DEMANDA
+   ------------------------------------------------------------
+   Aproxima o título "Visão Geral" da mesma posição vertical
+   e do mesmo eixo horizontal visual da tela "Nova Demanda".
+   Somente apresentação; nenhuma lógica é alterada.
+   ============================================================ */
+
+.dashboard-content {
+  margin-top: -23px !important;
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}

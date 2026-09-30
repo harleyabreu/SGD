@@ -542,3 +542,321 @@ button.btn-principal.clientes-btn-primary {
 .clientes-page-title h1 {
   margin-top: 0 !important;
 }
+
+
+/* ============================================================
+   FASE 7 — REVISÃO VISUAL COMPLETA
+   CLIENTES
+   ------------------------------------------------------------
+   Ajustes exclusivamente visuais.
+   A lógica do Clientes.tsx, handlers, filtros, cadastro,
+   edição, ativação/inativação e demais funcionalidades
+   permanecem preservados.
+   ============================================================ */
+
+/* ============================================================
+   1. BASE VISUAL E TIPOGRAFIA
+   ============================================================ */
+
+.clientes-page,
+.clientes-page * {
+  font-family: var(--gd-font-family) !important;
+}
+
+.clientes-page {
+  background: var(--gd-background) !important;
+  color: var(--gd-text) !important;
+}
+
+
+/* ============================================================
+   2. TÍTULO
+   ============================================================ */
+
+.clientes-page-title h1 {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-3xl, 24px) !important;
+  line-height: var(--gd-line-height-tight, 1.2) !important;
+  font-weight: 700 !important;
+}
+
+.clientes-page-title p {
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+  line-height: var(--gd-line-height-normal, 1.5) !important;
+}
+
+
+/* ============================================================
+   3. CARDS DE RESUMO
+   ============================================================ */
+
+.clientes-summary-card {
+  min-height: 92px !important;
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+  background: var(--gd-surface) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+
+  transition:
+    transform var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    border-color var(--gd-transition-fast) !important;
+}
+
+.clientes-summary-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--gd-border-strong) !important;
+  box-shadow: var(--gd-shadow-md) !important;
+}
+
+.clientes-summary-card strong {
+  font-size: 25px !important;
+}
+
+
+/* ============================================================
+   4. CARD PRINCIPAL
+   ============================================================ */
+
+.clientes-main-card {
+  border: 1px solid var(--gd-border) !important;
+  border-radius: var(--gd-radius-lg) !important;
+  background: var(--gd-surface) !important;
+  box-shadow: var(--gd-shadow-sm) !important;
+}
+
+
+/* ============================================================
+   5. CABEÇALHOS DE SEÇÃO
+   ============================================================ */
+
+.clientes-card-header {
+  border-bottom-color: var(--gd-border) !important;
+}
+
+.clientes-card-header h2 {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-lg, 16px) !important;
+  line-height: 1.3 !important;
+  font-weight: 700 !important;
+}
+
+.clientes-card-header p {
+  color: var(--gd-text-muted) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+
+/* ============================================================
+   6. FORMULÁRIO
+   ============================================================ */
+
+.clientes-form {
+  background: var(--gd-background) !important;
+  border-color: var(--gd-border) !important;
+  border-radius: var(--gd-radius-md) !important;
+}
+
+.clientes-form h3 {
+  color: #173f67 !important;
+  font-size: var(--gd-font-size-lg, 16px) !important;
+  font-weight: 700 !important;
+}
+
+.clientes-form-grid label {
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+  font-weight: 700 !important;
+}
+
+.clientes-input,
+.clientes-search {
+  height: var(--gd-control-height, 40px) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+
+  border: 1px solid var(--gd-border-strong) !important;
+  border-radius: var(--gd-radius-md) !important;
+
+  background: var(--gd-surface) !important;
+  color: var(--gd-text) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+}
+
+.clientes-input:focus,
+.clientes-search:focus {
+  border-color: var(--gd-primary) !important;
+  box-shadow: var(--gd-focus-ring) !important;
+}
+
+
+/* ============================================================
+   7. ERROS
+   ============================================================ */
+
+.clientes-error {
+  border-color: #fecaca !important;
+  border-radius: var(--gd-radius-md) !important;
+  background: var(--gd-danger-light) !important;
+  color: var(--gd-danger-dark) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+
+/* ============================================================
+   8. TABELA
+   ============================================================ */
+
+.clientes-table {
+  border-color: var(--gd-border) !important;
+  background: var(--gd-surface) !important;
+}
+
+.clientes-table thead th {
+  background: var(--gd-background) !important;
+  border-bottom-color: var(--gd-border-strong) !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+.clientes-table tbody td {
+  background: var(--gd-surface) !important;
+  border-bottom-color: var(--gd-border) !important;
+  color: var(--gd-text-secondary) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+}
+
+.clientes-table tbody td strong {
+  color: var(--gd-text) !important;
+  font-size: var(--gd-font-size-base, 14px) !important;
+}
+
+.clientes-table-row:hover td {
+  background: var(--gd-surface-hover) !important;
+}
+
+
+/* ============================================================
+   9. STATUS
+   ============================================================ */
+
+.clientes-table span {
+  font-size: var(--gd-font-size-sm, 12px) !important;
+}
+
+
+/* ============================================================
+   10. AÇÕES DA TABELA
+   ------------------------------------------------------------
+   Padronizadas para 34px, conforme o padrão global de ações
+   compactas definido no controls.css.
+   ============================================================ */
+
+.clientes-table button {
+  min-height: var(--gd-control-height-compact, 34px) !important;
+  height: var(--gd-control-height-compact, 34px) !important;
+
+  border-radius: var(--gd-radius-md) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-sm, 12px) !important;
+  font-weight: 700 !important;
+
+  transition:
+    background-color var(--gd-transition-fast),
+    border-color var(--gd-transition-fast),
+    color var(--gd-transition-fast),
+    box-shadow var(--gd-transition-fast),
+    transform var(--gd-transition-fast) !important;
+}
+
+.clientes-table button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--gd-shadow-sm);
+}
+
+
+/* ============================================================
+   11. BOTÕES DO RODAPÉ
+   ============================================================ */
+
+.gd-shell-footer button.btn-secundario.clientes-btn-secondary,
+.gd-shell-footer button.btn-principal.clientes-btn-primary {
+  height: var(--gd-control-height, 40px) !important;
+  min-height: var(--gd-control-height, 40px) !important;
+
+  border-radius: var(--gd-radius-md) !important;
+
+  font-family: var(--gd-font-family) !important;
+  font-size: var(--gd-font-size-md, 13px) !important;
+  font-weight: 700 !important;
+}
+
+.gd-shell-footer button.btn-secundario.clientes-btn-secondary {
+  border-color: var(--gd-border-strong) !important;
+  background: var(--gd-surface) !important;
+  color: var(--gd-text-secondary) !important;
+}
+
+.gd-shell-footer button.btn-principal.clientes-btn-primary {
+  border-color: var(--gd-primary) !important;
+  background: var(--gd-primary) !important;
+  color: var(--gd-text-white) !important;
+}
+
+
+/* ============================================================
+   12. FOCO VISÍVEL
+   ============================================================ */
+
+.clientes-page button:focus-visible,
+.clientes-page input:focus-visible,
+.clientes-page select:focus-visible {
+  outline: 2px solid var(--gd-primary) !important;
+  outline-offset: 1px !important;
+}
+
+
+/* ============================================================
+   13. RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 800px) {
+  .clientes-page {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .clientes-main-card {
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .clientes-page-title h1 {
+    font-size: var(--gd-font-size-2xl, 20px) !important;
+  }
+
+  .clientes-page-title p {
+    font-size: var(--gd-font-size-sm, 12px) !important;
+  }
+}
+
+
+/* ============================================================
+   14. REDUÇÃO DE MOVIMENTO
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .clientes-summary-card,
+  .clientes-table button {
+    transition: none !important;
+  }
+
+  .clientes-summary-card:hover,
+  .clientes-table button:hover {
+    transform: none !important;
+  }
+}

@@ -118,25 +118,11 @@
   background: #2563eb !important;
 }
 
-.configuracoes-identificacao-card::before {
-  background: #2563eb !important;
-}
-
-.configuracoes-sla-card::before {
-  background: #ea580c !important;
-}
-
-.configuracoes-notificacoes-card::before {
-  background: #ca8a04 !important;
-}
-
-.configuracoes-interface-card::before {
-  background: #7c3aed !important;
-}
-
-.configuracoes-fluxo-card::before {
-  background: #0891b2 !important;
-}
+.configuracoes-identificacao-card::before { background: #2563eb !important; }
+.configuracoes-sla-card::before { background: #ea580c !important; }
+.configuracoes-notificacoes-card::before { background: #ca8a04 !important; }
+.configuracoes-interface-card::before { background: #7c3aed !important; }
+.configuracoes-fluxo-card::before { background: #0891b2 !important; }
 
 /* ============================================================
    ADMINISTRAÇÃO
@@ -148,17 +134,10 @@
   background: linear-gradient(180deg, #f8fbff 0%, #ffffff 38%) !important;
 }
 
-.configuracoes-admin-card::before {
-  background: #2563eb !important;
-}
+.configuracoes-admin-card::before { background: #2563eb !important; }
+.configuracoes-admin-accent { display: none !important; }
 
-.configuracoes-admin-accent {
-  display: none !important;
-}
-
-.configuracoes-admin-card > div:nth-child(2) {
-  padding: 16px 18px !important;
-}
+.configuracoes-admin-card > div:nth-child(2) { padding: 16px 18px !important; }
 
 .configuracoes-admin-card .configuracoes-section-icon {
   background: #eff6ff !important;
@@ -172,9 +151,7 @@
   font-weight: 700 !important;
 }
 
-.configuracoes-admin-card > div:nth-child(2) p {
-  margin-top: 4px !important;
-}
+.configuracoes-admin-card > div:nth-child(2) p { margin-top: 4px !important; }
 
 /* ============================================================
    CABEÇALHO INTERNO DOS CARDS
@@ -274,9 +251,7 @@
    IDENTIFICAÇÃO
    ============================================================ */
 
-.config-identificacao {
-  gap: 12px !important;
-}
+.config-identificacao { gap: 12px !important; }
 
 .config-identificacao > div {
   min-height: 70px !important;
@@ -327,9 +302,7 @@
    SLA
    ============================================================ */
 
-.config-sla-grid {
-  gap: 12px !important;
-}
+.config-sla-grid { gap: 12px !important; }
 
 .config-sla-grid > label {
   min-width: 0 !important;
@@ -354,9 +327,7 @@
    NOTIFICAÇÕES
    ============================================================ */
 
-.config-notificacoes-grid {
-  gap: 10px !important;
-}
+.config-notificacoes-grid { gap: 10px !important; }
 
 .config-notificacoes-grid > label {
   min-height: 64px !important;
@@ -383,9 +354,7 @@
    PREFERÊNCIAS
    ============================================================ */
 
-.config-interface-grid {
-  gap: 12px !important;
-}
+.config-interface-grid { gap: 12px !important; }
 
 .config-interface-grid > label {
   padding: 11px !important;
@@ -451,9 +420,7 @@
     padding: 18px 12px 110px !important;
   }
 
-  .configuracoes-page-title {
-    font-size: 22px !important;
-  }
+  .configuracoes-page-title { font-size: 22px !important; }
 
   .configuracoes-page-subtitle {
     font-size: 12px !important;
@@ -465,9 +432,7 @@
     border-radius: 10px !important;
   }
 
-  .configuracoes-admin-card {
-    padding: 0 !important;
-  }
+  .configuracoes-admin-card { padding: 0 !important; }
 
   .configuracoes-admin-card > div:nth-child(2) {
     padding: 14px !important;
@@ -498,13 +463,9 @@
     padding-right: 10px !important;
   }
 
-  .configuracoes-page-title {
-    font-size: 21px !important;
-  }
+  .configuracoes-page-title { font-size: 21px !important; }
 
-  .configuracoes-card {
-    padding: 13px !important;
-  }
+  .configuracoes-card { padding: 13px !important; }
 
   .configuracoes-section-icon {
     width: 34px !important;
@@ -513,24 +474,101 @@
   }
 }
 
+/* FASE 7 — REVISÃO VISUAL PONTUAL: LEGIBILIDADE */
+.configuracoes-page .config-identificacao > div > div > span:last-child {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  letter-spacing: .25px !important;
+}
+
+.configuracoes-page .config-sla-grid > label > div:first-child > span:last-child {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+.configuracoes-page .config-interface-grid > label > span:first-child {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+}
+
+.configuracoes-admin-card span[style*="text-transform: uppercase"] {
+  font-size: 10px !important;
+}
+
+.configuracoes-page .config-notificacoes-grid strong {
+  font-size: 12px !important;
+  line-height: 1.25 !important;
+}
+
+.configuracoes-page .config-notificacoes-grid small {
+  font-size: 11px !important;
+  line-height: 1.3 !important;
+}
+
+.configuracoes-page .configuracoes-sla-card > div:nth-of-type(3) {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+.configuracoes-page .configuracoes-status-chip {
+  font-size: 12px !important;
+}
+
+@media (max-width: 700px) {
+  .configuracoes-page .config-notificacoes-grid strong { font-size: 12px !important; }
+  .configuracoes-page .config-notificacoes-grid small { font-size: 11px !important; }
+  .configuracoes-page .configuracoes-status-chip { font-size: 11px !important; }
+}
 /* ============================================================
-   AJUSTE FINAL — CABEÇALHO DA TELA CONFIGURAÇÕES
-   Somente posicionamento visual do título.
+   FASE 7 — AJUSTE FINAL
+   Alinhamento vertical + indicador "dias úteis" do SLA.
    ============================================================ */
 
+/* Sobe o conteúdo da tela para alinhar com as demais telas.
+   Mantém largura, cards, rodapé e shell inalterados. */
 .configuracoes-page {
-  padding-top: 4px !important;
+  margin-top: -18px !important;
 }
 
-/* Remove o traço azul ao lado do título. */
-.configuracoes-page-header > div:first-child > div {
-  display: none !important;
+/* Impede que "dias úteis" fique sobre o spinner nativo
+   do input type="number". */
+.config-sla-grid > label > div {
+  position: relative !important;
 }
 
-.configuracoes-page-header > div:first-child {
-  gap: 0 !important;
+.config-sla-grid > label > div > span {
+  right: 28px !important;
+  top: 12px !important;
+  z-index: 1 !important;
+  white-space: nowrap !important;
 }
 
-.configuracoes-page-subtitle {
-  margin-left: 0 !important;
+.config-sla-grid > label input[type="number"] {
+  padding-right: 96px !important;
+}
+
+/* Garante que o espaço final do campo continue confortável
+   em navegadores que exibem o spinner com largura maior. */
+@supports selector(input::-webkit-inner-spin-button) {
+  .config-sla-grid > label input[type="number"]::-webkit-inner-spin-button,
+  .config-sla-grid > label input[type="number"]::-webkit-outer-spin-button {
+    margin-left: 4px;
+  }
+}
+/* ============================================================
+   FASE 7 — AJUSTE SLA
+   Inversão visual do sufixo:
+   NÚMERO → "dias úteis" → spinner nativo
+   ============================================================ */
+
+.config-sla-grid > label > div > span {
+  right: 104px !important;
+  top: 12px !important;
+  z-index: 2 !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+
+.config-sla-grid > label input[type="number"] {
+  padding-right: 118px !important;
 }
