@@ -4724,3 +4724,151 @@ body {
   padding-left: 20px !important;
   padding-right: 20px !important;
 }
+
+/* ============================================================
+   FASE 7 — AJUSTE RESPONSIVO PONTUAL
+   PAINEL "DEMANDAS CRÍTICAS"
+   ------------------------------------------------------------
+   Somente reorganiza os cards internos do painel em larguras
+   reduzidas. Desktop permanece inalterado.
+   Nenhuma regra de negócio é alterada.
+   ============================================================ */
+
+@media (max-width: 1000px) {
+
+  /* O painel crítico nunca deixa seu conteúdo escapar
+     horizontalmente. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"],
+  .dashboard-content > .dashboard-panel[style*="border-left"] {
+    overflow: hidden !important;
+  }
+
+  /* Container dos cards críticos. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style],
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 10px 14px 14px !important;
+    gap: 8px !important;
+  }
+
+  /* Card individual:
+     5 colunas no desktop -> 3 colunas em notebook/tablet. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style],
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] {
+    display: grid !important;
+    grid-template-columns:
+      minmax(170px, 1.65fr)
+      minmax(100px, 1fr)
+      minmax(110px, 1fr) !important;
+    gap: 8px 12px !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 11px 12px !important;
+    box-sizing: border-box !important;
+    border-radius: 9px !important;
+  }
+
+  /* Título */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(1),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(1) {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Cliente */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(2),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(2) {
+    min-width: 0 !important;
+  }
+
+  /* Responsável */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(3),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(3) {
+    min-width: 0 !important;
+  }
+
+  /* Prazo */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(4),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(4) {
+    min-width: 0 !important;
+  }
+
+  /* Status */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(5),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(5) {
+    min-width: 0 !important;
+  }
+
+  /* Textos internos */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] small,
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] small {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+  }
+
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] strong,
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] strong {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Status não estoura a célula. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(5) span,
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(5) span {
+    max-width: 100% !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 760px) {
+
+  /* Em telas realmente estreitas, duas colunas ficam mais
+     legíveis do que comprimir cinco campos na mesma linha. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style],
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(92px, .8fr) !important;
+    gap: 8px 10px !important;
+    padding: 10px !important;
+  }
+
+  /* Título ocupa a largura principal. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(1),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(1) {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  /* Status no canto superior direito. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(5),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(5) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  /* Cliente / Responsável / Prazo na segunda e terceira linhas. */
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(2),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(2) {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(3),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(3) {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  .dashboard-content > .dashboard-panel[style*="borderLeft"] > div[style] > div[style] > div:nth-child(4),
+  .dashboard-content > .dashboard-panel[style*="border-left"] > div[style] > div[style] > div:nth-child(4) {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+  }
+}

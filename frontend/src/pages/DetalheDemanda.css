@@ -1152,3 +1152,756 @@ body,
   border-color: #b9c7d6 !important;
   color: #174f86 !important;
 }
+
+/* ============================================================
+   FASE 7 — DETALHE DA DEMANDA
+   REVISÃO VISUAL MODERNA
+   ------------------------------------------------------------
+   Somente apresentação visual.
+   Estrutura, callbacks e regras de negócio preservados.
+   ============================================================ */
+
+/* Página */
+.gd-page-content .detalhe-page {
+  width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 2px 20px 94px !important;
+  background:
+    linear-gradient(180deg, #f8fafc 0, #f8fafc 42%, #f4f7fb 100%) !important;
+  color: #0f172a !important;
+}
+
+/* ============================================================
+   CABEÇALHO — HERO
+   ============================================================ */
+
+.gd-page-content .detalhe-header {
+  position: relative !important;
+  margin: 0 0 16px !important;
+  padding: 20px 22px !important;
+  overflow: hidden !important;
+  border: 1px solid #dbe5f0 !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(135deg, #ffffff 0%, #fbfdff 58%, #f3f8ff 100%) !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .05) !important;
+}
+
+.gd-page-content .detalhe-header::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%) !important;
+}
+
+.gd-page-content .detalhe-codigo {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 23px !important;
+  margin-bottom: 7px !important;
+  padding: 0 8px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 999px !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  letter-spacing: .04em !important;
+}
+
+.gd-page-content .detalhe-header h1 {
+  margin: 0 !important;
+  color: #173f67 !important;
+  font-size: 26px !important;
+  line-height: 1.2 !important;
+  font-weight: 750 !important;
+  letter-spacing: -.45px !important;
+}
+
+.gd-page-content .detalhe-header p {
+  margin: 6px 0 0 !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+}
+
+/* Status mais visual */
+.gd-page-content .status-badge {
+  min-height: 34px !important;
+  padding: 7px 13px !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04) !important;
+}
+
+.gd-page-content .status-nova {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #bfdbfe !important;
+}
+
+.gd-page-content .status-aguardando {
+  background: #f5f3ff !important;
+  color: #6d28d9 !important;
+  border-color: #ddd6fe !important;
+}
+
+.gd-page-content .status-em-atendimento {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #bfdbfe !important;
+}
+
+.gd-page-content .status-com-pendencias {
+  background: #fff7ed !important;
+  color: #c2410c !important;
+  border-color: #fed7aa !important;
+}
+
+.gd-page-content .status-concluida {
+  background: #f0fdf4 !important;
+  color: #15803d !important;
+  border-color: #bbf7d0 !important;
+}
+
+.gd-page-content .status-cancelada {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.gd-page-content .detalhe-card {
+  margin: 0 0 16px !important;
+  border: 1px solid #e0e8f1 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .035) !important;
+}
+
+.gd-page-content .detalhe-card > .card-title {
+  position: relative !important;
+  padding: 15px 18px 14px !important;
+  border-bottom: 1px solid #e8eef5 !important;
+  color: #173f67 !important;
+  font-size: 17px !important;
+  line-height: 1.3 !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .detalhe-card > .card-title::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 4px !important;
+  height: 17px !important;
+  margin-right: 9px !important;
+  vertical-align: -3px !important;
+  border-radius: 999px !important;
+  background: #2563eb !important;
+}
+
+/* ============================================================
+   DADOS DA DEMANDA — CARDS INTERNOS
+   ============================================================ */
+
+.gd-page-content .dados-grid {
+  gap: 12px !important;
+  padding: 16px 18px !important;
+}
+
+.gd-page-content .dados-grid > div {
+  min-width: 0 !important;
+  padding: 12px 13px !important;
+  border: 1px solid #e4ebf3 !important;
+  border-radius: 10px !important;
+  background: #fbfdff !important;
+  transition: border-color .16s ease, box-shadow .16s ease,
+    transform .16s ease !important;
+}
+
+.gd-page-content .dados-grid > div:hover {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, .06) !important;
+  transform: translateY(-1px) !important;
+}
+
+.gd-page-content .dados-grid > div > span,
+.gd-page-content .descricao-area > span,
+.gd-page-content .observacao-box > span,
+.gd-page-content .campo-acao label,
+.gd-page-content .cancelamento-label {
+  margin-bottom: 6px !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  letter-spacing: .03em !important;
+}
+
+.gd-page-content .dados-grid strong {
+  color: #0f172a !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  font-weight: 750 !important;
+}
+
+/* Prioridade */
+.gd-page-content .prioridade-alta {
+  color: #dc2626 !important;
+}
+
+.gd-page-content .prioridade-media {
+  color: #d97706 !important;
+}
+
+.gd-page-content .prioridade-baixa {
+  color: #16a34a !important;
+}
+
+/* ============================================================
+   DESCRIÇÃO / OBSERVAÇÕES
+   ============================================================ */
+
+.gd-page-content .descricao-area {
+  margin: 0 18px !important;
+  padding: 16px 0 !important;
+  border-top: 1px solid #e8eef5 !important;
+}
+
+.gd-page-content .descricao-area p {
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid #e5ebf2 !important;
+  border-radius: 10px !important;
+  background: #fafcff !important;
+  color: #334155 !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+.gd-page-content .observacao-box {
+  margin: 0 18px 18px !important;
+  padding: 13px 14px !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 10px !important;
+  background: #f8fbff !important;
+}
+
+.gd-page-content .observacao-box p {
+  margin: 0 !important;
+  color: #334155 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+/* ============================================================
+   CONTROLES DO GESTOR
+   ============================================================ */
+
+.gd-page-content .gestor-controles {
+  margin: 0 18px 18px !important;
+  padding: 16px !important;
+  border: 1px solid #cfe0f5 !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, #f7fbff 0%, #fbfdff 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75) !important;
+}
+
+.gd-page-content .gestor-controles > strong {
+  margin-bottom: 12px !important;
+  color: #173f67 !important;
+  font-size: 14px !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .gestor-controles .dados-grid {
+  padding: 0 !important;
+  gap: 12px !important;
+}
+
+.gd-page-content .campo-acao {
+  gap: 6px !important;
+}
+
+.gd-page-content .campo-acao select,
+.gd-page-content .campo-acao input,
+.gd-page-content .gestor-controles textarea {
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .025) !important;
+}
+
+.gd-page-content .campo-acao select,
+.gd-page-content .campo-acao input {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+.gd-page-content .gestor-controles textarea {
+  min-height: 86px !important;
+  padding: 10px 11px !important;
+}
+
+.gd-page-content .campo-acao select:focus,
+.gd-page-content .campo-acao input:focus,
+.gd-page-content .gestor-controles textarea:focus,
+.gd-page-content .comentarios-content textarea:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10) !important;
+}
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+
+.gd-page-content .detalhe-page button {
+  min-height: 40px !important;
+  border-radius: 8px !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .btn-principal,
+.gd-page-content .btn-anexar {
+  height: 40px !important;
+  padding: 0 15px !important;
+  border: 1px solid #2563eb !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .14) !important;
+}
+
+.gd-page-content .btn-principal:hover:not(:disabled),
+.gd-page-content .btn-anexar:hover:not(:disabled) {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, .18) !important;
+}
+
+.gd-page-content .btn-secundario,
+.gd-page-content .btn-baixar {
+  height: 40px !important;
+  padding: 0 15px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+}
+
+.gd-page-content .btn-secundario:hover,
+.gd-page-content .btn-baixar:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+.gd-page-content .btn-danger-outline {
+  height: 40px !important;
+}
+
+/* ============================================================
+   RETOMAR / CANCELAMENTO
+   ============================================================ */
+
+.gd-page-content .detalhe-page .retomar-acoes {
+  margin-top: 16px !important;
+  padding: 14px 18px 16px !important;
+  border-top: 1px solid #e8eef5 !important;
+}
+
+.gd-page-content .detalhe-page .btn-retomar {
+  min-width: 148px !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, .14) !important;
+}
+
+.gd-page-content .detalhe-card-cancelamento {
+  margin-top: 16px !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 14px !important;
+  box-shadow: 0 3px 12px rgba(220, 38, 38, .035) !important;
+}
+
+.gd-page-content .cancelamento-header {
+  padding: 16px 18px !important;
+  background: linear-gradient(180deg, #fff7f7 0%, #fffafa 100%) !important;
+}
+
+.gd-page-content .cancelamento-titulo {
+  font-size: 14px !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .cancelamento-descricao {
+  font-size: 12px !important;
+}
+
+.gd-page-content .cancelamento-formulario {
+  padding: 16px 18px !important;
+  border-top: 1px solid #fee2e2 !important;
+}
+
+/* ============================================================
+   COMENTÁRIOS / ANEXOS / HISTÓRICO
+   ============================================================ */
+
+.gd-page-content .comentarios-content,
+.gd-page-content .arquivos-content,
+.gd-page-content .historico-content {
+  padding: 18px !important;
+}
+
+.gd-page-content .comentarios-content textarea {
+  min-height: 100px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+}
+
+.gd-page-content .comentario-item {
+  padding: 15px 0 !important;
+  border-top: 1px solid #e8eef5 !important;
+}
+
+.gd-page-content .comentario-topo strong {
+  font-size: 13px !important;
+}
+
+.gd-page-content .comentario-topo span,
+.gd-page-content .arquivo-info span {
+  font-size: 11px !important;
+}
+
+.gd-page-content .comentario-texto {
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+}
+
+.gd-page-content .arquivo-item {
+  padding: 11px !important;
+  border: 1px solid #e4ebf3 !important;
+  border-radius: 10px !important;
+  background: #fbfdff !important;
+  transition: border-color .16s ease, box-shadow .16s ease !important;
+}
+
+.gd-page-content .arquivo-item:hover {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, .05) !important;
+}
+
+.gd-page-content .historico-item {
+  padding-bottom: 20px !important;
+}
+
+.gd-page-content .historico-detalhes strong {
+  font-size: 13px !important;
+}
+
+.gd-page-content .historico-detalhes p {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.gd-page-content .historico-comentario {
+  border-left-width: 3px !important;
+  border-radius: 7px !important;
+  background: #f5f9ff !important;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .gd-page-content .dados-grid {
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .gd-page-content .detalhe-page {
+    padding: 18px 12px 88px !important;
+  }
+
+  .gd-page-content .detalhe-header {
+    padding: 17px 16px !important;
+  }
+
+  .gd-page-content .detalhe-header h1 {
+    font-size: 22px !important;
+  }
+
+  .gd-page-content .detalhe-card > .card-title {
+    font-size: 16px !important;
+  }
+
+  .gd-page-content .dados-grid > div {
+    padding: 11px 12px !important;
+  }
+
+  .gd-page-content .gestor-controles {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+
+  .gd-page-content .descricao-area {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+
+  .gd-page-content .observacao-box {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+}
+
+/* ============================================================
+   FASE 7 — ÁREA INFERIOR
+   Comentários, Anexos e Histórico.
+   ------------------------------------------------------------
+   IMPORTANTE: estes seletores são restritos aos blocos
+   inferiores. O cabeçalho, Dados da Demanda e Controles do
+   Gestor não são redefinidos aqui.
+   ============================================================ */
+
+/* ANEXOS */
+.gd-page-content .arquivos-content {
+  padding: 18px !important;
+}
+
+.gd-page-content .arquivos-instrucoes {
+  margin-bottom: 14px !important;
+  padding: 11px 12px !important;
+  border: 1px solid #e4ebf3 !important;
+  border-radius: 10px !important;
+  background: #fbfdff !important;
+}
+
+.gd-page-content .arquivos-instrucoes strong {
+  color: #173f67 !important;
+  font-size: 13px !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .arquivos-instrucoes span {
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+.gd-page-content .arquivos-vazio {
+  min-height: 150px !important;
+  padding: 28px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px dashed #bfd0e2 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(180deg, #fbfdff 0%, #f7faff 100%) !important;
+}
+
+.gd-page-content .arquivos-vazio .clip-icon {
+  width: 46px !important;
+  height: 46px !important;
+  margin: 0 0 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 12px !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 22px !important;
+  box-shadow: inset 0 0 0 1px #dbeafe !important;
+}
+
+.gd-page-content .arquivos-vazio strong {
+  margin-bottom: 5px !important;
+  color: #173f67 !important;
+  font-size: 13px !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .arquivos-vazio span {
+  max-width: 520px !important;
+  text-align: center !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
+.gd-page-content .arquivo-item {
+  padding: 12px !important;
+  border: 1px solid #e0e8f1 !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 7px rgba(15, 23, 42, .025) !important;
+}
+
+.gd-page-content .arquivo-item:hover {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .07) !important;
+}
+
+.gd-page-content .arquivo-icone {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 17px !important;
+}
+
+.gd-page-content .arquivo-info strong {
+  color: #0f172a !important;
+  font-size: 13px !important;
+}
+
+.gd-page-content .arquivo-info span {
+  color: #64748b !important;
+  font-size: 11px !important;
+}
+
+/* HISTÓRICO — somente dentro do bloco de histórico */
+.gd-page-content .historico-content {
+  padding: 20px 22px !important;
+}
+
+.gd-page-content .historico-item {
+  position: relative !important;
+  display: flex !important;
+  gap: 14px !important;
+  padding: 0 0 14px 30px !important;
+}
+
+.gd-page-content .historico-item:not(:last-child)::before {
+  left: 6px !important;
+  top: 15px !important;
+  bottom: -2px !important;
+  width: 2px !important;
+  background: linear-gradient(
+    180deg,
+    #bfdbfe 0%,
+    #dbeafe 72%,
+    #e2e8f0 100%
+  ) !important;
+}
+
+.gd-page-content .historico-bolinha {
+  left: 1px !important;
+  top: 5px !important;
+  width: 12px !important;
+  height: 12px !important;
+  box-sizing: border-box !important;
+  background: #2563eb !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: 0 0 0 2px #93c5fd !important;
+  z-index: 2 !important;
+}
+
+.gd-page-content .historico-item > div:last-child,
+.gd-page-content .historico-detalhes {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding: 11px 13px !important;
+  border: 1px solid #e3ebf4 !important;
+  border-radius: 10px !important;
+  background: #fbfdff !important;
+  box-shadow: 0 2px 7px rgba(15, 23, 42, .025) !important;
+}
+
+.gd-page-content .historico-item > div:last-child:hover,
+.gd-page-content .historico-detalhes:hover {
+  border-color: #bfdbfe !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .055) !important;
+}
+
+.gd-page-content .historico-data {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 22px !important;
+  margin-bottom: 6px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+}
+
+.gd-page-content .historico-detalhes > strong,
+.gd-page-content .historico-item > div:last-child > strong {
+  display: block !important;
+  margin-bottom: 4px !important;
+  color: #173f67 !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+  font-weight: 750 !important;
+}
+
+.gd-page-content .historico-detalhes > p,
+.gd-page-content .historico-item > div:last-child > p {
+  margin: 0 !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.gd-page-content .historico-comentario {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-top: 8px !important;
+  padding: 5px 9px !important;
+  border: 1px solid #dbeafe !important;
+  border-left: 3px solid #2563eb !important;
+  border-radius: 7px !important;
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+}
+
+/* Responsividade somente dos blocos inferiores */
+@media (max-width: 700px) {
+  .gd-page-content .historico-content,
+  .gd-page-content .arquivos-content {
+    padding: 14px !important;
+  }
+
+  .gd-page-content .historico-item {
+    gap: 11px !important;
+    padding-left: 27px !important;
+  }
+
+  .gd-page-content .historico-item > div:last-child,
+  .gd-page-content .historico-detalhes {
+    padding: 10px 11px !important;
+  }
+
+  .gd-page-content .arquivos-vazio {
+    min-height: 135px !important;
+    padding: 22px 14px !important;
+  }
+}

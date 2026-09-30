@@ -2628,66 +2628,114 @@ export function DetalheDemandaPage({
             ) : (
 
               historicoLocal.map(
-                (item) => (
+                (item) => {
 
-                  <div
-                    className="historico-item"
-                    key={item.id}
-                  >
+                  const comentarioRelacionado =
+                    item.tipo === 'comentario' &&
+                    item.referenciaId
+                      ? comentariosLocais.find(
+                          (comentarioItem) =>
+                            comentarioItem.id ===
+                            item.referenciaId
+                        )
+                      : undefined
 
-                    <div className="historico-bolinha" />
+                  return (
 
-                    <div className="historico-detalhes">
+                    <div
+                      className="historico-item"
+                      key={item.id}
+                    >
 
-                      <div className="historico-data">
+                      <div className="historico-bolinha" />
 
-                        {formatarDataHora(
-                          item.data
+                      <div className="historico-detalhes">
+
+                        <div className="historico-data">
+
+                          {formatarDataHora(
+                            item.data
+                          )}
+
+                        </div>
+
+                        <strong>
+                          {item.titulo}
+                        </strong>
+
+                        {comentarioRelacionado ? (
+
+                          <div className="historico-comentario-texto">
+
+                            <span
+                              className="historico-comentario-label"
+                              style={{
+                                display: 'block',
+                                marginBottom: '4px',
+                                color: '#2563eb',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                              }}
+                            >
+                              Comentário
+                            </span>
+
+                            <div
+                              className="historico-comentario-conteudo"
+                              style={{
+                                color: '#334155',
+                                fontSize: '13px',
+                                lineHeight: 1.55,
+                                whiteSpace: 'pre-wrap',
+                              }}
+                            >
+                              {comentarioRelacionado.texto}
+                            </div>
+
+                          </div>
+
+                        ) : (
+
+                          <p>
+                            {item.descricao}
+                          </p>
+
+                        )}
+
+                        <div className="historico-comentario">
+
+                          {item.usuario}
+
+                        </div>
+
+                        {item.motivo && (
+
+                          <div
+                            style={{
+                              marginTop:
+                                '6px',
+
+                              fontSize:
+                                '12px',
+
+                              color:
+                                '#526579',
+                            }}
+                          >
+                            <strong>
+                              Motivo:
+                            </strong>{' '}
+                            {item.motivo}
+                          </div>
+
                         )}
 
                       </div>
 
-                      <strong>
-                        {item.titulo}
-                      </strong>
-
-                      <p>
-                        {item.descricao}
-                      </p>
-
-                      <div className="historico-comentario">
-
-                        {item.usuario}
-
-                      </div>
-
-                      {item.motivo && (
-
-                        <div
-                          style={{
-                            marginTop:
-                              '6px',
-
-                            fontSize:
-                              '12px',
-
-                            color:
-                              '#526579',
-                          }}
-                        >
-                          <strong>
-                            Motivo:
-                          </strong>{' '}
-                          {item.motivo}
-                        </div>
-
-                      )}
-
                     </div>
 
-                  </div>
-
-                )
+                  )
+                }
               )
 
             )}

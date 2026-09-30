@@ -6641,3 +6641,434 @@ body {
 .gd-page-content .filtros {
   padding-top: 8px !important;
 }
+
+/* ============================================================
+   FASE 7 — RESPONSIVIDADE FINAL
+   TODAS AS DEMANDAS
+   ------------------------------------------------------------
+   Base: arquivo atual enviado pelo usuário.
+   Desktop NÃO é alterado.
+   Em larguras reduzidas, a Lista passa para um cartão
+   responsivo, mantendo TODAS as informações:
+   Cliente, Responsável, Prioridade, Status e Prazo.
+   Não cria rolagem horizontal.
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+  /* Conteúdo */
+  .gd-page-content .pagina {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  /* Filtros */
+  .gd-page-content .filtros-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* Barra de ações */
+  .gd-page-content .acoes {
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .gd-page-content .acoes-esquerda {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+  }
+
+  .gd-page-content .visualizacao {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Indicadores */
+  .gd-page-content .resumo-operacional {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  .gd-page-content .resumo-item {
+    min-width: 0 !important;
+  }
+
+  /* ==========================================================
+     LISTA RESPONSIVA
+     Todas as informações permanecem visíveis.
+     ========================================================== */
+
+  .gd-page-content .lista-cabecalho {
+    display: none !important;
+  }
+
+  .gd-page-content .lista {
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card {
+    display: grid !important;
+    grid-template-columns:
+      24px
+      minmax(0, 2fr)
+      minmax(115px, 1fr)
+      82px !important;
+    grid-template-rows: auto auto auto !important;
+    gap: 9px 10px !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 12px !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  /* Checkbox */
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-selecao {
+    grid-column: 1 !important;
+    grid-row: 1 / 4 !important;
+    align-self: start !important;
+    padding-top: 3px !important;
+  }
+
+  /* Título */
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-titulo {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .numero-demanda {
+    display: block !important;
+    margin-bottom: 2px !important;
+    font-size: 9px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna-titulo h3 {
+    margin: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Status */
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(6) {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .status {
+    display: inline-flex !important;
+    max-width: 100% !important;
+    font-size: 9px !important;
+    white-space: normal !important;
+    text-align: center !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .badge-atrasada {
+    display: block !important;
+    margin-top: 4px !important;
+    font-size: 8px !important;
+  }
+
+  /* Ações */
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-acoes {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna-acoes button {
+    width: 100% !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 0 7px !important;
+    border-radius: 7px !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    white-space: normal !important;
+  }
+
+  /* Informações inferiores — todas continuam presentes. */
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(3) {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    min-width: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(4) {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+    min-width: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(5) {
+    grid-column: 4 !important;
+    grid-row: 2 !important;
+    min-width: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(7) {
+    grid-column: 2 / 4 !important;
+    grid-row: 3 !important;
+    min-width: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna {
+    overflow: hidden !important;
+    padding: 0 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .campo-label {
+    display: block !important;
+    margin-bottom: 2px !important;
+    font-size: 9px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna strong {
+    display: block !important;
+    max-width: 100% !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .prioridade {
+    font-size: 9px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Ferramentas */
+  .gd-page-content .ferramentas-resultados {
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 800px) {
+
+  .gd-page-content .filtros-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .gd-page-content .resumo-operacional {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .gd-page-content .acoes {
+    align-items: stretch !important;
+  }
+
+  .gd-page-content .acoes-esquerda {
+    width: 100% !important;
+  }
+
+  .gd-page-content .visualizacao {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .gd-page-content .visualizacao button {
+    flex: 1 1 50% !important;
+  }
+
+  /* Card da demanda em 2 colunas de informação. */
+  .gd-page-content .lista > .demanda-card {
+    grid-template-columns:
+      24px
+      minmax(0, 1fr)
+      minmax(118px, 1fr)
+      78px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna-titulo h3 {
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .gd-page-content .pagina {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .gd-page-content .cabecalho {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .gd-page-content .cabecalho .btn-principal {
+    width: 100% !important;
+  }
+
+  .gd-page-content .filtros-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .resumo-operacional {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gd-page-content .acoes {
+    flex-direction: column !important;
+  }
+
+  .gd-page-content .acoes-esquerda {
+    width: 100% !important;
+  }
+
+  .gd-page-content .visualizacao {
+    width: 100% !important;
+  }
+
+  /* No celular, informações continuam visíveis,
+     apenas reorganizadas em duas linhas. */
+  .gd-page-content .lista > .demanda-card {
+    grid-template-columns:
+      22px
+      minmax(0, 1fr)
+      88px !important;
+    grid-template-rows: auto auto auto auto !important;
+    gap: 8px !important;
+    padding: 11px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-selecao {
+    grid-column: 1 !important;
+    grid-row: 1 / 5 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-titulo {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(6) {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-acoes {
+    grid-column: 3 !important;
+    grid-row: 4 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(3) {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(4) {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(5) {
+    grid-column: 2 !important;
+    grid-row: 3 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna:nth-child(7) {
+    grid-column: 3 !important;
+    grid-row: 3 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna-acoes button {
+    min-height: 32px !important;
+    height: 32px !important;
+    font-size: 9px !important;
+  }
+
+  .gd-page-content .ferramentas-resultados {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .gd-page-content .selecionar-todos {
+    width: 100% !important;
+  }
+
+  .gd-page-content .btn-exportar {
+    align-self: flex-start !important;
+  }
+}
+
+/* ============================================================
+   FASE 7 — AJUSTE VISUAL DOS CARDS RESPONSIVOS
+   ------------------------------------------------------------
+   Somente reduz altura/espaços dos cards em larguras menores.
+   Estrutura e informações permanecem exatamente as mesmas.
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .gd-page-content .lista {
+    gap: 7px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card {
+    align-content: start !important;
+    gap: 6px 8px !important;
+    padding: 9px 10px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card > .demanda-coluna-selecao {
+    padding-top: 1px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .numero-demanda {
+    margin-bottom: 1px !important;
+    line-height: 1.15 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna-titulo h3 {
+    line-height: 1.2 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .campo-label {
+    margin-bottom: 1px !important;
+    line-height: 1.1 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna strong {
+    line-height: 1.15 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .status {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    line-height: 1.05 !important;
+  }
+
+  .gd-page-content .lista > .demanda-card .demanda-coluna-acoes button {
+    min-height: 30px !important;
+    height: 30px !important;
+    line-height: 1.05 !important;
+  }
+}
+
+/* Um pouco mais compacto em tablet, sem retirar nenhuma
+   informação do card. */
+@media (max-width: 800px) {
+  .gd-page-content .lista {
+    padding: 7px !important;
+    gap: 7px !important;
+  }
+
+  .gd-page-content .lista > .demanda-card {
+    gap: 5px 7px !important;
+    padding: 9px !important;
+  }
+}
