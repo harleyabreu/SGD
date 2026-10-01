@@ -1206,11 +1206,8 @@ export default function TodasDemandas({
 
                 <input
                   type="text"
-                  placeholder="
-                    Pesquisar Por Título,
-                    Descrição, Código,
-                    Cliente Ou Responsável...
-                  "
+                  placeholder="Pesquisar Por Título, Descrição, Código, Cliente Ou Responsável..."
+                  
                   value={pesquisa}
                   onChange={(e) =>
                     setPesquisa(

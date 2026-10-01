@@ -268,6 +268,8 @@ const ESTILOS = `
     width: calc(100% - var(--gd-shell-sidebar-width));
     min-height: 100vh;
     margin-left: var(--gd-shell-sidebar-width);
+    display: flex;
+    flex-direction: column;
     background: var(--gd-background);
   }
 
@@ -734,25 +736,26 @@ const ESTILOS = `
 
   .gd-page-content {
     width: 100%;
+    flex: 1 1 auto;
     min-height: calc(100vh - var(--gd-shell-header-height));
     padding: 24px 24px 48px;
   }
 
   /* ============================================================
-     RODAPÉ FIXO DO SHELL
-     O rodapé pertence ao Menu Principal e acompanha o eixo
-     estrutural da área principal, assim como o cabeçalho.
+     RODAPÉ DO SHELL
+     O rodapé faz parte do fluxo da área principal. Assim, ele
+     permanece no final das telas curtas e nunca cobre conteúdo
+     nas telas longas.
      ============================================================ */
 
   .gd-shell-footer {
-    position: fixed;
-    left: var(--gd-shell-sidebar-width);
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
+    position: static;
+    z-index: auto;
 
+    flex: 0 0 auto;
+    width: 100%;
     min-height: 68px;
-    width: auto;
+    margin-top: 0;
     padding: 12px 28px;
 
     display: flex;
@@ -764,6 +767,10 @@ const ESTILOS = `
     background: var(--gd-surface);
     border-top: 1px solid var(--gd-border);
     box-shadow: 0 -2px 8px rgba(15, 23, 42, 0.05);
+  }
+
+  .gd-shell-footer > * {
+    min-width: 0;
   }
 
   .gd-shell-footer button {
@@ -928,8 +935,6 @@ const ESTILOS = `
     .gd-menu-shell.menu-fechado .gd-menu-overlay { display: none; }
 
     .gd-main { width: 100%; margin-left: 0; }
-    .gd-shell-footer { left: 0; }
-
     .gd-topbar { padding: 0 14px; }
     .gd-system-subtitle { display: none; }
     .gd-page-content { padding-left: 14px; padding-right: 14px; }
@@ -2170,13 +2175,13 @@ export default function MenuPrincipal({
         <main className="gd-page-content">
           {children}
         </main>
-      </div>
 
-      {rodapeAcoes && (
-        <div className="gd-shell-footer">
-          {rodapeAcoes}
-        </div>
-      )}
+        {rodapeAcoes && (
+          <div className="gd-shell-footer">
+            {rodapeAcoes}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

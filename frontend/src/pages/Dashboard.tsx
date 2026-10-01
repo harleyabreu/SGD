@@ -26,8 +26,9 @@
 // ============================================================
 
 import { useMemo, useState } from 'react'
-import type { Usuario } from '../types'
+import { PERFIS_RESPONSAVEIS, type Usuario } from '../types'
 import MenuPrincipal from '../components/MenuPrincipal'
+import { carregarUsuarios } from '../services/storage'
 import './Dashboard.css'
 import {
   calcularTempoAtendimento,
@@ -581,6 +582,140 @@ function Dashboard({
   const demandas = carregarDemandas()
 
   // ==========================================================
+  // FILTROS DO DASHBOARD
+  // ==========================================================
+  const [filtroPeriodo, setFiltroPeriodo] = useState('Todos')
+  const [filtroCliente, setFiltroCliente] = useState('Todos')
+  const [filtroResponsavel, setFiltroResponsavel] = useState('Todos')
+  const [filtroPrioridade, setFiltroPrioridade] = useState('Todas')
+  const [filtroStatus, setFiltroStatus] = useState('Todos')
+  const [filtroSituacao, setFiltroSituacao] = useState('Todas')
+
+  const prioridades = [
+    'Crítica',
+    'Alta',
+    'Média',
+    'Baixa',
+  ]
+
+  const statusOrdemBase = [
+    'Nova',
+    'Aguardando',
+    'Em Atendimento',
+    'Com Pendências',
+    'Concluída',
+    'Cancelada',
+  ]
+
+  const statusOrdem = statusOrdemBase
+
+  const responsaveisCadastrados = carregarUsuarios()
+    .filter((usuario) => PERFIS_RESPONSAVEIS.includes(usuario.perfil))
+    .map((usuario) => usuario.nome)
+    .filter(Boolean)
+
+  const clientesDisponiveis = Array.from(
+    new Set(
+      demandas
+        .map((demanda) => String(demanda.cliente || '').trim())
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b))
+
+  const responsaveisDisponiveis = Array.from(
+    new Set([
+      ...responsaveisCadastrados,
+      ...demandas
+        .map((demanda) => String(demanda.responsavel || '').trim())
+        .filter(Boolean),
+    ])
+  ).sort((a, b) => a.localeCompare(b))
+
+  function dataAberturaDaDemanda(demanda: Demanda): Date | null {
+    if (!demanda.dataAbertura) {
+      return null
+    }
+
+    const brasileira = converterData(demanda.dataAbertura)
+
+    if (brasileira) {
+      return brasileira
+    }
+
+    const iso = new Date(demanda.dataAbertura)
+
+    return Number.isNaN(iso.getTime()) ? null : iso
+  }
+
+  function pertenceAoPeriodo(
+    demanda: Demanda,
+    periodo: string
+  ): boolean {
+    if (periodo === 'Todos') {
+      return true
+    }
+
+    const dataAbertura = dataAberturaDaDemanda(demanda)
+
+    if (!dataAbertura) {
+      return false
+    }
+
+    dataAbertura.setHours(0, 0, 0, 0)
+
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+
+    if (periodo === 'Hoje') {
+      return dataAbertura.getTime() === hoje.getTime()
+    }
+
+    if (periodo === 'Últimos 7 Dias') {
+      const limite = new Date(hoje)
+      limite.setDate(limite.getDate() - 6)
+      return dataAbertura >= limite && dataAbertura <= hoje
+    }
+
+    if (periodo === 'Últimos 30 Dias') {
+      const limite = new Date(hoje)
+      limite.setDate(limite.getDate() - 29)
+      return dataAbertura >= limite && dataAbertura <= hoje
+    }
+
+    if (periodo === 'Este Mês') {
+      return (
+        dataAbertura.getMonth() === hoje.getMonth() &&
+        dataAbertura.getFullYear() === hoje.getFullYear()
+      )
+    }
+
+    return true
+  }
+
+  const demandasFiltradas = demandas.filter((demanda) => {
+    const situacaoAtendida =
+      filtroSituacao === 'Todas' ||
+      (filtroSituacao === 'Abertas' &&
+        demanda.status !== 'Concluída' &&
+        demanda.status !== 'Cancelada') ||
+      (filtroSituacao === 'Atrasadas' &&
+        estaAtrasada(demanda)) ||
+      (filtroSituacao === 'Concluídas' &&
+        demanda.status === 'Concluída')
+
+    return (
+      pertenceAoPeriodo(demanda, filtroPeriodo) &&
+      (filtroCliente === 'Todos' || demanda.cliente === filtroCliente) &&
+      (filtroResponsavel === 'Todos' ||
+        demanda.responsavel === filtroResponsavel) &&
+      (filtroPrioridade === 'Todas' ||
+        demanda.prioridade === filtroPrioridade) &&
+      (filtroStatus === 'Todos' || demanda.status === filtroStatus) &&
+      situacaoAtendida
+    )
+  })
+
+  // ==========================================================
   // V 1.4 — CENTRAL DE NOTIFICAÇÕES
   // ==========================================================
 
@@ -674,50 +809,50 @@ function Dashboard({
   // INDICADORES PRINCIPAIS
   // ==========================================================
 
-  const totalDemandas = demandas.length
+  const totalDemandas = demandasFiltradas.length
 
-  const demandasAbertas = demandas.filter(
+  const demandasAbertas = demandasFiltradas.filter(
     (demanda) =>
       demanda.status !== 'Concluída' &&
       demanda.status !== 'Cancelada'
   ).length
 
-  const demandasAtrasadas = demandas.filter(
+  const demandasAtrasadas = demandasFiltradas.filter(
     (demanda) => estaAtrasada(demanda)
   ).length
 
-  const emAtendimento = demandas.filter(
+  const emAtendimento = demandasFiltradas.filter(
     (demanda) =>
       demanda.status === 'Em Atendimento'
   ).length
 
-  const comPendencias = demandas.filter(
+  const comPendencias = demandasFiltradas.filter(
     (demanda) =>
       demanda.status === 'Com Pendências'
   ).length
 
-  const concluidas = demandas.filter(
+  const concluidas = demandasFiltradas.filter(
     (demanda) =>
       demanda.status === 'Concluída'
   ).length
 
-  const aguardando = demandas.filter(
+  const aguardando = demandasFiltradas.filter(
     (demanda) =>
       demanda.status === 'Aguardando'
   ).length
 
-  const novas = demandas.filter(
+  const novas = demandasFiltradas.filter(
     (demanda) =>
       demanda.status === 'Nova'
   ).length
 
-  const canceladas = demandas.filter(
+  const canceladas = demandasFiltradas.filter(
     (demanda) =>
       demanda.status === 'Cancelada'
   ).length
 
   const proximasDoVencimento =
-    demandas.filter(
+    demandasFiltradas.filter(
       (demanda) =>
         estaProximaDoVencimento(demanda)
     ).length
@@ -758,21 +893,21 @@ function Dashboard({
   // ==========================================================
 
   const porCliente = contarPorCampo(
-    demandas,
+    demandasFiltradas,
     'cliente'
   )
 
   const porResponsavel = contarPorCampo(
-    demandas,
+    demandasFiltradas,
     'responsavel'
   )
 
   const porPrioridade = contarPorCampo(
-    demandas,
+    demandasFiltradas,
     'prioridade'
   )
 
-  const porStatus = contarPorCampo(demandas, 'status')
+  const porStatus = contarPorCampo(demandasFiltradas, 'status')
 
   // ==========================================================
   // ORDENAÇÃO
@@ -790,30 +925,11 @@ function Dashboard({
     (a, b) => b[1] - a[1]
   )
 
-  const prioridades = [
-    'Crítica',
-    'Alta',
-    'Média',
-    'Baixa',
-  ]
-
-  const statusOrdemBase = [
-    'Nova',
-    'Aguardando',
-    'Em Atendimento',
-    'Com Pendências',
-    'Concluída',
-    'Cancelada',
-  ]
-
-  // Somente estes status fazem parte da interface oficial.
-  const statusOrdem = statusOrdemBase
-
   // ==========================================================
   // DEMANDAS QUE EXIGEM ATENÇÃO
   // ==========================================================
 
-  const demandasAtencao = demandas
+  const demandasAtencao = demandasFiltradas
     .filter(
       (demanda) =>
         estaAtrasada(demanda) ||
@@ -843,7 +959,7 @@ function Dashboard({
   // TMA E PRODUTIVIDADE DOS ANALISTAS
   // ==========================================================
 
-  const demandasConcluidas = demandas.filter(
+  const demandasConcluidas = demandasFiltradas.filter(
     (demanda) => demanda.status === 'Concluída'
   )
 
@@ -1114,11 +1230,11 @@ function Dashboard({
       }
       rodapeAcoes={
         <>
-          <div>
-            <strong style={{ color: '#0f172a', fontSize: 12 }}>Gestão De Demandas De TI</strong>
-            <span style={{ marginLeft: 8, color: '#64748b', fontSize: 11 }}>Dashboard Do Gestor</span>
+          <div className="dashboard-footer-brand">
+            <strong>Gestão De Demandas De TI</strong>
+            <span>Dashboard Do Gestor</span>
           </div>
-          <div style={{ color: '#64748b', fontSize: 11 }}>PRODEPA</div>
+          <div className="dashboard-footer-org">PRODEPA</div>
         </>
       }
     >
@@ -1132,26 +1248,11 @@ function Dashboard({
 
           <div>
 
-            <h2
-              style={{
-                margin: 0,
-                fontSize: 29,
-                lineHeight: 1.2,
-                fontWeight: 700,
-                color: '#173b68',
-              }}
-            >
+            <h2>
               Visão Geral
             </h2>
 
-            <p
-              style={{
-                margin: '0',
-                color: '#718096',
-                fontSize: 15,
-                lineHeight: 1.3,
-              }}
-            >
+            <p>
               Acompanhe O Andamento Das Demandas De TI.
             </p>
 
@@ -1196,7 +1297,7 @@ function Dashboard({
                 Período
               </label>
 
-              <select defaultValue="Todos">
+              <select value={filtroPeriodo} onChange={(event) => setFiltroPeriodo(event.target.value)}>
 
                 <option value="Todos">
                   Todos
@@ -1228,14 +1329,14 @@ function Dashboard({
                 Cliente
               </label>
 
-              <select defaultValue="Todos">
+              <select value={filtroCliente} onChange={(event) => setFiltroCliente(event.target.value)}>
 
                 <option value="Todos">
                   Todos Os Clientes
                 </option>
 
-                {clientes.map(
-                  ([cliente]) => (
+                {clientesDisponiveis.map(
+                  (cliente) => (
                     <option
                       key={cliente}
                       value={cliente}
@@ -1255,14 +1356,14 @@ function Dashboard({
                 Responsável
               </label>
 
-              <select defaultValue="Todos">
+              <select value={filtroResponsavel} onChange={(event) => setFiltroResponsavel(event.target.value)}>
 
                 <option value="Todos">
                   Todos Os Responsáveis
                 </option>
 
-                {responsaveis.map(
-                  ([responsavel]) => (
+                {responsaveisDisponiveis.map(
+                  (responsavel) => (
                     <option
                       key={responsavel}
                       value={responsavel}
@@ -1282,7 +1383,7 @@ function Dashboard({
                 Prioridade
               </label>
 
-              <select defaultValue="Todas">
+              <select value={filtroPrioridade} onChange={(event) => setFiltroPrioridade(event.target.value)}>
 
                 <option value="Todas">
                   Todas
@@ -1309,7 +1410,7 @@ function Dashboard({
                 Status
               </label>
 
-              <select defaultValue="Todos">
+              <select value={filtroStatus} onChange={(event) => setFiltroStatus(event.target.value)}>
 
                 <option value="Todos">
                   Todos
@@ -1336,7 +1437,7 @@ function Dashboard({
                 Situação
               </label>
 
-              <select defaultValue="Todas">
+              <select value={filtroSituacao} onChange={(event) => setFiltroSituacao(event.target.value)}>
 
                 <option value="Todas">
                   Todas
@@ -1642,21 +1743,14 @@ function Dashboard({
         </section>
 
         {/* ====================================================
-            NOVO QUADRO — DEMANDAS URGENTES
+            NOVO QUADRO — DEMANDAS CRÍTICAS
         ==================================================== */}
 
-        <section
-          className="dashboard-panel"
-          style={{
-            marginBottom: '24px',
-            borderLeft: '4px solid #dc2626',
-          }}
-        >
+        <section className="dashboard-panel critical-demands-panel">
 
           <div className="panel-header">
 
             <div>
-
               <h3>
                 🚨 Demandas Críticas
               </h3>
@@ -1665,22 +1759,17 @@ function Dashboard({
                 Demandas Com Prioridade Máxima Que Exigem
                 Acompanhamento Do Gestor.
               </small>
-
             </div>
 
-            <span
-              style={{
-                fontWeight: 700,
-                color:
-                  criticas > 0
-                    ? '#dc2626'
-                    : '#16a34a',
-              }}
-            >
+            <span className={
+              `critical-demands-counter ${
+                criticas > 0 ? 'has-critical' : 'no-critical'
+              }`
+            }>
               {pluralizar(
                 criticas,
-                'demanda crítica',
-                'demandas criticas'
+                'Demanda Crítica',
+                'Demandas Críticas'
               )}
             </span>
 
@@ -1689,263 +1778,104 @@ function Dashboard({
           {demandasCriticas.length === 0 ? (
 
             <div className="attention-empty">
-
-              <span>
-                ✓
-              </span>
+              <span>✓</span>
 
               <div>
-
                 <strong>
-                  Nenhuma demanda crítica.
+                  Nenhuma Demanda Crítica.
                 </strong>
 
                 <small>
-                  Não existem demandas com prioridade
-                  máxima no momento.
+                  Não Existem Demandas Com Prioridade
+                  Máxima No Momento.
                 </small>
-
               </div>
-
             </div>
 
           ) : (
 
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                paddingTop: '12px',
-              }}
-            >
+            <div className="critical-demands-list">
 
               {demandasCriticas
                 .slice(0, 8)
                 .map((demanda) => {
 
-                  const atrasada =
-                    estaAtrasada(demanda)
+                  const atrasada = estaAtrasada(demanda)
 
                   return (
-
                     <div
                       key={demanda.id}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns:
-                          'minmax(220px, 2fr) 1fr 1fr 120px 130px',
-                        gap: '16px',
-                        alignItems: 'center',
-                        padding: '14px 16px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        background:
-                          atrasada
-                            ? '#fff5f5'
-                            : '#fff',
-                      }}
+                      className={
+                        `critical-demand-card ${
+                          atrasada ? 'is-overdue' : ''
+                        }`
+                      }
                     >
 
-                      {/* TÍTULO */}
-
-                      <div>
-
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            marginBottom: '4px',
-                          }}
-                        >
-
+                      <div className="critical-demand-title">
+                        <div className="critical-demand-title-line">
                           <strong>
                             {demanda.titulo}
                           </strong>
 
                           {atrasada && (
-                            <span
-                              style={{
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                color: '#dc2626',
-                                background: '#fee2e2',
-                                padding: '3px 7px',
-                                borderRadius: '999px',
-                              }}
-                            >
+                            <span className="critical-overdue-badge">
                               ATRASADA
                             </span>
                           )}
-
                         </div>
 
-                        <small
-                          style={{
-                            color: '#64748b',
-                          }}
-                        >
+                        <small>
                           #{demanda.id}
                         </small>
-
                       </div>
 
-                      {/* CLIENTE */}
-
-                      <div>
-
-                        <small
-                          style={{
-                            display: 'block',
-                            color: '#64748b',
-                            marginBottom: '3px',
-                          }}
-                        >
-                          Cliente
-                        </small>
-
-                        <strong>
-                          {demanda.cliente}
-                        </strong>
-
+                      <div className="critical-demand-field">
+                        <small>Cliente</small>
+                        <strong>{demanda.cliente}</strong>
                       </div>
 
-                      {/* RESPONSÁVEL */}
-
-                      <div>
-
-                        <small
-                          style={{
-                            display: 'block',
-                            color: '#64748b',
-                            marginBottom: '3px',
-                          }}
-                        >
-                          Responsável
-                        </small>
-
-                        <strong>
-                          {demanda.responsavel}
-                        </strong>
-
+                      <div className="critical-demand-field">
+                        <small>Responsável</small>
+                        <strong>{demanda.responsavel}</strong>
                       </div>
 
-                      {/* PRAZO */}
-
-                      <div>
-
-                        <small
-                          style={{
-                            display: 'block',
-                            color: '#64748b',
-                            marginBottom: '3px',
-                          }}
-                        >
-                          Prazo
-                        </small>
-
-                        <strong
-                          style={{
-                            color:
-                              atrasada
-                                ? '#dc2626'
-                                : '#1e293b',
-                          }}
-                        >
+                      <div className="critical-demand-field">
+                        <small>Prazo</small>
+                        <strong className={atrasada ? 'is-overdue-text' : ''}>
                           {formatarPrazoEfetivo(demanda) || '-'}
                         </strong>
-
                       </div>
 
-                      {/* STATUS */}
-
-                      <div>
-
-                        <small
-                          style={{
-                            display: 'block',
-                            color: '#64748b',
-                            marginBottom: '5px',
-                          }}
-                        >
-                          Status
-                        </small>
-
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            padding: '5px 9px',
-                            borderRadius: '999px',
-                            background:
-                              demanda.status ===
-                              'Concluída'
-                                ? '#dcfce7'
-                                : demanda.status ===
-                                  'Com Pendências'
-                                ? '#ffedd5'
-                                : '#dbeafe',
-                            color:
-                              demanda.status ===
-                              'Concluída'
-                                ? '#166534'
-                                : demanda.status ===
-                                  'Com Pendências'
-                                ? '#c2410c'
-                                : '#1d4ed8',
-                          }}
-                        >
+                      <div className="critical-demand-field">
+                        <small>Status</small>
+                        <span className={
+                          `critical-status-badge status-${gerarClasse(demanda.status)}`
+                        }>
                           {demanda.status}
                         </span>
-
                       </div>
 
                     </div>
-
                   )
                 })}
 
               {demandasCriticas.length > 8 && (
 
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingTop: '10px',
-                  }}
-                >
-
-                  <small
-                    style={{
-                      color: '#64748b',
-                    }}
-                  >
-                    Exibindo As Primeiras 8 Demandas
-                    Críticas.
+                <div className="critical-demands-more">
+                  <small>
+                    Exibindo As Primeiras 8 Demandas Críticas.
                   </small>
 
                   {onTodasDemandas && (
-
                     <button
                       type="button"
                       onClick={onTodasDemandas}
                       className="btn-secundario btn-dashboard-link"
-                      style={{
-                        border: 'none',
-                        background: 'transparent',
-                        color: '#1d4ed8',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
                     >
                       Ver Todas As Demandas →
                     </button>
-
                   )}
-
                 </div>
 
               )}
@@ -2520,8 +2450,6 @@ function Dashboard({
                       'Com Pendências'
 
                   } else if (
-                    demanda.prioridade ===
-                      'Crítica' ||
                     demanda.prioridade ===
                       'Crítica'
                   ) {
