@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import type { Demanda, Usuario } from '../types'
 import { carregarUsuarios, salvarUsuarios } from '../services/storage'
 import { registrarAlteracao } from '../services/auditoria'
+import { mostrarToast } from '../services/toast'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './MinhasDemandas.css'
 
@@ -145,7 +146,6 @@ export default function MinhasDemandas({
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
   const [erroConta, setErroConta] = useState('')
-  const [mensagem, setMensagem] = useState('')
 
   const minhasDemandas = useMemo(
     () => demandas.filter((demanda) => demanda.responsavel?.trim().toLowerCase() === usuario.nome?.trim().toLowerCase()),
@@ -268,11 +268,10 @@ export default function MinhasDemandas({
         )
       }
 
-      setMensagem('Dados Da Conta Atualizados Com Sucesso.')
+      mostrarToast('Dados Da Conta Atualizados Com Sucesso.')
       setNovaSenha('')
       setConfirmacaoSenha('')
       setContaAberta(false)
-      window.setTimeout(() => setMensagem(''), 2800)
     } catch {
       setErroConta('Não Foi Possível Salvar As Alterações Da Conta.')
     }
@@ -301,7 +300,6 @@ export default function MinhasDemandas({
       onDashboard={onDashboard}
       onMinhasDemandas={() => {
         setContaAberta(false)
-        setMensagem('')
       }}
       onConfiguracoes={onConfiguracoes}
       onMinhaConta={() => {
@@ -594,7 +592,6 @@ export default function MinhasDemandas({
         </div>
       )}
 
-      {mensagem && <div className="md-toast">✓ {mensagem}</div>}
     </MenuPrincipal>
   )
 }

@@ -15,6 +15,7 @@ import {
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Clientes.css'
 import { registrarAlteracao } from '../services/auditoria'
+import { toastAviso, toastSucesso } from '../services/toast'
 
 interface Props {
   onVoltar: () => void
@@ -79,9 +80,6 @@ export default function Clientes({
   const [sigla, setSigla] =
     useState('')
 
-  const [mensagem, setMensagem] =
-    useState('')
-
   const filtrados = useMemo(() => {
     const termo =
       pesquisa
@@ -103,7 +101,6 @@ export default function Clientes({
     setEditando(null)
     setNome('')
     setSigla('')
-    setMensagem('')
     setMostrarFormulario(true)
   }
 
@@ -111,7 +108,6 @@ export default function Clientes({
     setEditando(cliente)
     setNome(cliente.nome)
     setSigla(cliente.sigla || '')
-    setMensagem('')
     setMostrarFormulario(true)
   }
 
@@ -120,7 +116,6 @@ export default function Clientes({
     setEditando(null)
     setNome('')
     setSigla('')
-    setMensagem('')
   }
 
   function salvar() {
@@ -131,7 +126,7 @@ export default function Clientes({
       sigla.trim().toUpperCase()
 
     if (!nomeLimpo) {
-      setMensagem(
+      toastAviso(
         'Informe o Nome do Cliente.'
       )
       return
@@ -148,7 +143,7 @@ export default function Clientes({
       )
 
     if (duplicado) {
-      setMensagem(
+      toastAviso(
         'Já Existe um Cliente com Esse Nome.'
       )
       return
@@ -225,7 +220,12 @@ export default function Clientes({
     setEditando(null)
     setNome('')
     setSigla('')
-    setMensagem('')
+
+    toastSucesso(
+      editando
+        ? 'Cliente Atualizado com Sucesso.'
+        : 'Cliente Cadastrado com Sucesso.'
+    )
   }
 
   function alternarStatus(
@@ -259,6 +259,10 @@ export default function Clientes({
         valorAnterior: cliente.ativo ? 'Ativo' : 'Inativo',
         valorNovo: novoStatus ? 'Ativo' : 'Inativo',
       }
+    )
+
+    toastSucesso(
+      `Cliente ${novoStatus ? 'Ativado' : 'Inativado'} com Sucesso.`
     )
   }
 
@@ -472,11 +476,6 @@ export default function Clientes({
                 </label>
               </div>
 
-              {mensagem && (
-                <div className="clientes-error" style={mensagemErro}>
-                  {mensagem}
-                </div>
-              )}
             </div>
           )}
 
@@ -740,16 +739,6 @@ const campoPesquisa: CSSProperties = {
   background: '#ffffff',
   color: '#0f172a',
   fontFamily: 'inherit',
-}
-
-const mensagemErro: CSSProperties = {
-  marginTop: 12,
-  padding: 10,
-  borderRadius: 8,
-  background: '#fef2f2',
-  border: '1px solid #fecaca',
-  color: '#b91c1c',
-  fontSize: 12,
 }
 
 const tabela: CSSProperties = {

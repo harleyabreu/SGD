@@ -13,6 +13,7 @@ import { useMemo, useState } from 'react'
 import './Feriados.css'
 
 import MenuPrincipal from '../components/MenuPrincipal'
+import { mostrarToast } from '../services/toast'
 
 
 
@@ -302,9 +303,6 @@ export default function Feriados({
 
 
 
-  const [mensagem, setMensagem] =
-
-    useState('')
 
 
 
@@ -395,28 +393,6 @@ export default function Feriados({
     setDescricao('')
 
     setEditandoId(null)
-
-  }
-
-
-
-  function mostrarMensagem(
-
-    texto: string
-
-  ) {
-
-    setMensagem(texto)
-
-
-
-    window.setTimeout(
-
-      () => setMensagem(''),
-
-      2500
-
-    )
 
   }
 
@@ -566,7 +542,7 @@ export default function Feriados({
 
 
 
-      mostrarMensagem(
+      mostrarToast(
 
         'Feriado Atualizado com Sucesso.'
 
@@ -614,7 +590,7 @@ export default function Feriados({
 
 
 
-    mostrarMensagem(
+    mostrarToast(
 
       'Feriado Cadastrado com Sucesso.'
 
@@ -682,7 +658,7 @@ export default function Feriados({
 
 
 
-    mostrarMensagem(
+    mostrarToast(
 
       item.ativo
 
@@ -801,16 +777,6 @@ export default function Feriados({
       <div className="feriados-page">
 
 
-
-      {mensagem && (
-
-        <div className="feriados-toast">
-
-          {mensagem}
-
-        </div>
-
-      )}
 
 
 

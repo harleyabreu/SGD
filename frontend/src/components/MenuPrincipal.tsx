@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { Usuario } from '../types'
+import ToastGlobal from './ToastGlobal'
 
 /**
  * ============================================================
@@ -2175,6 +2176,8 @@ export default function MenuPrincipal({
         <main className="gd-page-content">
           {children}
         </main>
+
+        <ToastGlobal />
 
         {rodapeAcoes && (
           <div className="gd-shell-footer">

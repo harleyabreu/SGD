@@ -75,6 +75,7 @@ import type {
 import MenuPrincipal from '../components/MenuPrincipal'
 
 import './DetalheDemanda.css'
+import { mostrarToast } from '../services/toast'
 
 
 
@@ -2425,6 +2426,11 @@ export function DetalheDemandaPage({
 
     )
 
+    mostrarToast(
+      'Demanda Cancelada Com Sucesso.'
+    )
+
+    
 
 
     setMotivoCancelamento(
@@ -2753,6 +2759,9 @@ export function DetalheDemandaPage({
 
     )
 
+    mostrarToast(
+      'Alterações Da Demanda Salvas Com Sucesso.'
+    )
   }
 
 
@@ -3473,6 +3482,11 @@ export function DetalheDemandaPage({
 
                     )
 
+                    mostrarToast(
+                      'Prioridade Da Demanda Alterada Com Sucesso.'
+                    )
+
+                    
 
 
                     setMotivoAlteracao(
@@ -3553,6 +3567,11 @@ export function DetalheDemandaPage({
 
                     )
 
+                    mostrarToast(
+                      'Prazo Da Demanda Alterado Com Sucesso.'
+                    )
+
+                    
 
 
                     setMotivoAlteracao(
@@ -3725,6 +3744,11 @@ export function DetalheDemandaPage({
 
                       )
 
+                      mostrarToast(
+                        'Demanda Reaberta Com Sucesso.'
+                      )
+
+                      
 
 
                       setMotivoReabertura(
