@@ -3,6 +3,7 @@ import type { Usuario } from '../types'
 import MenuPrincipal from '../components/MenuPrincipal'
 import { carregarUsuarios, salvarUsuarios } from '../services/storage'
 import { registrarAlteracao } from '../services/auditoria'
+import { mostrarToast } from '../services/toast'
 import './ConfiguracoesAnalista.css'
 
 type Props = {
@@ -58,7 +59,6 @@ export default function ConfiguracoesAnalista({
   const [telefone, setTelefone] = useState(usuario.telefone || '')
   const [novaSenha, setNovaSenha] = useState('')
   const [confirmacao, setConfirmacao] = useState('')
-  const [mensagem, setMensagem] = useState('')
   const [erro, setErro] = useState('')
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
@@ -71,8 +71,6 @@ export default function ConfiguracoesAnalista({
   async function salvar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErro('')
-    setMensagem('')
-
     const emailLimpo = email.trim()
     const telefoneLimpo = telefone.trim()
 
@@ -167,8 +165,7 @@ export default function ConfiguracoesAnalista({
 
     setNovaSenha('')
     setConfirmacao('')
-    setMensagem('Configurações atualizadas com sucesso.')
-    window.setTimeout(() => setMensagem(''), 2800)
+    mostrarToast('Configurações Atualizadas Com Sucesso.')
   }
 
   return (
@@ -326,12 +323,7 @@ export default function ConfiguracoesAnalista({
             </div>
           )}
 
-          {mensagem && (
-            <div className="analista-config-message analista-config-success" role="status">
-              {mensagem}
-            </div>
-          )}
-
+    
           <div className="analista-config-actions">
             <button
               type="button"

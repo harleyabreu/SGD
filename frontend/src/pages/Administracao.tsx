@@ -43,6 +43,7 @@ import { registrarAlteracao } from '../services/auditoria'
 
 import './Administracao.css'
 import MenuPrincipal from '../components/MenuPrincipal'
+import { mostrarToast } from '../services/toast'
 
 type Aba =
   | 'usuarios'
@@ -268,8 +269,6 @@ function Administracao({
   const [tipos, setTipos] =
     useState<TipoDemanda[]>(carregarTipos)
 
-  const [mensagem, setMensagem] = useState('')
-
   const [pesquisa, setPesquisa] = useState('')
 
   const [auditoria, setAuditoria] =
@@ -415,19 +414,6 @@ function Administracao({
         ),
     [auditoria, termo]
   )
-
-  // ==========================================================
-  // MENSAGEM
-  // ==========================================================
-
-  function avisar(texto: string) {
-    setMensagem(texto)
-
-    window.setTimeout(
-      () => setMensagem(''),
-      2800
-    )
-  }
 
   function atualizarAuditoriaLocal() {
     setAuditoria(carregarAuditoria())
@@ -643,7 +629,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         modoAlterarSenha
           ? 'Senha alterada com sucesso.'
           : 'Usuário atualizado com sucesso.'
@@ -679,7 +665,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Usuário cadastrado com sucesso.'
       )
     }
@@ -762,7 +748,7 @@ function Administracao({
 
     atualizarAuditoriaLocal()
 
-    avisar(
+    mostrarToast(
       `Usuário ${novoStatus.toLowerCase()} com sucesso.`
     )
   }
@@ -836,7 +822,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Órgão atualizado com sucesso.'
       )
     } else {
@@ -863,7 +849,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Órgão cadastrado com sucesso.'
       )
     }
@@ -905,7 +891,7 @@ function Administracao({
 
     atualizarAuditoriaLocal()
 
-    avisar(
+    mostrarToast(
       `Órgão ${novoStatus ? 'ativado' : 'inativado'}.`
     )
   }
@@ -996,7 +982,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Sistema atualizado com sucesso.'
       )
     } else {
@@ -1023,7 +1009,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Sistema cadastrado com sucesso.'
       )
     }
@@ -1065,7 +1051,7 @@ function Administracao({
 
     atualizarAuditoriaLocal()
 
-    avisar(
+    mostrarToast(
       `Sistema ${novoStatus ? 'ativado' : 'inativado'}.`
     )
   }
@@ -1136,7 +1122,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Tipo atualizado com sucesso.'
       )
     } else {
@@ -1162,7 +1148,7 @@ function Administracao({
 
       atualizarAuditoriaLocal()
 
-      avisar(
+      mostrarToast(
         'Tipo cadastrado com sucesso.'
       )
     }
@@ -1204,7 +1190,7 @@ function Administracao({
 
     atualizarAuditoriaLocal()
 
-    avisar(
+    mostrarToast(
       `Tipo ${novoStatus ? 'ativado' : 'inativado'}.`
     )
   }
@@ -2310,19 +2296,6 @@ function Administracao({
 
         </main>
 
-      {/* ======================================================
-          TOAST
-      ====================================================== */}
-
-      {mensagem && (
-        <div className="adm-toast">
-          <span className="adm-toast-icon">
-            ✓
-          </span>
-
-          {mensagem}
-        </div>
-      )}
     </MenuPrincipal>
   )
 

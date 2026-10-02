@@ -7,6 +7,7 @@
 // ============================================================
 
 import { useState, type CSSProperties } from 'react'
+import { toastErro, toastSucesso } from '../services/toast'
 import type { Usuario } from '../types'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Configuracoes.css'
@@ -232,13 +233,6 @@ export default function Configuracoes({
   onLogout,
 }: Props) {
   const [configuracoes, setConfiguracoes] = useState<ConfiguracoesSistema>(carregarConfiguracoes)
-  const [mensagem, setMensagem] = useState('')
-
-  function mostrarMensagem(texto: string) {
-    setMensagem(texto)
-    window.setTimeout(() => setMensagem(''), 2800)
-  }
-
   function alterarSLA(campo: keyof ConfiguracoesSistema['sla'], valor: string) {
     const numero = Number(valor)
     setConfiguracoes((atual) => ({
@@ -275,11 +269,11 @@ export default function Configuracoes({
 
   function salvar() {
     const sucesso = salvarConfiguracoes(configuracoes)
-    mostrarMensagem(
-      sucesso
-        ? 'Configurações salvas com sucesso.'
-        : 'Não foi possível salvar as configurações neste navegador.'
-    )
+    if (sucesso) {
+      toastSucesso('Configurações salvas com sucesso.')
+    } else {
+      toastErro('Não foi possível salvar as configurações neste navegador.')
+    }
   }
 
   function restaurarPadroes() {
@@ -297,7 +291,7 @@ export default function Configuracoes({
 
     setConfiguracoes(padrao)
     salvarConfiguracoes(padrao)
-    mostrarMensagem('Configurações padrão restauradas.')
+    toastSucesso('Configurações padrão restauradas.')
   }
 
   return (
@@ -339,13 +333,6 @@ export default function Configuracoes({
           </div>
           <p className="configuracoes-page-subtitle" style={{ margin: '0 0 0 14px', color: '#64748b', fontSize: 13, lineHeight: 1.4 }}>Parâmetros gerais e preferências do sistema.</p>
         </header>
-
-        {mensagem && (
-          <div className="configuracoes-message" role="status" style={{ marginBottom: 14, padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 9, border: '1px solid #bbf7d0', borderRadius: 10, background: '#f0fdf4', color: '#166534', fontSize: 12, fontWeight: 600 }}>
-            <span className="configuracoes-message-icon" style={{ width: 23, height: 23, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: '#dcfce7', color: '#16a34a', fontWeight: 800 }}>✓</span>
-            {mensagem}
-          </div>
-        )}
 
         {/* ADMINISTRAÇÃO */}
         <section className="configuracoes-card configuracoes-admin-card" style={{ ...cardBase, marginBottom: 14, borderColor: '#bfdbfe', background: 'linear-gradient(135deg, #ffffff 0%, #f8fbff 100%)' }}>
