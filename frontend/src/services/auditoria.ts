@@ -191,7 +191,7 @@ export function registrarDistribuicao(
 }
 
 // ============================================================
-// REGISTRAR PRIORIDADE
+// REGISTRAR CRITICIDADE
 // ============================================================
 
 export function registrarAlteracaoPrioridade(
@@ -205,7 +205,7 @@ export function registrarAlteracaoPrioridade(
     'demanda',
     entidadeId,
     'prioridade',
-    `Prioridade alterada de "${prioridadeAnterior}" para "${prioridadeNova}".`,
+    `Criticidade alterada de "${prioridadeAnterior}" para "${prioridadeNova}".`,
     usuario,
     {
       valorAnterior:

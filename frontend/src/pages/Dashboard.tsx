@@ -1380,7 +1380,7 @@ function Dashboard({
             <div className="filter-field">
 
               <label>
-                Prioridade
+                Criticidade
               </label>
 
               <select value={filtroPrioridade} onChange={(event) => setFiltroPrioridade(event.target.value)}>
@@ -1636,7 +1636,7 @@ function Dashboard({
               </strong>
 
               <small>
-                Prioridade Máxima
+                Criticidade Máxima
               </small>
 
             </div>
@@ -1756,7 +1756,7 @@ function Dashboard({
               </h3>
 
               <small>
-                Demandas Com Prioridade Máxima Que Exigem
+                Demandas Com Criticidade Máxima Que Exigem
                 Acompanhamento Do Gestor.
               </small>
             </div>
@@ -1786,7 +1786,7 @@ function Dashboard({
                 </strong>
 
                 <small>
-                  Não Existem Demandas Com Prioridade
+                  Não Existem Demandas Com Criticidade
                   Máxima No Momento.
                 </small>
               </div>
@@ -2153,7 +2153,7 @@ function Dashboard({
         </section>
 
         {/* ====================================================
-            PRIORIDADES
+            CRITICIDADES
         ==================================================== */}
 
         <section
@@ -2168,7 +2168,7 @@ function Dashboard({
             <div>
 
               <h3>
-                Demandas Por Prioridade
+                Demandas Por Criticidade
               </h3>
 
               <small>

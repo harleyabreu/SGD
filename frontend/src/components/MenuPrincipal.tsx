@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { ehPerfilOperacional } from '../types'
 import type { Usuario } from '../types'
 import ToastGlobal from './ToastGlobal'
 
@@ -985,6 +986,7 @@ function perfilExibicao(usuario: Usuario) {
 }
 
 
+
 // ============================================================
 // CENTRAL DE NOTIFICAÇÕES GLOBAL
 // ------------------------------------------------------------
@@ -1896,7 +1898,7 @@ export default function MenuPrincipal({
           className="gd-sidebar-nav"
           aria-label="Menu principal"
         >
-          {usuarioAtual?.perfil === 'Analista' || perfilUsuario === 'Analista' ? (
+          {ehPerfilOperacional(usuarioAtual?.perfil || perfilUsuario) ? (
             <>
               <div className="gd-nav-section">MINHAS DEMANDAS</div>
 

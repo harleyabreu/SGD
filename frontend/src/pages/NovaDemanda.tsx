@@ -644,11 +644,11 @@ export default function NovaDemanda({
 
               <div className="campo">
 
-                <label htmlFor="prioridade">Prioridade *</label>
+                <label htmlFor="prioridade">Criticidade *</label>
 
                 <select id="prioridade" name="prioridade" defaultValue="">
 
-                  <option value="">Selecione A Prioridade</option>
+                  <option value="">Selecione A Criticidade</option>
 
                   {PRIORIDADES.map((prioridade) => (
 

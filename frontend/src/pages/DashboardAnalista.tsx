@@ -127,6 +127,12 @@ export default function DashboardAnalista({
     .filter((item) => item.status === 'Com Pendências')
     .slice(0, 5)
 
+  const tituloVisao = usuario.perfil === 'Desenvolvedor'
+    ? 'Visão Do Desenvolvedor (a)'
+    : usuario.perfil === 'Estagiário'
+      ? 'Visão Do Estagiário (a)'
+      : 'Visão Do Analista'
+
   const proximosPrazos = minhasDemandas
     .filter(estaProxima)
     .sort((a, b) => {
@@ -149,7 +155,7 @@ export default function DashboardAnalista({
       <div className="analista-dashboard">
         <section className="analista-dashboard-header">
           <div>
-            <h2>Visão Do Analista</h2>
+            <h2>{tituloVisao}</h2>
             <p>Acompanhe Rapidamente As Suas Demandas E Os Prazos Que Exigem Atenção.</p>
           </div>
 

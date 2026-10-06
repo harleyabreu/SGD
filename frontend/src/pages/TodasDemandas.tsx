@@ -151,7 +151,7 @@ const STATUS = [
 ]
 
 // ============================================================
-// PRIORIDADES
+// CRITICIDADES
 // ============================================================
 
 const PRIORIDADES = [
@@ -265,7 +265,7 @@ function estaProximaDoVencimento(demanda: Demanda): boolean {
 }
 
 // ============================================================
-// PESO DA PRIORIDADE PARA ORDENAÇÃO
+// PESO DA CRITICIDADE PARA ORDENAÇÃO
 // ============================================================
 
 function pesoPrioridade(prioridade: string): number {
@@ -284,7 +284,7 @@ function pesoPrioridade(prioridade: string): number {
 }
 
 // ============================================================
-// CLASSE DE PRIORIDADE
+// CLASSE DE CRITICIDADE
 // ============================================================
 
 function obterClassePrioridade(
@@ -991,7 +991,7 @@ export default function TodasDemandas({
       'Descrição',
       'Cliente',
       'Responsável',
-      'Prioridade',
+      'Criticidade',
       'Prazo',
       'Situação',
       'Status',
@@ -1084,7 +1084,7 @@ export default function TodasDemandas({
         </div>
 
         <div className="demanda-coluna">
-          <span className="campo-label">PRIORIDADE</span>
+          <span className="campo-label">CRITICIDADE</span>
           <strong className={obterClassePrioridade(demanda.prioridade)}>
             {demanda.prioridade}
           </strong>
@@ -1341,12 +1341,12 @@ export default function TodasDemandas({
 
               </div>
 
-              {/* PRIORIDADE */}
+              {/* CRITICIDADE */}
 
               <div className="campo">
 
                 <label>
-                  Prioridade
+                  Criticidade
                 </label>
 
                 <select
@@ -1443,7 +1443,7 @@ export default function TodasDemandas({
                   <option value="mais-recentes">Mais Recentes</option>
                   <option value="prazo-proximo">Prazo Mais Próximo</option>
                   <option value="prazo-distante">Prazo Mais Distante</option>
-                  <option value="prioridade">Maior Prioridade</option>
+                  <option value="prioridade">Maior Criticidade</option>
                   <option value="titulo">Título A-Z</option>
                 </select>
 
@@ -1700,7 +1700,7 @@ export default function TodasDemandas({
                   <span># / Título</span>
                   <span>Cliente</span>
                   <span>Responsável</span>
-                  <span>Prioridade</span>
+                  <span>Criticidade</span>
                   <span>Status</span>
                   <span>Prazo</span>
                   <span>Ações</span>
@@ -2122,7 +2122,7 @@ export default function TodasDemandas({
                                       </h3>
 
                                       {/* ======================
-                                          PRIORIDADE
+                                          CRITICIDADE
                                       ====================== */}
 
                                       <span
