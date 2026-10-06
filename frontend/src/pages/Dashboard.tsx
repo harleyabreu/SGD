@@ -26,7 +26,7 @@
 // ============================================================
 
 import { useMemo, useState } from 'react'
-import { PERFIS_RESPONSAVEIS, type Usuario } from '../types'
+import { PERFIS_RESPONSAVEIS, ESTRUTURA_ORGANIZACIONAL, type Usuario } from '../types'
 import MenuPrincipal from '../components/MenuPrincipal'
 import { carregarUsuarios } from '../services/storage'
 import './Dashboard.css'
@@ -581,6 +581,16 @@ function Dashboard({
 
   const demandas = carregarDemandas()
 
+  const usuariosCadastrados = carregarUsuarios()
+
+  const usuarioPorNome = useMemo(() => {
+    const mapa = new Map<string, Usuario>()
+    usuariosCadastrados.forEach((usuario) => {
+      mapa.set(usuario.nome.trim().toLowerCase(), usuario)
+    })
+    return mapa
+  }, [usuariosCadastrados])
+
   // ==========================================================
   // FILTROS DO DASHBOARD
   // ==========================================================
@@ -1072,6 +1082,83 @@ function Dashboard({
     if (b.pontos !== a.pontos) return b.pontos - a.pontos
     return b.concluidas - a.concluidas
   })
+
+  // ==========================================================
+  // PRODUÇÃO POR SETOR
+  // ==========================================================
+
+  const producaoPorDivisao = useMemo(() => {
+    const agrupado = new Map<string, {
+      gerenciaSigla: string
+      gerenciaNome: string
+      divisaoNome: string
+      total: number
+      concluidas: number
+      emAtendimento: number
+      pendencias: number
+      atrasadas: number
+    }>()
+
+    demandasFiltradas.forEach((demanda) => {
+      const responsavel = String(demanda.responsavel || '').trim().toLowerCase()
+      const usuario = usuarioPorNome.get(responsavel)
+      const setor = usuario?.estruturaOrganizacional
+
+      const gerenciaSigla = setor?.gerenciaSigla || 'SEM'
+      const gerenciaNome = setor?.gerenciaNome || 'Sem Setor Cadastrado'
+      const divisaoNome = setor?.divisaoNome || 'Sem Setor Cadastrado'
+      const chave = `${gerenciaSigla}::${divisaoNome}`
+
+      const atual = agrupado.get(chave) || {
+        gerenciaSigla,
+        gerenciaNome,
+        divisaoNome,
+        total: 0,
+        concluidas: 0,
+        emAtendimento: 0,
+        pendencias: 0,
+        atrasadas: 0,
+      }
+
+      atual.total += 1
+      if (demanda.status === 'Concluída') atual.concluidas += 1
+      if (demanda.status === 'Em Atendimento') atual.emAtendimento += 1
+      if (demanda.status === 'Com Pendências') atual.pendencias += 1
+      if (estaAtrasada(demanda)) atual.atrasadas += 1
+
+      agrupado.set(chave, atual)
+    })
+
+    return Array.from(agrupado.values()).sort((a, b) => b.total - a.total)
+  }, [demandasFiltradas, usuarioPorNome])
+
+  const producaoPorGerencia = useMemo(() => {
+    const base = new Map<string, { sigla: string; nome: string; total: number; concluidas: number }>()
+
+    Object.keys(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias).forEach((sigla) => {
+      const gerencia = ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[sigla as keyof typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias]
+      base.set(sigla, { sigla, nome: gerencia.nome, total: 0, concluidas: 0 })
+    })
+
+    producaoPorDivisao.forEach((item) => {
+      if (!base.has(item.gerenciaSigla)) return
+      const atual = base.get(item.gerenciaSigla)!
+      atual.total += item.total
+      atual.concluidas += item.concluidas
+    })
+
+    return Array.from(base.values()).sort((a, b) => b.total - a.total)
+  }, [producaoPorDivisao])
+
+  const maiorTotalSetor = producaoPorDivisao[0]?.total || 0
+
+  const coresSetor: Record<string, string> = {
+    GNS: '#2563EB',
+    GES: '#7C3AED',
+    GTI: '#0F766E',
+  }
+
+  const corDoSetor = (gerenciaSigla: string) => coresSetor[gerenciaSigla] || '#64748B'
 
   // ==========================================================
   // RENDER
@@ -2266,6 +2353,94 @@ function Dashboard({
 
         </section>
 
+
+        {/* ====================================================
+            PRODUÇÃO POR SETOR
+        ==================================================== */}
+
+        <section className="dashboard-panel dashboard-sector-panel">
+          <div className="panel-header">
+            <div>
+              <h3>Produção Por Setor</h3>
+              <small>DDS — Diretoria de Desenvolvimento de Sistemas</small>
+            </div>
+            <span>{demandasFiltradas.length}</span>
+          </div>
+
+          <div className="sector-columns">
+            <div className="sector-panel-block">
+              <div className="sector-panel-title">
+                <strong>Produção Por Gerência</strong>
+                <small>Demandas vinculadas ao Responsável</small>
+              </div>
+
+              <div className="sector-manager-list">
+                {producaoPorGerencia.map((item) => {
+                  const maiorVolume = Math.max(...producaoPorGerencia.map((gerencia) => gerencia.total), 1)
+                  const percentual = Math.round((item.total / maiorVolume) * 100)
+
+                  return (
+                    <div className="sector-manager-row" key={item.sigla}>
+                      <div className="sector-manager-info">
+                        <strong>{item.sigla} — {item.nome.replace(/^Gerência\s+de\s+/i, '')}</strong>
+                        <span>{item.nome}</span>
+                      </div>
+                      <div className="sector-progress-track">
+                        <div
+                          className="sector-progress-bar"
+                          style={{
+                            width: `${percentual}%`,
+                            backgroundColor: corDoSetor(item.sigla),
+                          }}
+                        />
+                      </div>
+                      <strong className="sector-total-number">{item.total}</strong>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="sector-panel-block">
+              <div className="sector-panel-title">
+                <strong>Produção Por Divisão</strong>
+                <small>Ranking dos setores com maior volume</small>
+              </div>
+
+              {producaoPorDivisao.length === 0 ? (
+                <div className="empty-state">
+                  <div>🏢</div>
+                  <p>Nenhuma Demanda Com Setor Identificado Para Exibir.</p>
+                </div>
+              ) : (
+                <div className="sector-table-wrap">
+                  {producaoPorDivisao.map((item, index) => {
+                    const percentual = maiorTotalSetor
+                      ? Math.round((item.total / maiorTotalSetor) * 100)
+                      : 0
+
+                    return (
+                      <div className="sector-division-row" key={`${item.gerenciaSigla}-${item.divisaoNome}`}>
+                        <div className="sector-rank">{index + 1}</div>
+                        <div className="sector-division-main">
+                          <strong>{item.divisaoNome}</strong>
+                          <span>{item.gerenciaSigla} — {item.gerenciaNome}</span>
+                          <div className="sector-progress-track">
+                            <div className="sector-progress-bar" style={{ width: `${percentual}%`, backgroundColor: corDoSetor(item.gerenciaSigla) }} />
+                          </div>
+                        </div>
+                        <div className="sector-division-stats">
+                          <strong>{item.total}</strong>
+                          <small>{item.concluidas} concluídas</small>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* ====================================================
             TMA E PRODUTIVIDADE

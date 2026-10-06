@@ -18,12 +18,15 @@
 // ============================================================
 
 import { useMemo, useState } from 'react'
+import { ESTRUTURA_ORGANIZACIONAL } from '../types'
 import type {
   Cliente,
   Sistema,
   TipoDemanda,
   Usuario,
   RegistroAuditoria,
+  SiglaGerencia,
+  EstruturaOrganizacionalUsuario,
 } from '../types'
 
 import {
@@ -296,6 +299,14 @@ function Administracao({
   const [perfilUsuario, setPerfilUsuario] =
     useState<Usuario['perfil']>('Analista')
 
+  const [gerenciaUsuario, setGerenciaUsuario] =
+    useState<SiglaGerencia>('GNS')
+
+  const [divisaoUsuario, setDivisaoUsuario] =
+    useState<string>(
+      ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias.GNS.divisoes[0]
+    )
+
   const [senhaUsuario, setSenhaUsuario] =
     useState('')
 
@@ -358,7 +369,7 @@ function Administracao({
       usuarios.filter(
         (item) =>
           !termo ||
-          `${item.nome} ${item.login} ${item.email} ${item.perfil}`
+          `${item.nome} ${item.login} ${item.email} ${item.perfil} ${item.estruturaOrganizacional?.diretoriaSigla || ''} ${item.estruturaOrganizacional?.gerenciaSigla || ''} ${item.estruturaOrganizacional?.divisaoNome || ''}`
             .toLowerCase()
             .includes(termo)
       ),
@@ -438,6 +449,8 @@ function Administracao({
     setEmailUsuario('')
     setTelefoneUsuario('')
     setPerfilUsuario('Analista')
+    setGerenciaUsuario('GNS')
+    setDivisaoUsuario(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias.GNS.divisoes[0])
     setSenhaUsuario('')
     setConfirmarSenhaUsuario('')
     setMostrarSenhaUsuario(false)
@@ -452,6 +465,19 @@ function Administracao({
     setEmailUsuario(item.email)
     setTelefoneUsuario(aplicarMascaraTelefone(item.telefone || ''))
     setPerfilUsuario(item.perfil)
+
+    const estruturaExistente = item.estruturaOrganizacional
+    const gerenciaInformada = estruturaExistente?.gerenciaSigla
+    const gerenciaExistente: SiglaGerencia =
+      gerenciaInformada && gerenciaInformada in ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias
+        ? gerenciaInformada as SiglaGerencia
+        : 'GNS'
+    const gerenciaDados = ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaExistente]
+
+    setGerenciaUsuario(gerenciaExistente)
+    setDivisaoUsuario(
+      estruturaExistente?.divisaoNome || gerenciaDados.divisoes[0]
+    )
 
     window.scrollTo({
       top: 0,
@@ -503,6 +529,24 @@ function Administracao({
         'Informe Nome e Sobrenome para gerar o Login no padrão nome.sobrenome.'
       )
       return
+    }
+
+    setLoginUsuario(loginPadrao)
+
+    const diretoria = ESTRUTURA_ORGANIZACIONAL.diretoria
+    const gerencia = diretoria.gerencias[gerenciaUsuario]
+
+    if (!gerencia || !gerencia.divisoes.includes(divisaoUsuario as never)) {
+      window.alert('Selecione uma Gerência e uma Divisão válidas.')
+      return
+    }
+
+    const estruturaOrganizacional: EstruturaOrganizacionalUsuario = {
+      diretoriaSigla: diretoria.sigla,
+      diretoriaNome: diretoria.nome,
+      gerenciaSigla: gerencia.sigla,
+      gerenciaNome: gerencia.nome,
+      divisaoNome: divisaoUsuario as EstruturaOrganizacionalUsuario['divisaoNome'],
     }
 
     setLoginUsuario(loginPadrao)
@@ -598,6 +642,7 @@ function Administracao({
                 email: emailUsuario.trim(),
                 telefone: telefonePersistido,
                 perfil: perfilUsuario,
+                estruturaOrganizacional,
                 atualizadoEm: agora,
                 ...(senhaHashNova
                   ? {
@@ -644,6 +689,7 @@ function Administracao({
         email: emailUsuario.trim(),
         telefone: telefonePersistido,
         perfil: perfilUsuario,
+        estruturaOrganizacional,
         status: 'Ativo',
         criadoEm: agora,
         senhaHash,
@@ -659,7 +705,7 @@ function Administracao({
         'usuario',
         novo.id,
         'criacao',
-        `Usuário ${novo.nome} foi cadastrado.`,
+        `Usuário ${novo.nome} foi cadastrado no setor ${estruturaOrganizacional.gerenciaSigla} — ${estruturaOrganizacional.divisaoNome}.`,
         usuarioAtual.nome
       )
 
@@ -1241,7 +1287,7 @@ function Administracao({
                 className="btn-principal adm-footer-cadastrar"
                 onClick={salvarUsuario}
               >
-                {editUsuario ? 'Salvar Alterações' : '+ Cadastrar Analista'}
+                {editUsuario ? 'Salvar Alterações' : '+ Cadastrar Usuário'}
               </button>
             )}
 
@@ -1414,7 +1460,7 @@ function Administracao({
                         setNomeUsuario(nome)
                         setLoginUsuario(gerarLoginPadrao(nome, usuarios, editUsuario?.id))
                       }}
-                      placeholder="Nome do Analista"
+                      placeholder="Nome do Usuário"
                     />
                   </label>
 
@@ -1457,6 +1503,59 @@ function Administracao({
                     />
                   </label>
 
+                </div>
+
+                <div className="adm-org-section">
+                  <div className="adm-org-heading">
+                    <div>
+                      <strong>Setor (Estrutura Organizacional)</strong>
+                      <small>Defina a Diretoria, Gerência e Divisão do usuário.</small>
+                    </div>
+                  </div>
+
+                  <div className="adm-org-grid">
+                    <label>
+                      Diretoria *
+                      <select value="DDS" disabled>
+                        <option value="DDS">
+                          DDS — Diretoria de Desenvolvimento de Sistemas
+                        </option>
+                      </select>
+                    </label>
+
+                    <label>
+                      Gerência *
+                      <select
+                        value={gerenciaUsuario}
+                        onChange={(event) => {
+                          const novaGerencia = event.target.value as SiglaGerencia
+                          const dadosGerencia = ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[novaGerencia]
+                          setGerenciaUsuario(novaGerencia)
+                          setDivisaoUsuario(dadosGerencia.divisoes[0])
+                        }}
+                      >
+                        {(Object.entries(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias) as Array<[SiglaGerencia, (typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias)[SiglaGerencia]]>).map(([sigla, gerencia]) => (
+                          <option key={sigla} value={sigla}>
+                            {sigla} — {gerencia.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      Divisão *
+                      <select
+                        value={divisaoUsuario}
+                        onChange={(event) => setDivisaoUsuario(event.target.value)}
+                      >
+                        {ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaUsuario].divisoes.map((divisao) => (
+                          <option key={divisao} value={divisao}>
+                            {divisao}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
                 </div>
 
                 {(!editUsuario || modoAlterarSenha) && (
@@ -1596,6 +1695,7 @@ function Administracao({
                         <th>Usuário</th>
                         <th>Login</th>
                         <th>Perfil</th>
+                        <th>Setor</th>
                         <th>Status</th>
                         <th>Último Acesso</th>
                         <th>Ações</th>
@@ -1627,6 +1727,23 @@ function Administracao({
                               <span className="adm-pill">
                                 {rotuloPerfil(item.perfil)}
                               </span>
+                            </td>
+
+                            <td>
+                              {item.estruturaOrganizacional ? (
+                                <div className="adm-sector-cell">
+                                  <strong>
+                                    {item.estruturaOrganizacional.gerenciaSigla} — {item.estruturaOrganizacional.gerenciaNome}
+                                  </strong>
+                                  <small>
+                                    {item.estruturaOrganizacional.divisaoNome}
+                                  </small>
+                                </div>
+                              ) : (
+                                <span className="adm-sector-empty">
+                                  Sem Setor Cadastrado
+                                </span>
+                              )}
                             </td>
 
                             <td>
