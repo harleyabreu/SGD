@@ -49,6 +49,7 @@ import type {
   Historico,
   Usuario,
 } from './types'
+import { ehPerfilOperacional } from './types'
 
 import {
   carregarClientes,
@@ -138,6 +139,7 @@ function ehGestor(sessaoAtual: SessaoUsuario | null): boolean {
   return sessaoAtual?.perfil === 'Gestor/Administrador' || String(sessaoAtual?.perfil) === 'Gestor'
 }
 
+
 // Perfis que podem ser definidos como Responsável pela Demanda.
 // Mantemos a validação centralizada para que criação, redistribuição,
 // reabertura e alteração de status utilizem exatamente a mesma regra.
@@ -162,7 +164,7 @@ function transicaoPermitida(statusAnterior: string, novoStatus: string): boolean
 }
 
 // ============================================================
-// PRIORIDADES
+// CRITICIDADES
 // ============================================================
 
 const PRIORIDADES = [
@@ -301,7 +303,7 @@ function adicionarDiasUteis(
 }
 
 // ============================================================
-// PRAZO POR PRIORIDADE
+// PRAZO POR CRITICIDADE
 // ============================================================
 
 function diasPrazoPorPrioridade(
@@ -711,7 +713,7 @@ function App() {
     setPagina,
   ] = useState(() => {
     const sessaoInicial = carregarSessao()
-    return sessaoInicial?.perfil === 'Analista'
+    return ehPerfilOperacional(sessaoInicial?.perfil)
       ? 'dashboard-analista'
       : 'dashboard'
   })
@@ -836,8 +838,7 @@ function App() {
     )
 
     setPagina(
-      usuario.perfil ===
-        'Analista'
+      ehPerfilOperacional(usuario.perfil)
         ? 'dashboard-analista'
         : 'dashboard'
     )
@@ -904,7 +905,7 @@ function App() {
     salvarSessao(novaSessao)
     setSessao(novaSessao)
     setPagina(
-      usuarioAtualizado.perfil === 'Analista'
+      ehPerfilOperacional(usuarioAtualizado.perfil)
         ? 'dashboard-analista'
         : 'dashboard'
     )
@@ -1190,7 +1191,7 @@ function App() {
   }
 
   // ==========================================================
-  // ALTERAR PRIORIDADE
+  // ALTERAR CRITICIDADE
   //
   // REGRA:
   // - O tempo já consumido não é zerado.
@@ -1227,7 +1228,7 @@ function App() {
       demandaPrioridade?.status === 'Cancelada'
     ) {
       window.alert(
-        'Demandas concluídas ou canceladas não podem ter a prioridade alterada. Reabra a demanda antes, quando aplicável.'
+        'Demandas concluídas ou canceladas não podem ter a criticidade alterada. Reabra a demanda antes, quando aplicável.'
       )
       return
     }
@@ -1272,10 +1273,10 @@ function App() {
 
         const motivoFinal =
           motivo?.trim() ||
-          'Alteração de prioridade realizada pelo Gestor.'
+          'Alteração de criticidade realizada pelo Gestor.'
 
         const descricao =
-          `Prioridade alterada de "${demanda.prioridade}" para "${novaPrioridade}". Tempo já consumido: ${consumidos} dia(s) útil(eis). Novo SLA: ${novoSla} dia(s) útil(eis). Saldo considerado: ${saldo} dia(s) útil(eis).`
+          `Criticidade alterada de "${demanda.prioridade}" para "${novaPrioridade}". Tempo já consumido: ${consumidos} dia(s) útil(eis). Novo SLA: ${novoSla} dia(s) útil(eis). Saldo considerado: ${saldo} dia(s) útil(eis).`
 
         registrarAlteracao(
           'demanda',
@@ -1322,7 +1323,7 @@ function App() {
                 'prioridade',
 
               titulo:
-                'Prioridade alterada',
+                'Criticidade alterada',
 
               descricao,
 
@@ -2812,7 +2813,7 @@ function App() {
     )
 
     setPagina(
-      sessao?.perfil === 'Analista'
+      ehPerfilOperacional(sessao?.perfil)
         ? 'dashboard-analista'
         : 'todas-demandas'
     )
@@ -2823,9 +2824,8 @@ function App() {
   // ==========================================================
 
   function abrirFeriados() {
-    setPagina(
-      'feriados'
-    )
+    if (!ehGestor(sessao)) return
+    setPagina('feriados')
   }
 
   // ==========================================================
@@ -2833,18 +2833,22 @@ function App() {
   // ==========================================================
 
   function abrirNovaDemanda() {
+    if (!ehGestor(sessao)) return
     setPagina('nova-demanda')
   }
 
   function abrirClientes() {
+    if (!ehGestor(sessao)) return
     setPagina('clientes')
   }
 
   function abrirResponsaveis() {
+    if (!ehGestor(sessao)) return
     setPagina('responsaveis')
   }
 
   function abrirRelatorios() {
+    if (!ehGestor(sessao)) return
     setPagina('relatorios')
   }
 
@@ -2910,7 +2914,7 @@ function App() {
   // ==========================================================
 
   if (
-    sessao.perfil === 'Analista' &&
+    ehPerfilOperacional(sessao.perfil) &&
     pagina === 'dashboard-analista'
   ) {
     return (
@@ -2976,7 +2980,7 @@ function App() {
   // ==========================================================
 
   if (
-    sessao.perfil === 'Analista' &&
+    ehPerfilOperacional(sessao.perfil) &&
     pagina === 'configuracoes-analista'
   ) {
     return (
@@ -3079,10 +3083,7 @@ function App() {
   // FERIADOS
   // ==========================================================
 
-  if (
-    pagina ===
-    'feriados'
-  ) {
+  if (ehGestor(sessao) && pagina === 'feriados') {
     return (
       <Feriados
         onVoltar={() =>
@@ -3110,10 +3111,7 @@ function App() {
   // TODAS AS DEMANDAS
   // ==========================================================
 
-  if (
-    pagina ===
-    'todas-demandas'
-  ) {
+  if (ehGestor(sessao) && pagina === 'todas-demandas') {
     return (
       <TodasDemandas
         demandas={
@@ -3162,10 +3160,7 @@ function App() {
   // NOVA DEMANDA
   // ==========================================================
 
-  if (
-    pagina ===
-    'nova-demanda'
-  ) {
+  if (ehGestor(sessao) && pagina === 'nova-demanda') {
     return (
       <NovaDemanda
         clientes={
@@ -3248,14 +3243,14 @@ function App() {
         perfilUsuarioGlobal={sessao.perfil || 'Gestor/Administrador'}
 
         onMinhasDemandas={
-          sessao.perfil === 'Analista'
+          ehPerfilOperacional(sessao.perfil)
             ? () => setPagina('minhas-demandas')
             : undefined
         }
 
         onDashboard={() =>
           setPagina(
-            sessao.perfil === 'Analista'
+            ehPerfilOperacional(sessao.perfil)
               ? 'dashboard-analista'
               : 'dashboard'
           )
@@ -3288,7 +3283,7 @@ function App() {
         }
 
         onConfiguracoes={
-          sessao.perfil === 'Analista'
+          ehPerfilOperacional(sessao.perfil)
             ? () => setPagina('configuracoes-analista')
             : abrirConfiguracoes
         }
@@ -3328,7 +3323,7 @@ function App() {
   // CLIENTES
   // ==========================================================
 
-  if (pagina === 'clientes') {
+  if (ehGestor(sessao) && pagina === 'clientes') {
     return (
       <Clientes
         onVoltar={() => setPagina('dashboard')}
@@ -3351,7 +3346,7 @@ function App() {
   // RESPONSÁVEIS / ANALISTAS
   // ==========================================================
 
-  if (pagina === 'responsaveis') {
+  if (ehGestor(sessao) && pagina === 'responsaveis') {
     return (
       <Responsaveis
         onVoltar={() => setPagina('dashboard')}
@@ -3374,7 +3369,7 @@ function App() {
   // RELATÓRIOS
   // ==========================================================
 
-  if (pagina === 'relatorios') {
+  if (ehGestor(sessao) && pagina === 'relatorios') {
     return (
       <Relatorios
         onVoltar={() => setPagina('dashboard')}
@@ -3396,6 +3391,20 @@ function App() {
   // ==========================================================
   // DASHBOARD
   // ==========================================================
+
+  if (ehPerfilOperacional(sessao.perfil)) {
+    return (
+      <DashboardAnalista
+        usuario={usuarioAtual!}
+        demandas={demandas}
+        onDashboard={() => setPagina('dashboard-analista')}
+        onMinhasDemandas={() => setPagina('minhas-demandas')}
+        onConfiguracoes={() => setPagina('configuracoes-analista')}
+        onAbrirDetalhe={abrirDetalhe}
+        onSair={realizarLogout}
+      />
+    )
+  }
 
   return (
     <div

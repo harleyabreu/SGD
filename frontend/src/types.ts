@@ -13,7 +13,19 @@ export type StatusUsuario =
   | 'Ativo'
   | 'Inativo'
 
+// Perfis Operacionais: possuem exatamente a mesma experiência funcional do Analista.
+export const PERFIS_OPERACIONAIS: PerfilUsuario[] = [
+  'Analista',
+  'Desenvolvedor',
+  'Estagiário',
+]
+
+export function ehPerfilOperacional(perfil?: string): boolean {
+  return PERFIS_OPERACIONAIS.includes(perfil as PerfilUsuario)
+}
+
 // Perfis que podem ser selecionados como Responsável pela Demanda.
+// Analista, Desenvolvedor e Estagiário formam o mesmo grupo operacional de execução.
 export const PERFIS_RESPONSAVEIS: PerfilUsuario[] = [
   'Gestor/Administrador',
   'Analista',
@@ -264,7 +276,7 @@ export const STATUS_DEMANDA = [
 ] as const
 
 // ============================================================
-// PRIORIDADES OFICIAIS
+// CRITICIDADES OFICIAIS
 // ============================================================
 
 export const PRIORIDADES_DEMANDA = [

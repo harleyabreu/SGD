@@ -402,7 +402,7 @@ export default function MinhasDemandas({
           </div>
 
           <div className="md-filter-field">
-            <label htmlFor="md-prioridade">Prioridade</label>
+            <label htmlFor="md-prioridade">Criticidade</label>
             <select id="md-prioridade" value={prioridadeFiltro} onChange={(event) => setPrioridadeFiltro(event.target.value)}>
               {PRIORIDADES.map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
             </select>
@@ -450,7 +450,7 @@ export default function MinhasDemandas({
                     <th>ID</th>
                     <th>Demanda</th>
                     <th>Órgão</th>
-                    <th>Prioridade</th>
+                    <th>Criticidade</th>
                     <th>Status</th>
                     <th>Prazo</th>
                     <th>SLA</th>

@@ -56,7 +56,10 @@ import {
 
 
 
+import { ehPerfilOperacional } from '../types'
+
 import type {
+
 
   Demanda,
 
@@ -84,22 +87,6 @@ import { mostrarToast } from '../services/toast'
 // PROPS
 
 // ============================================================
-
-
-
-function perfilOperacional(perfil?: string) {
-
-  return (
-
-    perfil === 'Analista' ||
-
-    perfil === 'Desenvolvedor (a)' ||
-
-    perfil === 'Estagiário (a)'
-
-  )
-
-}
 
 
 
@@ -261,7 +248,7 @@ const STATUS = [
 
 // ============================================================
 
-// PRIORIDADES
+// CRITICIDADES
 
 // ============================================================
 
@@ -441,7 +428,7 @@ function classeStatus(status: string) {
 
 // ============================================================
 
-// CLASSE PRIORIDADE
+// CLASSE CRITICIDADE
 
 // ============================================================
 
@@ -783,7 +770,7 @@ export function DetalheDemandaPage({
 
   // ==========================================================
 
-  // PRIORIDADE
+  // CRITICIDADE
 
   // ==========================================================
 
@@ -2792,7 +2779,7 @@ export function DetalheDemandaPage({
 
           perfil:
 
-            perfilOperacional(perfilUsuarioGlobal)
+            ehPerfilOperacional(perfilUsuarioGlobal)
 
               ? perfilUsuarioGlobal as Usuario['perfil']
 
@@ -2804,7 +2791,7 @@ export function DetalheDemandaPage({
 
         }}
 
-        ativo={perfilOperacional(perfilUsuarioGlobal) ? 'minhas-demandas' : 'todas-demandas'}
+        ativo={ehPerfilOperacional(perfilUsuarioGlobal) ? 'minhas-demandas' : 'todas-demandas'}
 
         onDashboard={onDashboard}
 
@@ -2824,7 +2811,7 @@ export function DetalheDemandaPage({
 
         onConfiguracoes={onConfiguracoes}
 
-        onMinhaConta={perfilOperacional(perfilUsuarioGlobal) ? onConfiguracoes : undefined}
+        onMinhaConta={ehPerfilOperacional(perfilUsuarioGlobal) ? onConfiguracoes : undefined}
 
         onSair={onLogout}
 
@@ -3080,7 +3067,7 @@ export function DetalheDemandaPage({
 
               <span>
 
-                PRIORIDADE
+                CRITICIDADE
 
               </span>
 
@@ -3224,7 +3211,7 @@ export function DetalheDemandaPage({
 
 
 
-                {/* PRIORIDADE */}
+                {/* CRITICIDADE */}
 
 
 
@@ -3234,7 +3221,7 @@ export function DetalheDemandaPage({
 
                   <label>
 
-                    Prioridade
+                    Criticidade
 
                   </label>
 
@@ -3370,7 +3357,7 @@ export function DetalheDemandaPage({
 
                 }
 
-                placeholder="Motivo obrigatório para alteração de prazo ou prioridade."
+                placeholder="Motivo obrigatório para alteração de prazo ou criticidade."
 
                 style={{
 
@@ -3460,7 +3447,7 @@ export function DetalheDemandaPage({
 
                       alert(
 
-                        'Informe o motivo da alteração de prioridade.'
+                        'Informe o motivo da alteração de criticidade.'
 
                       )
 
@@ -3483,7 +3470,7 @@ export function DetalheDemandaPage({
                     )
 
                     mostrarToast(
-                      'Prioridade Da Demanda Alterada Com Sucesso.'
+                      'Criticidade Da Demanda Alterada Com Sucesso.'
                     )
 
                     
@@ -3499,7 +3486,7 @@ export function DetalheDemandaPage({
 
                 >
 
-                  Alterar Prioridade
+                  Alterar Criticidade
 
                 </button>
 

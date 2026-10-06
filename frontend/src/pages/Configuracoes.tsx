@@ -387,7 +387,7 @@ export default function Configuracoes({
             <div className="configuracoes-section-icon" style={sectionIcon('#fff7ed', '#ea580c')}>◷</div>
             <div>
               <h2 className="configuracoes-section-heading" style={{ margin: 0, fontSize: 15, fontWeight: 750 }}>Regras de SLA</h2>
-              <p style={{ margin: '3px 0 0', color: '#64748b', fontSize: 12 }}>Defina a quantidade de dias úteis para cada prioridade.</p>
+              <p style={{ margin: '3px 0 0', color: '#64748b', fontSize: 12 }}>Defina a quantidade de dias úteis para cada criticidade.</p>
             </div>
           </div>
 

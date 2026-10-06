@@ -142,7 +142,7 @@ export default function Relatorios({
       'Cliente',
       'Sistema',
       'Analista',
-      'Prioridade',
+      'Criticidade',
       'Status',
       'Prazo',
       'Abertura',
@@ -312,7 +312,7 @@ export default function Relatorios({
               </label>
 
               <label style={label}>
-                Prioridade
+                Criticidade
 
                 <select
                   value={prioridade}
@@ -413,7 +413,7 @@ export default function Relatorios({
 
             <section style={card}>
               <h2 style={tituloSecao}>
-                Por Prioridade
+                Por Criticidade
               </h2>
 
               {porPrioridade.map((item) => (
@@ -511,7 +511,7 @@ export default function Relatorios({
                     <th>Título</th>
                     <th>Cliente</th>
                     <th>Analista</th>
-                    <th>Prioridade</th>
+                    <th>Criticidade</th>
                     <th>Status</th>
                     <th>Prazo</th>
                   </tr>
