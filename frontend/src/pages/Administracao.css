@@ -3618,3 +3618,104 @@ select {
     font-size: var(--gd-font-size-sm, 12px) !important;
   }
 }
+
+
+/* ============================================================
+   ESTRUTURA ORGANIZACIONAL DO USUÁRIO
+   ============================================================ */
+.adm-org-section {
+  margin-top: 14px;
+  padding: 15px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.adm-org-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.adm-org-heading strong {
+  display: block;
+  color: #173f67;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adm-org-heading small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.adm-org-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr 1.45fr;
+  gap: 12px;
+}
+
+.adm-org-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.adm-org-grid select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+}
+
+.adm-org-grid select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+.adm-table-wrap td small {
+  display: block;
+  line-height: 1.35;
+}
+
+@media (max-width: 1100px) {
+  .adm-org-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.adm-sector-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 210px;
+}
+
+.adm-sector-cell strong {
+  color: #173f67;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.adm-sector-cell small {
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.adm-sector-empty {
+  color: #94a3b8;
+  font-size: 11px;
+}

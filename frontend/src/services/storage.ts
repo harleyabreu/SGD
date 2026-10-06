@@ -6,6 +6,7 @@
 import type {
   Cliente,
   Demanda,
+  DivisaoOrganizacional,
   Notificacao,
   PerfilUsuario,
   RegistroAuditoria,
@@ -51,10 +52,111 @@ export function salvarDemandas(demandas: Demanda[]) {
   salvar(STORAGE_KEYS.demandas, demandas)
 }
 
+function normalizarEstruturaOrganizacional(usuario: Usuario): Usuario {
+  const estrutura = usuario.estruturaOrganizacional
+  if (!estrutura) return usuario
+
+  const divisaoAnterior = String(estrutura.divisaoNome || '').trim()
+
+  const mapaDivisoes: Record<string, { gerenciaSigla: 'GNS' | 'GES' | 'GTI'; gerenciaNome: string; divisaoNome: DivisaoOrganizacional }> = {
+    'Divisão de Sistemas Corporativos': {
+      gerenciaSigla: 'GNS',
+      gerenciaNome: 'Gerência de Negócios de Sistemas',
+      divisaoNome: 'Divisão de Sistemas Corporativos (DSC)',
+    },
+    'Divisão de Sistemas Corporativos (DSC)': {
+      gerenciaSigla: 'GNS',
+      gerenciaNome: 'Gerência de Negócios de Sistemas',
+      divisaoNome: 'Divisão de Sistemas Corporativos (DSC)',
+    },
+    'Divisão de Sistemas Específicos': {
+      gerenciaSigla: 'GNS',
+      gerenciaNome: 'Gerência de Negócios de Sistemas',
+      divisaoNome: 'Divisão de Sistemas Específicos (DSE)',
+    },
+    'Divisão de Sistemas Específicos (DSE)': {
+      gerenciaSigla: 'GNS',
+      gerenciaNome: 'Gerência de Negócios de Sistemas',
+      divisaoNome: 'Divisão de Sistemas Específicos (DSE)',
+    },
+    'Divisão de Controle e Qualidade': {
+      gerenciaSigla: 'GNS',
+      gerenciaNome: 'Gerência de Negócios de Sistemas',
+      divisaoNome: 'Divisão de Controle e Qualidade (DCQ)',
+    },
+    'Divisão de Controle e Qualidade (DCQ)': {
+      gerenciaSigla: 'GNS',
+      gerenciaNome: 'Gerência de Negócios de Sistemas',
+      divisaoNome: 'Divisão de Controle e Qualidade (DCQ)',
+    },
+    'Divisão de Projeto e Configuração': {
+      gerenciaSigla: 'GES',
+      gerenciaNome: 'Gerência de Engenharia de Sistemas',
+      divisaoNome: 'Divisão de Projeto e Configuração (DPC)',
+    },
+    'Divisão de Projeto e Configuração (DPC)': {
+      gerenciaSigla: 'GES',
+      gerenciaNome: 'Gerência de Engenharia de Sistemas',
+      divisaoNome: 'Divisão de Projeto e Configuração (DPC)',
+    },
+    'Divisão de Construção e Sistemas': {
+      gerenciaSigla: 'GES',
+      gerenciaNome: 'Gerência de Engenharia de Sistemas',
+      divisaoNome: 'Divisão de Construção e Sistemas (DCS)',
+    },
+    'Divisão de Construção e Sistemas (DCS)': {
+      gerenciaSigla: 'GES',
+      gerenciaNome: 'Gerência de Engenharia de Sistemas',
+      divisaoNome: 'Divisão de Construção e Sistemas (DCS)',
+    },
+    'Divisão de Projetos e Inovação': {
+      gerenciaSigla: 'GTI',
+      gerenciaNome: 'Gerência de Tecnologia da Informação',
+      divisaoNome: 'Divisão de Projetos e Inovação (DPI)',
+    },
+    'Divisão de Projetos e Inovação (DPI)': {
+      gerenciaSigla: 'GTI',
+      gerenciaNome: 'Gerência de Tecnologia da Informação',
+      divisaoNome: 'Divisão de Projetos e Inovação (DPI)',
+    },
+    'Divisão de Ferramentas de Apoio': {
+      gerenciaSigla: 'GTI',
+      gerenciaNome: 'Gerência de Tecnologia da Informação',
+      divisaoNome: 'Divisão de Ferramentas de Apoio (DFA)',
+    },
+    'Divisão de Ferramentas de Apoio (DFA)': {
+      gerenciaSigla: 'GTI',
+      gerenciaNome: 'Gerência de Tecnologia da Informação',
+      divisaoNome: 'Divisão de Ferramentas de Apoio (DFA)',
+    },
+  }
+
+  const atualizada = mapaDivisoes[divisaoAnterior]
+  if (!atualizada) return usuario
+
+  const estruturaNova = {
+    ...estrutura,
+    diretoriaSigla: 'DDS' as const,
+    diretoriaNome: 'Diretoria de Desenvolvimento de Sistemas' as const,
+    gerenciaSigla: atualizada.gerenciaSigla,
+    gerenciaNome: atualizada.gerenciaNome,
+    divisaoNome: atualizada.divisaoNome,
+  }
+
+  return { ...usuario, estruturaOrganizacional: estruturaNova as Usuario['estruturaOrganizacional'] }
+}
+
 export function carregarUsuarios(): Usuario[] {
   const usuarios = ler<Usuario[]>(STORAGE_KEYS.usuarios, [])
 
-  if (usuarios.length > 0) return usuarios
+  if (usuarios.length > 0) {
+    const normalizados = usuarios.map(normalizarEstruturaOrganizacional)
+    const houveMudanca = normalizados.some((item, index) =>
+      JSON.stringify(item.estruturaOrganizacional) !== JSON.stringify(usuarios[index]?.estruturaOrganizacional)
+    )
+    if (houveMudanca) salvar(STORAGE_KEYS.usuarios, normalizados)
+    return normalizados
+  }
 
   const agora = new Date().toISOString()
   const inicial: Usuario = {

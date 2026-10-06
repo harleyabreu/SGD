@@ -212,6 +212,7 @@ export default function Responsaveis({
                   <th style={cabecalhoTabela}>Perfil</th>
                   <th style={cabecalhoTabela}>Login</th>
                   <th style={cabecalhoTabela}>E-Mail</th>
+                  <th style={cabecalhoTabela}>Setor</th>
                   <th style={{ ...cabecalhoTabela, textAlign: 'center' }}>Status</th>
                   <th style={{ ...cabecalhoTabela, textAlign: 'center' }}>Último Acesso</th>
                 </tr>
@@ -237,6 +238,21 @@ export default function Responsaveis({
 
                     <td style={textoTabela}>
                       {responsavel.email || '-'}
+                    </td>
+
+                    <td style={textoTabela}>
+                      {responsavel.estruturaOrganizacional ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <strong style={{ fontSize: 11, color: '#173f67', fontWeight: 700 }}>
+                            {responsavel.estruturaOrganizacional.gerenciaSigla} — {responsavel.estruturaOrganizacional.gerenciaNome}
+                          </strong>
+                          <span style={{ fontSize: 10, color: '#64748b' }}>
+                            {responsavel.estruturaOrganizacional.divisaoNome}
+                          </span>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>Sem Setor Cadastrado</span>
+                      )}
                     </td>
 
                     <td>
@@ -265,7 +281,7 @@ export default function Responsaveis({
                 {responsaveis.length === 0 && (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       style={tabelaVazia}
                     >
                       Nenhum Responsável Encontrado.

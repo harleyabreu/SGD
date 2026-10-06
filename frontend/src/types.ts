@@ -13,6 +13,58 @@ export type StatusUsuario =
   | 'Ativo'
   | 'Inativo'
 
+
+// ============================================================
+// ESTRUTURA ORGANIZACIONAL
+// ============================================================
+
+export const ESTRUTURA_ORGANIZACIONAL = {
+  diretoria: {
+    sigla: 'DDS',
+    nome: 'Diretoria de Desenvolvimento de Sistemas',
+    gerencias: {
+      GNS: {
+        sigla: 'GNS',
+        nome: 'Gerência de Negócios de Sistemas',
+        divisoes: [
+          'Divisão de Sistemas Corporativos (DSC)',
+          'Divisão de Sistemas Específicos (DSE)',
+          'Divisão de Controle e Qualidade (DCQ)',
+        ],
+      },
+      GES: {
+        sigla: 'GES',
+        nome: 'Gerência de Engenharia de Sistemas',
+        divisoes: [
+          'Divisão de Projeto e Configuração (DPC)',
+          'Divisão de Construção e Sistemas (DCS)',
+        ],
+      },
+      GTI: {
+        sigla: 'GTI',
+        nome: 'Gerência de Tecnologia da Informação',
+        divisoes: [
+          'Divisão de Projetos e Inovação (DPI)',
+          'Divisão de Ferramentas de Apoio (DFA)',
+        ],
+      },
+    },
+  },
+} as const
+
+export type SiglaGerencia = keyof typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias
+export type DivisaoOrganizacional =
+  typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[SiglaGerencia]['divisoes'][number]
+
+export type EstruturaOrganizacionalUsuario = {
+  diretoriaSigla: 'DDS'
+  diretoriaNome: 'Diretoria de Desenvolvimento de Sistemas'
+  gerenciaSigla: SiglaGerencia
+  gerenciaNome: string
+  divisaoNome: DivisaoOrganizacional
+}
+
+
 // Perfis Operacionais: possuem exatamente a mesma experiência funcional do Analista.
 export const PERFIS_OPERACIONAIS: PerfilUsuario[] = [
   'Analista',
@@ -107,6 +159,7 @@ export type Usuario = {
   criadoEm: string
   atualizadoEm?: string
   ultimoAcesso?: string
+  estruturaOrganizacional?: EstruturaOrganizacionalUsuario
 }
 
 // ============================================================
