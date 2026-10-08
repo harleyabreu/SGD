@@ -1703,7 +1703,7 @@ export default function TodasDemandas({
                   <span>Criticidade</span>
                   <span>Status</span>
                   <span>Prazo</span>
-                  <span>Ações</span>
+                  <span aria-hidden="true"></span>
                 </div>
               )}
 

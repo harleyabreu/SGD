@@ -300,12 +300,10 @@ function Administracao({
     useState<Usuario['perfil']>('Analista')
 
   const [gerenciaUsuario, setGerenciaUsuario] =
-    useState<SiglaGerencia>('GNS')
+    useState<SiglaGerencia | ''>('')
 
   const [divisaoUsuario, setDivisaoUsuario] =
-    useState<string>(
-      ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias.GNS.divisoes[0]
-    )
+    useState<string>('')
 
   const [senhaUsuario, setSenhaUsuario] =
     useState('')
@@ -449,8 +447,8 @@ function Administracao({
     setEmailUsuario('')
     setTelefoneUsuario('')
     setPerfilUsuario('Analista')
-    setGerenciaUsuario('GNS')
-    setDivisaoUsuario(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias.GNS.divisoes[0])
+    setGerenciaUsuario('')
+    setDivisaoUsuario('')
     setSenhaUsuario('')
     setConfirmarSenhaUsuario('')
     setMostrarSenhaUsuario(false)
@@ -534,7 +532,9 @@ function Administracao({
     setLoginUsuario(loginPadrao)
 
     const diretoria = ESTRUTURA_ORGANIZACIONAL.diretoria
-    const gerencia = diretoria.gerencias[gerenciaUsuario]
+    const gerencia = gerenciaUsuario
+      ? diretoria.gerencias[gerenciaUsuario]
+      : undefined
 
     if (!gerencia || !gerencia.divisoes.includes(divisaoUsuario as never)) {
       window.alert('Selecione uma Gerência e uma Divisão válidas.')
@@ -1528,12 +1528,15 @@ function Administracao({
                       <select
                         value={gerenciaUsuario}
                         onChange={(event) => {
-                          const novaGerencia = event.target.value as SiglaGerencia
-                          const dadosGerencia = ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[novaGerencia]
-                          setGerenciaUsuario(novaGerencia)
-                          setDivisaoUsuario(dadosGerencia.divisoes[0])
+                          const valor = event.target.value as SiglaGerencia | ''
+                          setGerenciaUsuario(valor)
+                          setDivisaoUsuario('')
                         }}
                       >
+                        <option value="">
+                          Selecione...
+                        </option>
+
                         {(Object.entries(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias) as Array<[SiglaGerencia, (typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias)[SiglaGerencia]]>).map(([sigla, gerencia]) => (
                           <option key={sigla} value={sigla}>
                             {sigla} — {gerencia.nome}
@@ -1547,12 +1550,18 @@ function Administracao({
                       <select
                         value={divisaoUsuario}
                         onChange={(event) => setDivisaoUsuario(event.target.value)}
+                        disabled={!gerenciaUsuario}
                       >
-                        {ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaUsuario].divisoes.map((divisao) => (
-                          <option key={divisao} value={divisao}>
-                            {divisao}
-                          </option>
-                        ))}
+                        <option value="">
+                          Selecione...
+                        </option>
+
+                        {gerenciaUsuario &&
+                          ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaUsuario].divisoes.map((divisao) => (
+                            <option key={divisao} value={divisao}>
+                              {divisao}
+                            </option>
+                          ))}
                       </select>
                     </label>
                   </div>

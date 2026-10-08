@@ -808,25 +808,66 @@ function App() {
     usuario: Usuario,
     exigirTrocaSenha = false
   ) {
+    // ========================================================
+    // REGISTRA O ÚLTIMO ACESSO DO USUÁRIO
+    //
+    // O registro acontece imediatamente após a autenticação,
+    // inclusive quando o usuário precisa trocar a senha no
+    // primeiro acesso.
+    // ========================================================
+
+    const dataUltimoAcesso = agoraISO()
+
+    const usuarios = carregarUsuarios()
+
+    const usuariosAtualizados = usuarios.map((item) =>
+      item.id === usuario.id
+        ? {
+            ...item,
+            ultimoAcesso: dataUltimoAcesso,
+          }
+        : item
+    )
+
+    salvarUsuarios(usuariosAtualizados)
+
+    const usuarioAtualizado =
+      usuariosAtualizados.find(
+        (item) => item.id === usuario.id
+      ) || {
+        ...usuario,
+        ultimoAcesso: dataUltimoAcesso,
+      }
+
+    // ========================================================
+    // PRIMEIRO ACESSO / TROCA OBRIGATÓRIA DE SENHA
+    // ========================================================
+
     if (exigirTrocaSenha) {
-      setUsuarioTrocaSenha(usuario)
+      setUsuarioTrocaSenha(
+        usuarioAtualizado
+      )
 
       return
     }
 
+    // ========================================================
+    // CRIA A SESSÃO
+    // ========================================================
+
     const novaSessao:
       SessaoUsuario = {
       usuarioId:
-        usuario.id,
+        usuarioAtualizado.id,
 
       nome:
-        usuario.nome,
+        usuarioAtualizado.nome,
 
       perfil:
-        usuario.perfil,
+        usuarioAtualizado.perfil,
 
       login:
-        usuario.login,
+        usuarioAtualizado.login,
     }
 
     salvarSessao(
@@ -838,7 +879,9 @@ function App() {
     )
 
     setPagina(
-      ehPerfilOperacional(usuario.perfil)
+      ehPerfilOperacional(
+        usuarioAtualizado.perfil
+      )
         ? 'dashboard-analista'
         : 'dashboard'
     )

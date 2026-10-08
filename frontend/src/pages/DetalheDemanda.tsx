@@ -782,11 +782,9 @@ export function DetalheDemandaPage({
 
     setPrioridadeSelecionada,
 
-  ] = useState(
+  ] = useState(''
 
-    demanda.prioridade
-
-  )
+)
 
 
 
@@ -902,11 +900,7 @@ export function DetalheDemandaPage({
 
 
 
-    setPrioridadeSelecionada(
-
-      demanda.prioridade
-
-    )
+    setPrioridadeSelecionada('')
 
 
 
@@ -3249,6 +3243,15 @@ export function DetalheDemandaPage({
 
 
 
+                    <option value="">
+
+                      Selecione...
+
+                    </option>
+
+
+
+
                     {PRIORIDADES.map(
 
                       (item) => (
@@ -3429,11 +3432,13 @@ export function DetalheDemandaPage({
 
                   disabled={
 
-                    prioridadeSelecionada ===
+                    !prioridadeSelecionada ||
 
-                    demanda.prioridade
+                    prioridadeSelecionada ===
 
-                  }
+                    demanda.prioridade
+
+                  }
 
                   onClick={() => {
 
@@ -3472,6 +3477,8 @@ export function DetalheDemandaPage({
                     mostrarToast(
                       'Criticidade Da Demanda Alterada Com Sucesso.'
                     )
+
+                    setPrioridadeSelecionada('')
 
                     
 

@@ -981,7 +981,7 @@ function iniciaisDoUsuario(nome: string) {
 
 function perfilExibicao(usuario: Usuario) {
   return usuario.perfil === 'Gestor/Administrador'
-    ? 'Gestor'
+    ? 'Gestor (a)'
     : usuario.perfil
 }
 
