@@ -79,7 +79,7 @@ export default function Relatorios({
 
       const dentroPrioridade =
         prioridade === 'todas' ||
-        demanda.prioridade === prioridade
+        (demanda.criticidade || demanda.prioridade) === prioridade
 
       return dentroPeriodo && dentroStatus && dentroPrioridade
     })
@@ -117,7 +117,7 @@ export default function Relatorios({
   ].map((nome) => ({
     nome,
     total: filtradas.filter(
-      (item) => item.prioridade === nome
+      (item) => (item.criticidade || item.prioridade) === nome
     ).length,
   }))
 
@@ -143,6 +143,7 @@ export default function Relatorios({
       'Sistema',
       'Analista',
       'Criticidade',
+      'Prioridade de Atendimento',
       'Status',
       'Prazo',
       'Abertura',
@@ -154,7 +155,8 @@ export default function Relatorios({
       item.cliente,
       item.sistema || '',
       item.responsavel || '',
-      item.prioridade,
+      item.criticidade || item.prioridade,
+      item.prioridadeAtendimento || '',
       item.status,
       item.prazo,
       item.dataAbertura || '',
@@ -511,7 +513,7 @@ export default function Relatorios({
                     <th>Título</th>
                     <th>Cliente</th>
                     <th>Analista</th>
-                    <th>Criticidade</th>
+                    <th>Classificação</th>
                     <th>Status</th>
                     <th>Prazo</th>
                   </tr>
@@ -545,7 +547,10 @@ export default function Relatorios({
                         </td>
 
                         <td>
-                          {item.prioridade}
+                          <strong>{item.criticidade || item.prioridade}</strong>
+                          <small style={{ display: 'block', marginTop: 4, color: '#475569' }}>
+                            {item.prioridadeAtendimento || '—'}
+                          </small>
                         </td>
 
                         <td>

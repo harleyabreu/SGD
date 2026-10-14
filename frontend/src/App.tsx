@@ -1,6 +1,6 @@
 // ============================================================
 // GESTÃO DE DEMANDAS DE TI
-// V2.8 — APLICAÇÃO PRINCIPAL — ESTÁVEL
+// V2.9 — APLICAÇÃO PRINCIPAL — PRIORIDADE DE ATENDIMENTO EDITÁVEL
 // ============================================================
 // ARQUIVO: src/App.tsx
 //
@@ -97,7 +97,8 @@ function criarNotificacao(notificacao: Parameters<typeof criarNotificacaoBase>[0
   if (campo && !notificacaoHabilitada(campo)) return
   criarNotificacaoBase(notificacao)
 }
-import { diasPrazoPorPrioridade as obterDiasSLAConfigurados } from './sla'
+
+import { diasPrazoPorPrioridade as obterDiasSLAConfigurados, diasSLACombinado, PRIORIDADES_ATENDIMENTO } from './sla'
 
 // ============================================================
 // USUÁRIO PADRÃO
@@ -307,9 +308,12 @@ function adicionarDiasUteis(
 // ============================================================
 
 function diasPrazoPorPrioridade(
-  prioridade: string
+  criticidade: string,
+  prioridadeAtendimento?: string
 ): number {
-  return obterDiasSLAConfigurados(prioridade)
+  return prioridadeAtendimento
+    ? diasSLACombinado(criticidade, prioridadeAtendimento)
+    : obterDiasSLAConfigurados(criticidade)
 }
 
 // ============================================================
@@ -317,15 +321,14 @@ function diasPrazoPorPrioridade(
 // ============================================================
 
 function calcularPrazo(
-  prioridade: string,
-  dataAbertura = new Date()
+  criticidade: string,
+  dataAbertura = new Date(),
+  prioridadeAtendimento?: string
 ): string {
   return dataLocalISO(
     adicionarDiasUteis(
       dataAbertura,
-      diasPrazoPorPrioridade(
-        prioridade
-      )
+      diasPrazoPorPrioridade(criticidade, prioridadeAtendimento)
     )
   )
 }
@@ -387,17 +390,30 @@ let nomeUsuarioAtualGlobal =
 function normalizarDemanda(
   demanda: Demanda
 ): Demanda {
-  const prioridadeOriginal =
-    demanda.prioridade
+  // Campo `prioridade` era utilizado historicamente para guardar a criticidade.
+  // Mantemos essa compatibilidade enquanto normalizamos os novos campos.
+  const criticidadeOriginal =
+    demanda.criticidade || demanda.prioridade
 
-  const prioridade =
-    prioridadeOriginal === 'Urgente'
+  const criticidade =
+    criticidadeOriginal === 'Urgente'
       ? 'Crítica'
-      : PRIORIDADES.includes(
-          prioridadeOriginal
-        )
-        ? prioridadeOriginal
+      : PRIORIDADES.includes(criticidadeOriginal)
+        ? criticidadeOriginal
         : 'Média'
+
+  const prioridadeLegadaParaAtendimento: Record<string, string> = {
+    'Crítica': 'P1 — Imediata',
+    'Alta': 'P2 — Urgente',
+    'Média': 'P3 — Normal',
+    'Baixa': 'P4 — Planejada',
+    'Urgente': 'P1 — Imediata',
+  }
+
+  const prioridadeAtendimento =
+    PRIORIDADES_ATENDIMENTO.includes(demanda.prioridadeAtendimento as typeof PRIORIDADES_ATENDIMENTO[number])
+      ? demanda.prioridadeAtendimento!
+      : prioridadeLegadaParaAtendimento[criticidadeOriginal] || prioridadeLegadaParaAtendimento[criticidade]
 
   const dataAbertura =
     demanda.dataAbertura ||
@@ -433,7 +449,11 @@ function normalizarDemanda(
 
     status,
 
-    prioridade,
+    criticidade,
+
+    prioridade: criticidade,
+
+    prioridadeAtendimento,
 
     responsavel:
       demanda.responsavel || '',
@@ -452,14 +472,16 @@ function normalizarDemanda(
     prazo:
       demanda.prazo ||
       calcularPrazo(
-        prioridade,
-        new Date(dataAbertura)
+        criticidade,
+        new Date(dataAbertura),
+        prioridadeAtendimento
       ),
 
     prazoDiasUteis:
       demanda.prazoDiasUteis ||
       diasPrazoPorPrioridade(
-        prioridade
+        criticidade,
+        prioridadeAtendimento
       ),
 
     prazoManual:
@@ -1098,18 +1120,32 @@ function App() {
     const id =
       Date.now()
 
-    const prioridade =
-      PRIORIDADES.includes(
-        demanda.prioridade
-      )
-        ? demanda.prioridade
+    const criticidadeInformada =
+      demanda.criticidade || demanda.prioridade
+
+    const criticidade =
+      PRIORIDADES.includes(criticidadeInformada)
+        ? criticidadeInformada
         : 'Média'
+
+    const prioridadeLegadaParaAtendimento: Record<string, string> = {
+      'Crítica': 'P1 — Imediata',
+      'Alta': 'P2 — Urgente',
+      'Média': 'P3 — Normal',
+      'Baixa': 'P4 — Planejada',
+    }
+
+    const prioridadeAtendimento =
+      PRIORIDADES_ATENDIMENTO.includes(demanda.prioridadeAtendimento as typeof PRIORIDADES_ATENDIMENTO[number])
+        ? demanda.prioridadeAtendimento!
+        : prioridadeLegadaParaAtendimento[criticidade]
 
     const prazo =
       demanda.prazo ||
       calcularPrazo(
-        prioridade,
-        agora
+        criticidade,
+        agora,
+        prioridadeAtendimento
       )
 
     const responsavel =
@@ -1135,7 +1171,11 @@ function App() {
 
         id,
 
-        prioridade,
+        criticidade,
+
+        prioridade: criticidade,
+
+        prioridadeAtendimento,
 
         prazo,
 
@@ -1149,7 +1189,8 @@ function App() {
 
         prazoDiasUteis:
           diasPrazoPorPrioridade(
-            prioridade
+            criticidade,
+            prioridadeAtendimento
           ),
 
         prazoManual: false,
@@ -1224,7 +1265,7 @@ function App() {
         demandaId:
           id,
 
-        prioridade,
+        prioridade: criticidade,
       })
     }
 
@@ -1280,8 +1321,7 @@ function App() {
       id,
       (demanda) => {
         if (
-          demanda.prioridade ===
-          novaPrioridade
+          (demanda.criticidade || demanda.prioridade) === novaPrioridade
         ) {
           return demanda
         }
@@ -1293,7 +1333,8 @@ function App() {
 
         const novoSla =
           diasPrazoPorPrioridade(
-            novaPrioridade
+            novaPrioridade,
+            demanda.prioridadeAtendimento
           )
 
         const saldo =
@@ -1341,6 +1382,9 @@ function App() {
 
         return {
           ...demanda,
+
+          criticidade:
+            novaPrioridade,
 
           prioridade:
             novaPrioridade,
@@ -1395,6 +1439,91 @@ function App() {
         }
       }
     )
+  }
+
+  // ==========================================================
+  // ALTERAR PRIORIDADE DE ATENDIMENTO
+  // Aplica o SLA combinado de Criticidade e Prioridade sobre o saldo restante.
+  // ==========================================================
+  function alterarPrioridadeAtendimento(
+    id: number,
+    novaPrioridadeAtendimento: string,
+    motivo?: string
+  ) {
+    if (!ehGestor(sessao)) {
+      return
+    }
+
+    if (!PRIORIDADES_ATENDIMENTO.includes(novaPrioridadeAtendimento as typeof PRIORIDADES_ATENDIMENTO[number])) {
+      return
+    }
+
+    const demandaAlvo = demandas.find((item) => item.id === id)
+    if (!demandaAlvo) {
+      return
+    }
+
+    if (demandaAlvo.status === 'Concluída' || demandaAlvo.status === 'Cancelada') {
+      window.alert('Demandas concluídas ou canceladas não podem ter a Prioridade de Atendimento alterada. Reabra a demanda antes, quando aplicável.')
+      return
+    }
+
+    const motivoFinal = motivo?.trim() || 'Alteração de Prioridade de Atendimento realizada pelo Gestor.'
+
+    atualizarDemanda(id, (demanda) => {
+      if (demanda.status === 'Concluída' || demanda.status === 'Cancelada') {
+        return demanda
+      }
+
+      const prioridadeAtual = demanda.prioridadeAtendimento || ''
+      if (prioridadeAtual === novaPrioridadeAtendimento) {
+        return demanda
+      }
+
+      const criticidadeAtual = demanda.criticidade || demanda.prioridade || 'Média'
+      const consumidos = diasUteisConsumidosSemPendencia(demanda)
+      const novoSla = diasSLACombinado(criticidadeAtual, novaPrioridadeAtendimento)
+      const saldo = Math.max(novoSla - consumidos, 0)
+      const novoPrazo = dataLocalISO(adicionarDiasUteis(new Date(), saldo))
+      const agora = agoraISO()
+      const descricao = `Prioridade de Atendimento alterada de "${prioridadeAtual || 'Não definida'}" para "${novaPrioridadeAtendimento}". Tempo já consumido: ${consumidos} dia(s) útil(eis). Novo SLA combinado: ${novoSla} dia(s) útil(eis). Saldo considerado: ${saldo} dia(s) útil(eis).`
+
+      registrarAlteracao(
+        'demanda',
+        id,
+        'alteracao_prioridade_atendimento',
+        descricao,
+        nomeUsuarioAtual,
+        {
+          valorAnterior: prioridadeAtual || 'Não definida',
+          valorNovo: novaPrioridadeAtendimento,
+          motivo: motivoFinal,
+        }
+      )
+
+      const historico: Historico = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        tipo: 'prioridade_atendimento',
+        titulo: 'Prioridade de Atendimento alterada',
+        descricao,
+        data: agora,
+        usuario: nomeUsuarioAtual,
+        referenciaId: id,
+        valorAnterior: prioridadeAtual || 'Não definida',
+        valorNovo: novaPrioridadeAtendimento,
+        motivo: motivoFinal,
+      }
+
+      return {
+        ...demanda,
+        prioridadeAtendimento: novaPrioridadeAtendimento,
+        prazo: novoPrazo,
+        prazoDiasUteis: novoSla,
+        prazoManual: false,
+        motivoAlteracaoPrioridade: motivoFinal,
+        historico: [historico, ...(demanda.historico || [])],
+      }
+    })
   }
 
   // ==========================================================
@@ -3345,6 +3474,10 @@ function App() {
 
         onAlterarPrioridade={
           alterarPrioridade
+        }
+
+        onAlterarPrioridadeAtendimento={
+          alterarPrioridadeAtendimento
         }
 
         onAlterarPrazoManual={

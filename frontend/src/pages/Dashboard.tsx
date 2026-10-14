@@ -63,6 +63,10 @@ type Demanda = {
   sistema?: string
   tipo?: string
   responsavel: string
+  /** Classificação de impacto, mantendo compatibilidade com o campo legado. */
+  criticidade?: string
+  /** Urgência do atendimento, independente da criticidade. */
+  prioridadeAtendimento?: string
   prioridade: string
   prazo: string
   observacao: string
@@ -127,9 +131,7 @@ function carregarDemandas(): Demanda[] {
           ? 'Em Atendimento'
           : demanda.status,
       prioridade:
-        demanda.prioridade === 'Urgente'
-          ? 'Crítica'
-          : demanda.prioridade,
+        demanda.criticidade || (demanda.prioridade === 'Crítica' ? 'Crítica' : demanda.prioridade),
     }))
 
     const houveMigracao = dados.some(
@@ -719,7 +721,7 @@ function Dashboard({
       (filtroResponsavel === 'Todos' ||
         demanda.responsavel === filtroResponsavel) &&
       (filtroPrioridade === 'Todas' ||
-        demanda.prioridade === filtroPrioridade) &&
+        (demanda.criticidade || demanda.prioridade) === filtroPrioridade) &&
       (filtroStatus === 'Todos' || demanda.status === filtroStatus) &&
       situacaoAtendida
     )
@@ -874,7 +876,7 @@ function Dashboard({
   const demandasCriticas = demandas
     .filter(
       (demanda) =>
-        demanda.prioridade === 'Crítica' &&
+        ((demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata' || demanda.prioridadeAtendimento === 'P2 — Urgente') &&
         demanda.status !== 'Concluída' &&
         demanda.status !== 'Cancelada'
     )
@@ -944,7 +946,7 @@ function Dashboard({
       (demanda) =>
         estaAtrasada(demanda) ||
         demanda.status === 'Com Pendências' ||
-        demanda.prioridade === 'Crítica' ||
+        ((demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata' || demanda.prioridadeAtendimento === 'P2 — Urgente') ||
         estaProximaDoVencimento(demanda)
     )
     .sort((a, b) => {
@@ -1001,7 +1003,7 @@ function Dashboard({
 
   const pontosComplexidade = demandasConcluidas.reduce(
     (total, demanda) =>
-      total + (pontosPrioridade[demanda.prioridade] || 0),
+      total + (pontosPrioridade[(demanda.criticidade || demanda.prioridade)] || 0),
     0
   )
 
@@ -1056,7 +1058,7 @@ function Dashboard({
         : null
 
       atual.concluidas += 1
-      atual.pontos += pontosPrioridade[demanda.prioridade] || 0
+      atual.pontos += pontosPrioridade[(demanda.criticidade || demanda.prioridade)] || 0
 
       if (conclusao) {
         atual.tma += calcularTempoAtendimento(demanda, conclusao)
@@ -1715,7 +1717,7 @@ function Dashboard({
             <div>
 
               <span className="card-label">
-                Demandas Críticas
+                Demandas Urgentes
               </span>
 
               <strong>
@@ -1723,7 +1725,7 @@ function Dashboard({
               </strong>
 
               <small>
-                Criticidade Máxima
+                Prioridade Máxima
               </small>
 
             </div>
@@ -1839,11 +1841,11 @@ function Dashboard({
 
             <div>
               <h3>
-                🚨 Demandas Críticas
+                🚨 Demandas Urgentes
               </h3>
 
               <small>
-                Demandas Com Criticidade Máxima Que Exigem
+                Demandas Com Prioridade Máxima Que Exigem
                 Acompanhamento Do Gestor.
               </small>
             </div>
@@ -1855,8 +1857,8 @@ function Dashboard({
             }>
               {pluralizar(
                 criticas,
-                'Demanda Crítica',
-                'Demandas Críticas'
+                'Demanda Urgente',
+                'Demandas Urgentes'
               )}
             </span>
 
@@ -1869,11 +1871,11 @@ function Dashboard({
 
               <div>
                 <strong>
-                  Nenhuma Demanda Crítica.
+                  Nenhuma Demanda Urgente.
                 </strong>
 
                 <small>
-                  Não Existem Demandas Com Criticidade
+                  Não Existem Demandas Com Prioridade
                   Máxima No Momento.
                 </small>
               </div>
@@ -1951,7 +1953,7 @@ function Dashboard({
 
                 <div className="critical-demands-more">
                   <small>
-                    Exibindo As Primeiras 8 Demandas Críticas.
+                    Exibindo As Primeiras 8 Demandas Urgentes.
                   </small>
 
                   {onTodasDemandas && (
@@ -2547,7 +2549,7 @@ function Dashboard({
 
               <small>
                 Atrasadas, Pendentes,
-                Críticas Ou Próximas Do Vencimento
+                Urgentes Ou Próximas Do Vencimento
               </small>
 
             </div>
@@ -2576,7 +2578,7 @@ function Dashboard({
 
                 <small>
                   Não Existem Demandas Atrasadas
-                  Ou Com Situação Crítica No Momento.
+                  Ou Com Situação Urgente No Momento.
                 </small>
 
               </div>
@@ -2626,7 +2628,7 @@ function Dashboard({
 
                   } else if (
                     demanda.prioridade ===
-                      'Crítica'
+                      'Urgente'
                   ) {
 
                     classe =
@@ -2774,7 +2776,7 @@ function Dashboard({
             </strong>
 
             <span>
-              Críticas
+              Urgentes
             </span>
 
           </div>

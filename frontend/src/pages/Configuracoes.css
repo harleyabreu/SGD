@@ -409,6 +409,7 @@
 @media (max-width: 1000px) {
   .config-identificacao,
   .config-sla-grid,
+  .config-sla-prioridade-grid,
   .config-notificacoes-grid,
   .config-interface-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -446,6 +447,7 @@
 
   .config-identificacao,
   .config-sla-grid,
+  .config-sla-prioridade-grid,
   .config-notificacoes-grid,
   .config-interface-grid {
     grid-template-columns: 1fr !important;

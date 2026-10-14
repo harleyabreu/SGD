@@ -34,6 +34,12 @@ type ConfiguracoesSistema = {
     media: number
     baixa: number
   }
+  slaPrioridade: {
+    p1: number
+    p2: number
+    p3: number
+    p4: number
+  }
   notificacoes: {
     atrasadas: boolean
     proximoVencimento: boolean
@@ -56,6 +62,12 @@ const CONFIGURACOES_PADRAO: ConfiguracoesSistema = {
     alta: 6,
     media: 10,
     baixa: 20,
+  },
+  slaPrioridade: {
+    p1: 2,
+    p2: 6,
+    p3: 10,
+    p4: 20,
   },
   notificacoes: {
     atrasadas: true,
@@ -91,6 +103,10 @@ function carregarConfiguracoes(): ConfiguracoesSistema {
       sla: {
         ...CONFIGURACOES_PADRAO.sla,
         ...(dados.sla || {}),
+      },
+      slaPrioridade: {
+        ...CONFIGURACOES_PADRAO.slaPrioridade,
+        ...(dados.slaPrioridade || {}),
       },
       notificacoes: {
         ...CONFIGURACOES_PADRAO.notificacoes,
@@ -257,6 +273,27 @@ export default function Configuracoes({
     }))
   }
 
+  function alterarSLAPrioridade(campo: keyof ConfiguracoesSistema['slaPrioridade'], valor: string) {
+    const numero = Number(valor)
+    setConfiguracoes((atual) => ({
+      ...atual,
+      slaPrioridade: {
+        ...atual.slaPrioridade,
+        [campo]: Number.isFinite(numero) && numero > 0 ? Math.min(365, Math.floor(numero)) : 1,
+      },
+    }))
+  }
+
+  function ajustarSLAPrioridade(campo: keyof ConfiguracoesSistema['slaPrioridade'], delta: number) {
+    setConfiguracoes((atual) => ({
+      ...atual,
+      slaPrioridade: {
+        ...atual.slaPrioridade,
+        [campo]: Math.min(365, Math.max(1, atual.slaPrioridade[campo] + delta)),
+      },
+    }))
+  }
+
   function alterarNotificacao(campo: keyof ConfiguracoesSistema['notificacoes']) {
     setConfiguracoes((atual) => ({
       ...atual,
@@ -285,6 +322,7 @@ export default function Configuracoes({
 
     const padrao: ConfiguracoesSistema = {
       sla: { ...CONFIGURACOES_PADRAO.sla },
+      slaPrioridade: { ...CONFIGURACOES_PADRAO.slaPrioridade },
       notificacoes: { ...CONFIGURACOES_PADRAO.notificacoes },
       interface: { ...CONFIGURACOES_PADRAO.interface },
     }
@@ -387,7 +425,7 @@ export default function Configuracoes({
             <div className="configuracoes-section-icon" style={sectionIcon('#fff7ed', '#ea580c')}>◷</div>
             <div>
               <h2 className="configuracoes-section-heading" style={{ margin: 0, fontSize: 15, fontWeight: 750 }}>Regras de SLA</h2>
-              <p style={{ margin: '3px 0 0', color: '#64748b', fontSize: 12 }}>Defina a quantidade de dias úteis para cada criticidade.</p>
+              <p style={{ margin: '3px 0 0', color: '#64748b', fontSize: 12 }}>Defina prazos-base editáveis para Criticidade e Prioridade de Atendimento.</p>
             </div>
           </div>
 
@@ -446,9 +484,45 @@ export default function Configuracoes({
             ))}
           </div>
 
+          <div style={{ marginTop: 18, marginBottom: 9 }}>
+            <h3 style={{ margin: 0, fontSize: 13, color: '#0f172a', fontWeight: 750 }}>Prazos por Prioridade de Atendimento</h3>
+            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: 12 }}>O prazo final será o menor valor entre a Criticidade e a Prioridade selecionadas.</p>
+          </div>
+          <div className="config-sla-grid config-sla-prioridade-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+            {([
+              ['P1 — Imediata', 'p1', '#fef2f2', '#dc2626'],
+              ['P2 — Urgente', 'p2', '#fff7ed', '#ea580c'],
+              ['P3 — Normal', 'p3', '#eff6ff', '#2563eb'],
+              ['P4 — Planejada', 'p4', '#f0fdf4', '#16a34a'],
+            ] as const).map(([nome, campo, fundo, cor]) => (
+              <label key={campo} style={{ padding: 10, border: '1px solid #e2e8f0', borderRadius: 10, background: '#ffffff' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: cor }} />
+                  <span style={{ ...labelStyle, margin: 0, color: cor }}>{nome}</span>
+                </div>
+                <div className="config-sla-input-wrap" style={{ position: 'relative' }}>
+                  <input
+                    className="config-sla-input"
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={configuracoes.slaPrioridade[campo]}
+                    onChange={(e) => alterarSLAPrioridade(campo, e.target.value)}
+                    style={{ ...inputStyle, paddingRight: 118, background: fundo, borderColor: `${cor}35` }}
+                  />
+                  <span className="config-sla-suffix">dias úteis</span>
+                  <div className="config-sla-spinner" aria-hidden="true">
+                    <button type="button" className="config-sla-spinner-btn" onClick={() => ajustarSLAPrioridade(campo, 1)} aria-label={`Aumentar ${nome}`}>▲</button>
+                    <button type="button" className="config-sla-spinner-btn config-sla-spinner-btn-down" onClick={() => ajustarSLAPrioridade(campo, -1)} aria-label={`Diminuir ${nome}`}>▼</button>
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+
           <div style={{ marginTop: 12, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 9, border: '1px solid #dbeafe', borderRadius: 9, background: '#eff6ff', color: '#1e40af', fontSize: 11, lineHeight: 1.5 }}>
             <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 7, background: '#dbeafe', color: '#2563eb', fontWeight: 800 }}>i</span>
-            <span>Os valores padrão são <strong>2 / 6 / 10 / 20 dias úteis</strong>. Finais de semana e feriados cadastrados continuam sendo desconsiderados pelo cálculo atual.</span>
+            <span>Os prazos-base de Criticidade e Prioridade são editáveis acima. O sistema aplica o menor dos dois valores. Alterações valem para novas demandas; prazos já registrados são preservados. Finais de semana e feriados cadastrados são desconsiderados.</span>
           </div>
         </section>
 

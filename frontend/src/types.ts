@@ -282,6 +282,13 @@ export type Demanda = {
 
   responsavel: string
 
+  /** Classificação de impacto da demanda. Campo canônico; prioridade é mantida para compatibilidade. */
+  criticidade?: string
+
+  /** Prioridade de atendimento independente da criticidade. */
+  prioridadeAtendimento?: string
+
+  /** Campo legado, utilizado por telas e dados antigos como criticidade. */
   prioridade: string
 
   prazo: string
@@ -332,12 +339,15 @@ export const STATUS_DEMANDA = [
 // CRITICIDADES OFICIAIS
 // ============================================================
 
-export const PRIORIDADES_DEMANDA = [
+export const CRITICIDADES_DEMANDA = [
   'Crítica',
   'Alta',
   'Média',
   'Baixa',
 ] as const
+
+/** Alias legado mantido para preservar compatibilidade com versões anteriores. */
+export const PRIORIDADES_DEMANDA = CRITICIDADES_DEMANDA
 
 // ============================================================
 // TIPOS OFICIAIS DE DEMANDA

@@ -270,16 +270,16 @@ function estaProximaDoVencimento(demanda: Demanda): boolean {
 
 function pesoPrioridade(prioridade: string): number {
   switch (prioridade) {
+    case 'P1 — Imediata': return 5
+    case 'P2 — Urgente': return 4
+    case 'P3 — Normal': return 2
+    case 'P4 — Planejada': return 1
     case 'Crítica':
-      return 5
-    case 'Alta':
-      return 3
-    case 'Média':
-      return 2
-    case 'Baixa':
-      return 1
-    default:
-      return 0
+    case 'Urgente': return 5
+    case 'Alta': return 4
+    case 'Média': return 2
+    case 'Baixa': return 1
+    default: return 0
   }
 }
 
@@ -293,6 +293,7 @@ function obterClassePrioridade(
   switch (valor) {
 
     case 'Crítica':
+    case 'Urgente':
       return 'prioridade critica'
 
     case 'Alta':
@@ -306,6 +307,26 @@ function obterClassePrioridade(
 
     default:
       return 'prioridade baixa'
+  }
+}
+
+// ============================================================
+// CLASSE DA PRIORIDADE DE ATENDIMENTO
+// Mantém as cores separadas da criticidade/impacto.
+// ============================================================
+
+function obterClassePrioridadeAtendimento(valor: string) {
+  switch (valor) {
+    case 'P1 — Imediata':
+      return 'badge-prioridade-p1'
+    case 'P2 — Urgente':
+      return 'badge-prioridade-p2'
+    case 'P3 — Normal':
+      return 'badge-prioridade-p3'
+    case 'P4 — Planejada':
+      return 'badge-prioridade-p4'
+    default:
+      return 'badge-prioridade-indefinida'
   }
 }
 
@@ -419,7 +440,7 @@ export default function TodasDemandas({
     () => demandas.map((demanda) => ({
       ...demanda,
       status: normalizarStatus(demanda.status),
-      prioridade: demanda.prioridade === 'Crítica' ? 'Crítica' : demanda.prioridade,
+      prioridade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
     })),
     [demandas]
   )
@@ -590,7 +611,7 @@ export default function TodasDemandas({
 
         const correspondePrioridade =
           !prioridade ||
-          demanda.prioridade === prioridade
+          (demanda.criticidade || demanda.prioridade) === prioridade
 
         const correspondeSituacao = (() => {
           if (!situacao) {
@@ -610,7 +631,7 @@ export default function TodasDemandas({
           }
 
           if (situacao === 'criticas') {
-            return demanda.prioridade === 'Crítica'
+            return (demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata'
           }
 
           if (situacao === 'concluidas') {
@@ -682,7 +703,7 @@ export default function TodasDemandas({
       }
 
       if (ordenacao === 'prioridade') {
-        return pesoPrioridade(b.prioridade) - pesoPrioridade(a.prioridade)
+        return pesoPrioridade(b.prioridadeAtendimento || b.criticidade || b.prioridade) - pesoPrioridade(a.prioridadeAtendimento || a.criticidade || a.prioridade)
       }
 
       if (ordenacao === 'titulo') {
@@ -709,7 +730,7 @@ export default function TodasDemandas({
       total: demandasFiltradas.length,
       atrasadas: demandasFiltradas.filter(estaAtrasada).length,
       criticas: demandasFiltradas.filter(
-        (demanda) => demanda.prioridade === 'Crítica'
+        (demanda) => (demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata'
       ).length,
       proximas: demandasFiltradas.filter(estaProximaDoVencimento).length,
       concluidas: demandasFiltradas.filter(
@@ -992,6 +1013,7 @@ export default function TodasDemandas({
       'Cliente',
       'Responsável',
       'Criticidade',
+      'Prioridade de Atendimento',
       'Prazo',
       'Situação',
       'Status',
@@ -1004,7 +1026,8 @@ export default function TodasDemandas({
       demanda.descricao,
       demanda.cliente,
       demanda.responsavel,
-      demanda.prioridade,
+      demanda.criticidade || demanda.prioridade,
+      demanda.prioridadeAtendimento || '',
       formatarData(demanda.prazo),
       estaAtrasada(demanda)
         ? 'Atrasada'
@@ -1050,7 +1073,7 @@ export default function TodasDemandas({
     demanda: Demanda
   ) {
     const atrasada = estaAtrasada(demanda)
-    const prioridadeCritica = demanda.prioridade === 'Crítica'
+    const prioridadeCritica = (demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata'
 
     return (
       <div
@@ -1085,9 +1108,10 @@ export default function TodasDemandas({
 
         <div className="demanda-coluna">
           <span className="campo-label">CRITICIDADE</span>
-          <strong className={obterClassePrioridade(demanda.prioridade)}>
-            {demanda.prioridade}
+          <strong className={obterClassePrioridade(demanda.criticidade || demanda.prioridade)}>
+            {demanda.criticidade || demanda.prioridade}
           </strong>
+          <small className={`prioridade-atendimento-secundaria ${obterClassePrioridadeAtendimento(demanda.prioridadeAtendimento || '')}`}>{demanda.prioridadeAtendimento || 'Prioridade não definida'}</small>
         </div>
 
         <div className="demanda-coluna">
@@ -1397,7 +1421,7 @@ export default function TodasDemandas({
                   <option value="abertas">Abertas</option>
                   <option value="atrasadas">Atrasadas</option>
                   <option value="proximas">Próximas Do Vencimento</option>
-                  <option value="críticas">Críticas</option>
+                  <option value="criticas">Urgentes</option>
                   <option value="concluidas">Concluídas</option>
                   <option value="canceladas">Canceladas</option>
                 </select>
@@ -1443,7 +1467,7 @@ export default function TodasDemandas({
                   <option value="mais-recentes">Mais Recentes</option>
                   <option value="prazo-proximo">Prazo Mais Próximo</option>
                   <option value="prazo-distante">Prazo Mais Distante</option>
-                  <option value="prioridade">Maior Criticidade</option>
+                  <option value="prioridade">Maior Prioridade</option>
                   <option value="titulo">Título A-Z</option>
                 </select>
 
@@ -1601,7 +1625,7 @@ export default function TodasDemandas({
 
             <div className="resumo-item alerta">
               <strong>{resumoOperacional.criticas}</strong>
-              <span>Críticas</span>
+              <span>Urgentes</span>
             </div>
 
             <div className="resumo-item aviso">
@@ -1700,7 +1724,7 @@ export default function TodasDemandas({
                   <span># / Título</span>
                   <span>Cliente</span>
                   <span>Responsável</span>
-                  <span>Criticidade</span>
+                  <span>Classificação</span>
                   <span>Status</span>
                   <span>Prazo</span>
                   <span aria-hidden="true"></span>
@@ -2026,8 +2050,8 @@ export default function TodasDemandas({
                                     )
 
                                   const crítica =
-                                    demanda.prioridade ===
-                                    'Crítica'
+                                    (demanda.criticidade || demanda.prioridade) === 'Crítica' ||
+                                    demanda.prioridadeAtendimento === 'P1 — Imediata'
 
                                   return (
 
@@ -2132,8 +2156,9 @@ export default function TodasDemandas({
                                           )
                                         }
                                       >
-                                        {demanda.prioridade}
+                                        {demanda.criticidade || demanda.prioridade}
                                       </span>
+                                      <small className={`prioridade-atendimento-secundaria ${obterClassePrioridadeAtendimento(demanda.prioridadeAtendimento || '')}`}>{demanda.prioridadeAtendimento || 'Prioridade não definida'}</small>
 
                                       {/* ======================
                                           DESCRIÇÃO
@@ -2259,7 +2284,9 @@ export default function TodasDemandas({
                                               novoStatus ===
                                                 'Concluída' ||
                                               novoStatus ===
-                                                'Em Atendimento'
+                                                'Em Atendimento' ||
+                                              novoStatus ===
+                                                'Cancelada'
                                             ) &&
                                             onAbrirDetalhe
                                           ) {
@@ -2284,15 +2311,15 @@ export default function TodasDemandas({
                                             if (demanda.status === 'Nova') {
                                               return (
                                                 item === 'Aguardando' ||
-                                                item === 'Em Atendimento'
+                                                item === 'Em Atendimento' ||
+                                                item === 'Cancelada'
                                               )
                                             }
 
                                             if (demanda.status === 'Aguardando') {
                                               return (
                                                 item === 'Em Atendimento' ||
-                                                item === 'Com Pendências' ||
-                                                item === 'Concluída'
+                                                item === 'Cancelada'
                                               )
                                             }
 
@@ -2300,14 +2327,16 @@ export default function TodasDemandas({
                                               return (
                                                 item === 'Aguardando' ||
                                                 item === 'Com Pendências' ||
-                                                item === 'Concluída'
+                                                item === 'Concluída' ||
+                                                item === 'Cancelada'
                                               )
                                             }
 
                                             if (demanda.status === 'Com Pendências') {
                                               return (
                                                 item === 'Em Atendimento' ||
-                                                item === 'Concluída'
+                                                item === 'Concluída' ||
+                                                item === 'Cancelada'
                                               )
                                             }
 

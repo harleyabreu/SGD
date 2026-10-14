@@ -2,7 +2,7 @@
 
 // GESTÃO DE DEMANDAS DE TI
 
-// V2.4 — DETALHE DA DEMANDA
+// V2.5 — DETALHE DA DEMANDA — PRIORIDADE DE ATENDIMENTO EDITÁVEL
 
 // ============================================================
 
@@ -79,6 +79,7 @@ import MenuPrincipal from '../components/MenuPrincipal'
 
 import './DetalheDemanda.css'
 import { mostrarToast } from '../services/toast'
+import { PRIORIDADES_ATENDIMENTO } from '../sla'
 
 
 
@@ -188,6 +189,18 @@ type Props = {
 
 
 
+  onAlterarPrioridadeAtendimento?: (
+
+    id: number,
+
+    novaPrioridadeAtendimento: string,
+
+    motivo?: string
+
+  ) => void
+
+
+
   onAlterarPrazoManual?: (
 
     id: number,
@@ -255,15 +268,10 @@ const STATUS = [
 
 
 const PRIORIDADES = [
-
-  'Crítica',
-
-  'Alta',
-
-  'Média',
-
-  'Baixa',
-
+  'Crítica',
+  'Alta',
+  'Média',
+  'Baixa',
 ]
 
 
@@ -442,7 +450,7 @@ function classePrioridade(
 
   switch (prioridade) {
 
-    case 'Crítica':
+    case 'Urgente':
 
       return 'prioridade-alta'
 
@@ -521,6 +529,8 @@ export function DetalheDemandaPage({
   analistas = [],
 
   onAlterarPrioridade,
+
+  onAlterarPrioridadeAtendimento,
 
   onAlterarPrazoManual,
 
@@ -788,6 +798,12 @@ export function DetalheDemandaPage({
 
 
 
+  // PRIORIDADE DE ATENDIMENTO
+
+  const [prioridadeAtendimentoSelecionada, setPrioridadeAtendimentoSelecionada] = useState('')
+
+
+
   // ==========================================================
 
   // PRAZO
@@ -901,6 +917,10 @@ export function DetalheDemandaPage({
 
 
     setPrioridadeSelecionada('')
+
+
+
+    setPrioridadeAtendimentoSelecionada('')
 
 
 
@@ -3056,38 +3076,18 @@ export function DetalheDemandaPage({
 
 
             <div>
+              <span>CRITICIDADE</span>
+              <strong className={classePrioridade(demanda.criticidade || demanda.prioridade)}>
+                {demanda.criticidade || demanda.prioridade}
+              </strong>
+            </div>
 
+            <div>
+              <span>PRIORIDADE DE ATENDIMENTO</span>
+              <strong>{demanda.prioridadeAtendimento || 'Não definida'}</strong>
+            </div>
 
-
-              <span>
-
-                CRITICIDADE
-
-              </span>
-
-
-
-              <strong
-
-                className={classePrioridade(
-
-                  demanda.prioridade
-
-                )}
-
-              >
-
-                {demanda.prioridade}
-
-              </strong>
-
-
-
-            </div>
-
-
-
-            <div>
+            <div>
 
 
 
@@ -3288,6 +3288,23 @@ export function DetalheDemandaPage({
 
 
 
+                {/* PRIORIDADE DE ATENDIMENTO */}
+                <div className="campo-acao">
+                  <label htmlFor="prioridade-atendimento-gestor">
+                    Prioridade de Atendimento
+                  </label>
+                  <select
+                    id="prioridade-atendimento-gestor"
+                    value={prioridadeAtendimentoSelecionada}
+                    onChange={(event) => setPrioridadeAtendimentoSelecionada(event.target.value)}
+                    disabled={demanda.status === 'Concluída' || demanda.status === 'Cancelada'}
+                  >
+                    <option value="">Selecione...</option>
+                    {PRIORIDADES_ATENDIMENTO.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
                 {/* PRAZO */}
 
 
@@ -3360,7 +3377,7 @@ export function DetalheDemandaPage({
 
                 }
 
-                placeholder="Motivo obrigatório para alteração de prazo ou criticidade."
+                placeholder="Motivo obrigatório para alteração de prazo ou prioridade."
 
                 style={{
 
@@ -3452,7 +3469,7 @@ export function DetalheDemandaPage({
 
                       alert(
 
-                        'Informe o motivo da alteração de criticidade.'
+                        'Informe o motivo da alteração de prioridade.'
 
                       )
 
@@ -3496,6 +3513,37 @@ export function DetalheDemandaPage({
                   Alterar Criticidade
 
                 </button>
+                <button
+                  type="button"
+                  className="btn-principal"
+                  disabled={
+                    !prioridadeAtendimentoSelecionada ||
+                    prioridadeAtendimentoSelecionada === (demanda.prioridadeAtendimento || '') ||
+                    demanda.status === 'Concluída' ||
+                    demanda.status === 'Cancelada'
+                  }
+                  onClick={() => {
+                    if (!motivoAlteracao.trim()) {
+                      alert('Informe o motivo da alteração da Prioridade de Atendimento.')
+                      return
+                    }
+                    if (!onAlterarPrioridadeAtendimento) {
+                      alert('A alteração da Prioridade de Atendimento não está disponível.')
+                      return
+                    }
+                    onAlterarPrioridadeAtendimento(
+                      demanda.id,
+                      prioridadeAtendimentoSelecionada,
+                      motivoAlteracao.trim()
+                    )
+                    mostrarToast('Prioridade de Atendimento alterada com sucesso.')
+                    setPrioridadeAtendimentoSelecionada('')
+                    setMotivoAlteracao('')
+                  }}
+                >
+                  Alterar Prioridade
+                </button>
+
 
 
 

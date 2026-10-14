@@ -26,7 +26,7 @@ import type { Demanda, Usuario } from '../types'
 
 
 
-import { diasPrazoPorPrioridade } from '../sla'
+import { diasPrazoPorCriticidade, diasPrazoPorPrioridadeAtendimento, diasSLACombinado, PRIORIDADES_ATENDIMENTO } from '../sla'
 
 
 
@@ -168,7 +168,7 @@ type NovaDemandaProps = {
 
 
 
-const PRIORIDADES = ['Crítica', 'Alta', 'Média', 'Baixa']
+const CRITICIDADES = ['Crítica', 'Alta', 'Média', 'Baixa']
 
 
 
@@ -273,6 +273,8 @@ export default function NovaDemanda({
 
 
   const [sistemaSelecionado, setSistemaSelecionado] = useState('')
+  const [criticidadeSelecionada, setCriticidadeSelecionada] = useState('')
+  const [prioridadeSelecionada, setPrioridadeSelecionada] = useState('')
 
 
 
@@ -468,7 +470,9 @@ export default function NovaDemanda({
 
 
 
-      prioridade: String(formData.get('prioridade') || '').trim(),
+      criticidade: String(formData.get('criticidade') || '').trim(),
+      prioridade: String(formData.get('criticidade') || '').trim(), // Compatibilidade com telas e demandas antigas.
+      prioridadeAtendimento: String(formData.get('prioridadeAtendimento') || '').trim(),
 
 
 
@@ -524,7 +528,8 @@ export default function NovaDemanda({
 
 
 
-      !demanda.prioridade
+      !demanda.criticidade ||
+      !demanda.prioridadeAtendimento
 
 
 
@@ -1282,51 +1287,55 @@ export default function NovaDemanda({
 
 
 
-            <div className="formulario-grid">
+            <section className="classificacao-demanda-card">
+              <div className="classificacao-demanda-heading">
+                <div className="classificacao-demanda-icon" aria-hidden="true">◆</div>
+                <div>
+                  <h3>Classificação da Demanda</h3>
+                  <p>Informe o impacto e a urgência para definir o prazo de atendimento.</p>
+                </div>
+              </div>
+              <div className="classificacao-demanda-grid">
 
 
+
+                            <div className="campo">
+                <label htmlFor="criticidade">Criticidade *</label>
+                <select
+                  id="criticidade"
+                  name="criticidade"
+                  value={criticidadeSelecionada}
+                  onChange={(event) => setCriticidadeSelecionada(event.target.value)}
+                  required
+                >
+                  <option value="">Selecione...</option>
+                  {CRITICIDADES.map((criticidade) => (
+                    <option key={criticidade} value={criticidade}>{criticidade}</option>
+                  ))}
+                </select>
+                <small className="classificacao-ajuda">Impacto caso a demanda não seja resolvida.</small>
+              </div>
 
               <div className="campo">
-
-
-
-                <label htmlFor="prioridade">Criticidade *</label>
-
-
-
-                <select id="prioridade" name="prioridade" defaultValue="">
-
-
-
+                <label htmlFor="prioridadeAtendimento">Prioridade de Atendimento *</label>
+                <select
+                  id="prioridadeAtendimento"
+                  name="prioridadeAtendimento"
+                  value={prioridadeSelecionada}
+                  onChange={(event) => setPrioridadeSelecionada(event.target.value)}
+                  required
+                >
                   <option value="">Selecione...</option>
-
-
-
-                  {PRIORIDADES.map((prioridade) => (
-
-
-
-                    <option key={prioridade} value={prioridade}>
-
-
-
-                      {prioridade}
-
-
-
-                    </option>
-
-
-
+                  {PRIORIDADES_ATENDIMENTO.map((prioridade) => (
+                    <option key={prioridade} value={prioridade}>{prioridade}</option>
                   ))}
-
-
-
                 </select>
-
-
-
+                <small className="classificacao-ajuda">Urgência com que a equipe deve iniciar o atendimento.</small>
               </div>
+              </div>
+            </section>
+
+            <div className="formulario-grid">
 
 
 
@@ -1406,7 +1415,7 @@ export default function NovaDemanda({
 
 
 
-              className="campo"
+              className="campo sla-resumo-card"
 
 
 
@@ -1462,30 +1471,16 @@ export default function NovaDemanda({
 
 
 
-              <small style={{ marginTop: '4px', color: '#6b7c93' }}>
-
-
-
-                Crítica: {diasPrazoPorPrioridade('Crítica')} dias úteis •
-
-
-
-                Alta: {diasPrazoPorPrioridade('Alta')} •
-
-
-
-                Média: {diasPrazoPorPrioridade('Média')} •
-
-
-
-                Baixa: {diasPrazoPorPrioridade('Baixa')}.
-
-
-
-                Finais De Semana E Feriados Cadastrados Não São Contabilizados.
-
-
-
+              <small className="sla-resumo-texto">
+                {criticidadeSelecionada && prioridadeSelecionada ? (
+                  <>
+                    Prazo estimado: <strong>{diasSLACombinado(criticidadeSelecionada, prioridadeSelecionada)} dias úteis</strong>.
+                    O sistema utiliza o menor prazo entre a Criticidade ({diasPrazoPorCriticidade(criticidadeSelecionada)} dias) e a Prioridade ({diasPrazoPorPrioridadeAtendimento(prioridadeSelecionada)} dias).
+                  </>
+                ) : (
+                  'Selecione a Criticidade e a Prioridade de Atendimento para visualizar o prazo estimado.'
+                )}
+                {' '}Finais de semana e feriados cadastrados não são contabilizados.
               </small>
 
 
