@@ -161,6 +161,14 @@ const PRIORIDADES = [
   'Baixa',
 ]
 
+// Prioridade de Atendimento é um campo independente da Criticidade.
+const PRIORIDADES_ATENDIMENTO = [
+  'P1 — Imediata',
+  'P2 — Urgente',
+  'P3 — Normal',
+  'P4 — Planejada',
+]
+
 // ============================================================
 // FUNÇÃO PARA CONVERTER DATA
 // Aceita:
@@ -484,6 +492,11 @@ export default function TodasDemandas({
   ] = useState('')
 
   const [
+    prioridadeAtendimento,
+    setPrioridadeAtendimento
+  ] = useState('')
+
+  const [
     situacao,
     setSituacao
   ] = useState('')
@@ -581,21 +594,19 @@ export default function TodasDemandas({
 
         const correspondePesquisa =
           !texto ||
-          demanda.titulo
-            .toLowerCase()
-            .includes(texto) ||
-          demanda.descricao
-            .toLowerCase()
-            .includes(texto) ||
-          demanda.id
-            .toString()
-            .includes(texto) ||
-          demanda.cliente
-            .toLowerCase()
-            .includes(texto) ||
-          demanda.responsavel
-            .toLowerCase()
-            .includes(texto)
+          [
+            demanda.titulo,
+            demanda.descricao,
+            demanda.id,
+            demanda.cliente,
+            demanda.responsavel,
+            demanda.criticidade || demanda.prioridade,
+            demanda.prioridadeAtendimento,
+          ].some((valor) =>
+            String(valor ?? '')
+              .toLocaleLowerCase('pt-BR')
+              .includes(texto)
+          )
 
         const correspondeCliente =
           !cliente ||
@@ -612,6 +623,10 @@ export default function TodasDemandas({
         const correspondePrioridade =
           !prioridade ||
           (demanda.criticidade || demanda.prioridade) === prioridade
+
+        const correspondePrioridadeAtendimento =
+          !prioridadeAtendimento ||
+          (demanda.prioridadeAtendimento || '') === prioridadeAtendimento
 
         const correspondeSituacao = (() => {
           if (!situacao) {
@@ -631,7 +646,12 @@ export default function TodasDemandas({
           }
 
           if (situacao === 'criticas') {
-            return (demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata'
+            // A situação "Urgentes" considera a Prioridade de Atendimento;
+            // Criticidade continua disponível no filtro próprio.
+            return (
+              demanda.prioridadeAtendimento === 'P1 — Imediata' ||
+              demanda.prioridadeAtendimento === 'P2 — Urgente'
+            )
           }
 
           if (situacao === 'concluidas') {
@@ -683,6 +703,7 @@ export default function TodasDemandas({
           correspondeResponsavel &&
           correspondeStatus &&
           correspondePrioridade &&
+          correspondePrioridadeAtendimento &&
           correspondeSituacao &&
           correspondePeriodo
         )
@@ -703,7 +724,9 @@ export default function TodasDemandas({
       }
 
       if (ordenacao === 'prioridade') {
-        return pesoPrioridade(b.prioridadeAtendimento || b.criticidade || b.prioridade) - pesoPrioridade(a.prioridadeAtendimento || a.criticidade || a.prioridade)
+        // Ordena exclusivamente pela Prioridade de Atendimento.
+        // Demandas sem esse campo ficam ao final, sem inferir pela Criticidade.
+        return pesoPrioridade(b.prioridadeAtendimento || '') - pesoPrioridade(a.prioridadeAtendimento || '')
       }
 
       if (ordenacao === 'titulo') {
@@ -720,6 +743,7 @@ export default function TodasDemandas({
     responsavel,
     status,
     prioridade,
+    prioridadeAtendimento,
     situacao,
     periodo,
     ordenacao,
@@ -729,8 +753,12 @@ export default function TodasDemandas({
     return {
       total: demandasFiltradas.length,
       atrasadas: demandasFiltradas.filter(estaAtrasada).length,
+      // O indicador "Urgentes" considera apenas P1/P2 da Prioridade de Atendimento.
+      // Criticidade é um campo independente e tem filtro próprio.
       criticas: demandasFiltradas.filter(
-        (demanda) => (demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata'
+        (demanda) =>
+          demanda.prioridadeAtendimento === 'P1 — Imediata' ||
+          demanda.prioridadeAtendimento === 'P2 — Urgente'
       ).length,
       proximas: demandasFiltradas.filter(estaProximaDoVencimento).length,
       concluidas: demandasFiltradas.filter(
@@ -885,6 +913,7 @@ export default function TodasDemandas({
     setResponsavel('')
     setStatus('')
     setPrioridade('')
+    setPrioridadeAtendimento('')
     setSituacao('')
     setPeriodo('')
     setOrdenacao('mais-recentes')
@@ -1073,7 +1102,7 @@ export default function TodasDemandas({
     demanda: Demanda
   ) {
     const atrasada = estaAtrasada(demanda)
-    const prioridadeCritica = (demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata'
+    const prioridadeCritica = (demanda.criticidade || demanda.prioridade) === 'Crítica'
 
     return (
       <div
@@ -1230,7 +1259,7 @@ export default function TodasDemandas({
 
                 <input
                   type="text"
-                  placeholder="Pesquisar Por Título, Descrição, Código, Cliente Ou Responsável..."
+                  placeholder="Pesquisar Por Título, Descrição, Código, Cliente, Responsável, Criticidade Ou Prioridade De Atendimento..."
                   
                   value={pesquisa}
                   onChange={(e) =>
@@ -1403,6 +1432,28 @@ export default function TodasDemandas({
 
               </div>
 
+              {/* PRIORIDADE DE ATENDIMENTO — INDEPENDENTE DA CRITICIDADE */}
+
+              <div className="campo">
+
+                <label>
+                  Prioridade De Atendimento
+                </label>
+
+                <select
+                  value={prioridadeAtendimento}
+                  onChange={(e) => setPrioridadeAtendimento(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {PRIORIDADES_ATENDIMENTO.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
               {/* SITUAÇÃO */}
 
               <div className="campo">
@@ -1421,7 +1472,7 @@ export default function TodasDemandas({
                   <option value="abertas">Abertas</option>
                   <option value="atrasadas">Atrasadas</option>
                   <option value="proximas">Próximas Do Vencimento</option>
-                  <option value="criticas">Urgentes</option>
+                  <option value="criticas">Urgentes (P1/P2)</option>
                   <option value="concluidas">Concluídas</option>
                   <option value="canceladas">Canceladas</option>
                 </select>
@@ -2050,8 +2101,7 @@ export default function TodasDemandas({
                                     )
 
                                   const crítica =
-                                    (demanda.criticidade || demanda.prioridade) === 'Crítica' ||
-                                    demanda.prioridadeAtendimento === 'P1 — Imediata'
+                                    (demanda.criticidade || demanda.prioridade) === 'Crítica'
 
                                   return (
 

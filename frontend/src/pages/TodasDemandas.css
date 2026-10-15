@@ -7176,3 +7176,21 @@ body {
   background: transparent !important;
   border-color: transparent !important;
 }
+
+
+/* ============================================================
+   INTEGRAÇÃO FUNCIONAL — FILTRO DE PRIORIDADE DE ATENDIMENTO
+   O campo é independente de Criticidade e recebe ícone próprio.
+   ============================================================ */
+.gd-page-content .filtros-grid .campo:nth-child(6) label::before {
+  content: '⚡' !important;
+}
+.gd-page-content .filtros-grid .campo:nth-child(7) label::before {
+  content: '≡' !important;
+}
+.gd-page-content .filtros-grid .campo:nth-child(8) label::before {
+  content: '◷' !important;
+}
+.gd-page-content .filtros-grid .campo:nth-child(9) label::before {
+  content: '↕' !important;
+}

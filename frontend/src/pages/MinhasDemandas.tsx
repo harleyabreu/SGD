@@ -1,1189 +1,2305 @@
 import { useMemo, useState, type FormEvent } from 'react'
 
+
+
 import type { Demanda, Usuario } from '../types'
+
+
 
 import { carregarUsuarios, salvarUsuarios } from '../services/storage'
 
+
+
 import { registrarAlteracao } from '../services/auditoria'
+
+
 
 import { mostrarToast } from '../services/toast'
 
+
+
 import MenuPrincipal from '../components/MenuPrincipal'
+
+
 
 import './MinhasDemandas.css'
 
 
 
+
+
+
+
 type Props = {
 
-  usuario: Usuario
 
-  demandas: Demanda[]
 
-  onVoltar: () => void
+  usuario: Usuario
 
-  onDashboard?: () => void
 
-  onConfiguracoes?: () => void
 
-  onAbrirDetalhe: (demanda: Demanda) => void
+  demandas: Demanda[]
 
-  onAlterarStatus: (id: number, novoStatus: string, motivo?: string) => void
 
-  onAdicionarComentario: (id: number, texto: string) => void
+
+  onVoltar: () => void
+
+
+
+  onDashboard?: () => void
+
+
+
+  onConfiguracoes?: () => void
+
+
+
+  onAbrirDetalhe: (demanda: Demanda) => void
+
+
+
+  onAlterarStatus: (id: number, novoStatus: string, motivo?: string) => void
+
+
+
+  onAdicionarComentario: (id: number, texto: string) => void
+
+
 
 }
+
+
+
+
 
 
 
 type UsuarioSeguranca = Usuario & {
 
-  senhaHash?: string
 
-  exigirTrocaSenha?: boolean
+
+  senhaHash?: string
+
+
+
+  exigirTrocaSenha?: boolean
+
+
 
 }
+
+
+
+
 
 
 
 const MINIMO_SENHA = 6
 
+
+
 const STATUS = ['Todos', 'Aguardando', 'Em Atendimento', 'Com Pendências', 'Concluída', 'Cancelada']
+
+
 
 const PRIORIDADES = ['Todas', 'Crítica', 'Alta', 'Média', 'Baixa']
 
 
 
+
+
+
+
 async function hashSenha(senha: string): Promise<string> {
 
-  const bytes = new TextEncoder().encode(senha)
 
-  const digest = await window.crypto.subtle.digest('SHA-256', bytes)
 
-  return Array.from(new Uint8Array(digest))
+  const bytes = new TextEncoder().encode(senha)
 
-    .map((byte) => byte.toString(16).padStart(2, '0'))
 
-    .join('')
+
+  const digest = await window.crypto.subtle.digest('SHA-256', bytes)
+
+
+
+  return Array.from(new Uint8Array(digest))
+
+
+
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+
+
+
+    .join('')
+
+
 
 }
+
+
+
+
 
 
 
 function converterData(data: string): Date | null {
 
-  if (!data) return null
+
+
+  if (!data) return null
 
 
 
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(data)
-
-  if (match) {
-
-    const [, dia, mes, ano] = match
-
-    const resultado = new Date(Number(ano), Number(mes) - 1, Number(dia))
-
-    resultado.setHours(0, 0, 0, 0)
-
-    return resultado
-
-  }
 
 
 
-  const resultado = new Date(data)
 
-  if (Number.isNaN(resultado.getTime())) return null
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(data)
 
-  resultado.setHours(0, 0, 0, 0)
 
-  return resultado
+
+  if (match) {
+
+
+
+    const [, dia, mes, ano] = match
+
+
+
+    const resultado = new Date(Number(ano), Number(mes) - 1, Number(dia))
+
+
+
+    resultado.setHours(0, 0, 0, 0)
+
+
+
+    return resultado
+
+
+
+  }
+
+
+
+
+
+
+
+  const resultado = new Date(data)
+
+
+
+  if (Number.isNaN(resultado.getTime())) return null
+
+
+
+  resultado.setHours(0, 0, 0, 0)
+
+
+
+  return resultado
+
+
 
 }
+
+
+
+
 
 
 
 function formatarData(data: string): string {
 
-  const valor = converterData(data)
 
-  if (!valor) return data || '—'
 
-  return valor.toLocaleDateString('pt-BR')
+  const valor = converterData(data)
+
+
+
+  if (!valor) return data || '—'
+
+
+
+  return valor.toLocaleDateString('pt-BR')
+
+
 
 }
+
+
+
+
 
 
 
 function estaAtrasada(demanda: Demanda): boolean {
 
-  if (!demanda.prazo || demanda.status === 'Concluída' || demanda.status === 'Cancelada') return false
 
-  const prazo = converterData(demanda.prazo)
 
-  if (!prazo) return false
+  if (!demanda.prazo || demanda.status === 'Concluída' || demanda.status === 'Cancelada') return false
 
-  const hoje = new Date()
 
-  hoje.setHours(0, 0, 0, 0)
 
-  return prazo < hoje
+  const prazo = converterData(demanda.prazo)
+
+
+
+  if (!prazo) return false
+
+
+
+  const hoje = new Date()
+
+
+
+  hoje.setHours(0, 0, 0, 0)
+
+
+
+  return prazo < hoje
+
+
 
 }
+
+
+
+
 
 
 
 function estaProxima(demanda: Demanda): boolean {
 
-  if (!demanda.prazo || demanda.status === 'Concluída' || demanda.status === 'Cancelada') return false
 
-  const prazo = converterData(demanda.prazo)
 
-  if (!prazo) return false
+  if (!demanda.prazo || demanda.status === 'Concluída' || demanda.status === 'Cancelada') return false
 
-  const hoje = new Date()
 
-  hoje.setHours(0, 0, 0, 0)
 
-  const limite = new Date(hoje)
+  const prazo = converterData(demanda.prazo)
 
-  limite.setDate(limite.getDate() + 7)
 
-  return prazo >= hoje && prazo <= limite
+
+  if (!prazo) return false
+
+
+
+  const hoje = new Date()
+
+
+
+  hoje.setHours(0, 0, 0, 0)
+
+
+
+  const limite = new Date(hoje)
+
+
+
+  limite.setDate(limite.getDate() + 7)
+
+
+
+  return prazo >= hoje && prazo <= limite
+
+
 
 }
+
+
+
+
 
 
 
 function classeStatus(status: string): string {
 
-  switch (status) {
 
-    case 'Nova':
 
-      return 'md-status-nova'
-
-    case 'Aguardando':
-
-      return 'md-status-aguardando'
-
-    case 'Em Atendimento':
-
-      return 'md-status-em-atendimento'
-
-    case 'Com Pendências':
-
-      return 'md-status-com-pendencias'
-
-    case 'Concluída':
-
-      return 'md-status-concluida'
-
-    case 'Cancelada':
-
-      return 'md-status-cancelada'
-
-    default:
-
-      return 'md-status'
-
-  }
-
-}
+  switch (status) {
 
 
 
-function estiloPrioridade(prioridade: string): React.CSSProperties {
+    case 'Nova':
 
-  switch (prioridade) {
 
-    case 'Urgente':
 
-      return {
+      return 'md-status-nova'
 
-        background: '#FDECEC',
 
-        color: '#B42318',
 
-      }
+    case 'Aguardando':
 
-    case 'Alta':
 
-      return {
 
-        background: '#FEF0F0',
+      return 'md-status-aguardando'
 
-        color: '#D92D20',
 
-      }
 
-    case 'Média':
+    case 'Em Atendimento':
 
-      return {
 
-        background: '#FFF1E6',
 
-        color: '#B54708',
+      return 'md-status-em-atendimento'
 
-      }
 
-    case 'Baixa':
 
-      return {
+    case 'Com Pendências':
 
-        background: '#EAF8EF',
 
-        color: '#16803C',
 
-      }
+      return 'md-status-com-pendencias'
 
-    default:
 
-      return {
 
-        background: '#EFF6FF',
+    case 'Concluída':
 
-        color: '#2563EB',
 
-      }
 
-  }
+      return 'md-status-concluida'
+
+
+
+    case 'Cancelada':
+
+
+
+      return 'md-status-cancelada'
+
+
+
+    default:
+
+
+
+      return 'md-status'
+
+
+
+  }
+
+
 
 }
+
+
+
+
+
+
+
+function classePrioridadeAtendimento(prioridadeAtendimento: string): string {
+  const prioridade = prioridadeAtendimento.trim().toUpperCase()
+
+  if (prioridade.startsWith('P1')) return 'md-prioridade-atendimento md-prioridade-p1'
+  if (prioridade.startsWith('P2')) return 'md-prioridade-atendimento md-prioridade-p2'
+  if (prioridade.startsWith('P3')) return 'md-prioridade-atendimento md-prioridade-p3'
+  if (prioridade.startsWith('P4')) return 'md-prioridade-atendimento md-prioridade-p4'
+
+  return 'md-prioridade-atendimento'
+}
+
+function normalizarCriticidade(valor: string): string {
+  return String(valor || '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+function classeLinhaCriticidade(criticidade: string): string {
+  const valor = normalizarCriticidade(criticidade)
+  return valor === 'critica' || valor === 'urgente' ? 'md-row-critica' : ''
+}
+
+function classeCriticidade(criticidade: string): string {
+  switch (normalizarCriticidade(criticidade)) {
+    case 'critica':
+    case 'urgente':
+      return 'md-criticidade-critica'
+    case 'alta':
+      return 'md-criticidade-alta'
+    case 'media':
+      return 'md-criticidade-media'
+    case 'baixa':
+      return 'md-criticidade-baixa'
+    default:
+      return 'md-criticidade-indefinida'
+  }
+}
+
 
 
 
 export default function MinhasDemandas({
 
-  usuario,
 
-  demandas,
 
-  onVoltar,
+  usuario,
 
-  onDashboard,
 
-  onConfiguracoes,
 
-  onAbrirDetalhe,
+  demandas,
 
-  onAlterarStatus,
+
+
+  onVoltar,
+
+
+
+  onDashboard,
+
+
+
+  onConfiguracoes,
+
+
+
+  onAbrirDetalhe,
+
+
+
+  onAlterarStatus,
+
+
 
 }: Props) {
 
-  const [pesquisa, setPesquisa] = useState('')
 
-  const [statusFiltro, setStatusFiltro] = useState('Todos')
 
-  const [prioridadeFiltro, setPrioridadeFiltro] = useState('Todas')
+  const [pesquisa, setPesquisa] = useState('')
 
-  const [situacaoFiltro, setSituacaoFiltro] = useState('Todos')
 
-  const [contaAberta, setContaAberta] = useState(false)
 
-  const [novoEmail, setNovoEmail] = useState(usuario.email || '')
+  const [statusFiltro, setStatusFiltro] = useState('Todos')
 
-  const [novaSenha, setNovaSenha] = useState('')
 
-  const [confirmacaoSenha, setConfirmacaoSenha] = useState('')
 
-  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
+  const [prioridadeFiltro, setPrioridadeFiltro] = useState('Todas')
 
-  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
 
-  const [erroConta, setErroConta] = useState('')
 
+  const [situacaoFiltro, setSituacaoFiltro] = useState('Todos')
 
 
-  const minhasDemandas = useMemo(
 
-    () => demandas.filter((demanda) => demanda.responsavel?.trim().toLowerCase() === usuario.nome?.trim().toLowerCase()),
+  const [contaAberta, setContaAberta] = useState(false)
 
-    [demandas, usuario.nome],
 
-  )
 
+  const [novoEmail, setNovoEmail] = useState(usuario.email || '')
 
 
-  const demandasFiltradas = useMemo(() => {
 
-    const termo = pesquisa.trim().toLowerCase()
+  const [novaSenha, setNovaSenha] = useState('')
 
 
 
-    return minhasDemandas.filter((demanda) => {
+  const [confirmacaoSenha, setConfirmacaoSenha] = useState('')
 
-      const correspondePesquisa = !termo ||
 
-        `${demanda.id} ${demanda.titulo} ${demanda.cliente} ${demanda.sistema || ''} ${demanda.descricao}`
 
-          .toLowerCase()
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
 
-          .includes(termo)
 
 
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
 
-      const correspondeStatus = statusFiltro === 'Todos' || demanda.status === statusFiltro
 
-      const correspondePrioridade = prioridadeFiltro === 'Todas' || (demanda.criticidade || demanda.prioridade) === prioridadeFiltro
 
+  const [erroConta, setErroConta] = useState('')
 
 
-      const correspondeSituacao = situacaoFiltro === 'Todos'
 
-        || (situacaoFiltro === 'Abertas' && demanda.status !== 'Concluída' && demanda.status !== 'Cancelada')
 
-        || (situacaoFiltro === 'Concluídas' && demanda.status === 'Concluída')
 
-        || (situacaoFiltro === 'Atrasadas' && estaAtrasada(demanda))
 
 
+  const minhasDemandas = useMemo(
 
-      return correspondePesquisa && correspondeStatus && correspondePrioridade && correspondeSituacao
 
-    })
 
-  }, [minhasDemandas, pesquisa, statusFiltro, prioridadeFiltro, situacaoFiltro])
+    () => demandas.filter((demanda) => demanda.responsavel?.trim().toLowerCase() === usuario.nome?.trim().toLowerCase()),
 
 
 
-  const indicadores = useMemo(() => ({
+    [demandas, usuario.nome],
 
-    total: minhasDemandas.length,
 
-    abertas: minhasDemandas.filter((item) => item.status !== 'Concluída' && item.status !== 'Cancelada').length,
 
-    aguardando: minhasDemandas.filter((item) => item.status === 'Aguardando').length,
+  )
 
-    atendimento: minhasDemandas.filter((item) => item.status === 'Em Atendimento').length,
 
-    pendencias: minhasDemandas.filter((item) => item.status === 'Com Pendências').length,
 
-    atrasadas: minhasDemandas.filter(estaAtrasada).length,
 
-    concluidas: minhasDemandas.filter((item) => item.status === 'Concluída').length,
 
-  }), [minhasDemandas])
 
 
+  const demandasFiltradas = useMemo(() => {
 
-  function limparFiltros() {
 
-    setPesquisa('')
 
-    setStatusFiltro('Todos')
+    const termo = pesquisa.trim().toLowerCase()
 
-    setPrioridadeFiltro('Todas')
 
-    setSituacaoFiltro('Todos')
 
-  }
 
 
 
-  async function salvarConta(event: FormEvent<HTMLFormElement>) {
 
-    event.preventDefault()
+    return minhasDemandas.filter((demanda) => {
 
-    setErroConta('')
 
 
+      const correspondePesquisa = !termo ||
 
-    const email = novoEmail.trim()
 
-    const senha = novaSenha
 
+        `${demanda.id} ${demanda.titulo} ${demanda.cliente} ${demanda.sistema || ''} ${demanda.descricao}`
 
 
-    if (!email) {
 
-      setErroConta('Informe Um E-mail Válido.')
+          .toLowerCase()
 
-      return
 
-    }
 
+          .includes(termo)
 
 
-    if (senha && senha.length < MINIMO_SENHA) {
 
-      setErroConta(`A nova senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`)
 
-      return
 
-    }
 
 
+      const correspondeStatus = statusFiltro === 'Todos' || demanda.status === statusFiltro
 
-    if (senha && senha !== confirmacaoSenha) {
 
-      setErroConta('A Confirmação Da Senha Não Confere.')
 
-      return
+      const correspondePrioridade = prioridadeFiltro === 'Todas' || (demanda.criticidade || demanda.prioridade) === prioridadeFiltro
 
-    }
 
 
 
-    try {
 
-      const usuarios = carregarUsuarios() as UsuarioSeguranca[]
 
-      const usuarioAtual = usuarios.find((item) => item.id === usuario.id)
 
+      const correspondeSituacao = situacaoFiltro === 'Todos'
 
 
-      if (!usuarioAtual) {
 
-        setErroConta('Usuário Não Encontrado.')
+        || (situacaoFiltro === 'Abertas' && demanda.status !== 'Concluída' && demanda.status !== 'Cancelada')
 
-        return
 
-      }
 
+        || (situacaoFiltro === 'Concluídas' && demanda.status === 'Concluída')
 
 
-      const emailEmUso = usuarios.some(
 
-        (item) => item.id !== usuario.id && item.email.toLowerCase() === email.toLowerCase(),
+        || (situacaoFiltro === 'Atrasadas' && estaAtrasada(demanda))
 
-      )
 
 
 
-      if (emailEmUso) {
 
-        setErroConta('Este E-mail Já Está Sendo Utilizado Por Outro Usuário.')
 
-        return
 
-      }
+      return correspondePesquisa && correspondeStatus && correspondePrioridade && correspondeSituacao
 
 
 
-      let usuarioAtualizado: UsuarioSeguranca = {
+    })
 
-        ...usuarioAtual,
 
-        email,
 
-        atualizadoEm: new Date().toISOString(),
+  }, [minhasDemandas, pesquisa, statusFiltro, prioridadeFiltro, situacaoFiltro])
 
-      }
 
 
 
-      if (senha) {
 
-        usuarioAtualizado = {
 
-          ...usuarioAtualizado,
 
-          senhaHash: await hashSenha(senha),
+  const indicadores = useMemo(() => ({
 
-          exigirTrocaSenha: false,
 
-        }
 
-      }
+    total: minhasDemandas.length,
 
 
 
-      const atualizados = usuarios.map((item) => item.id === usuario.id ? usuarioAtualizado : item)
+    abertas: minhasDemandas.filter((item) => item.status !== 'Concluída' && item.status !== 'Cancelada').length,
 
-      salvarUsuarios(atualizados)
 
 
+    aguardando: minhasDemandas.filter((item) => item.status === 'Aguardando').length,
 
-      if (usuarioAtual.email !== email) {
 
-        registrarAlteracao(
 
-          'usuario',
+    atendimento: minhasDemandas.filter((item) => item.status === 'Em Atendimento').length,
 
-          usuario.id,
 
-          'alteracao_email',
 
-          `O Usuário ${usuario.nome} Alterou O Próprio E-mail.`,
+    pendencias: minhasDemandas.filter((item) => item.status === 'Com Pendências').length,
 
-          usuario.nome,
 
-          { valorAnterior: usuarioAtual.email, valorNovo: email },
 
-        )
+    atrasadas: minhasDemandas.filter(estaAtrasada).length,
 
-      }
 
 
+    concluidas: minhasDemandas.filter((item) => item.status === 'Concluída').length,
 
-      if (senha) {
 
-        registrarAlteracao(
 
-          'usuario',
+  }), [minhasDemandas])
 
-          usuario.id,
 
-          'troca_senha',
 
-          `O Usuário ${usuario.nome} Alterou A Própria Senha.`,
 
-          usuario.nome,
 
-        )
 
-      }
 
+  function limparFiltros() {
 
 
-      mostrarToast('Dados Da Conta Atualizados Com Sucesso.')
 
-      setNovaSenha('')
+    setPesquisa('')
 
-      setConfirmacaoSenha('')
 
-      setContaAberta(false)
 
-    } catch {
+    setStatusFiltro('Todos')
 
-      setErroConta('Não Foi Possível Salvar As Alterações Da Conta.')
 
-    }
 
-  }
+    setPrioridadeFiltro('Todas')
 
 
 
-  function abrirConta() {
+    setSituacaoFiltro('Todos')
 
-    setNovoEmail(usuario.email || '')
 
-    setNovaSenha('')
 
-    setConfirmacaoSenha('')
+  }
 
-    setErroConta('')
 
-    setContaAberta(true)
 
-  }
 
 
 
-  function cancelarConta() {
 
-    setErroConta('')
+  async function salvarConta(event: FormEvent<HTMLFormElement>) {
 
-    setContaAberta(false)
 
-    setNovaSenha('')
 
-    setConfirmacaoSenha('')
+    event.preventDefault()
 
-  }
 
 
+    setErroConta('')
 
-  return (
 
-    <MenuPrincipal
 
-      usuarioAtual={usuario}
 
-      ativo="minhas-demandas"
 
-      subtitulo="Minhas Demandas"
 
-      onDashboard={onDashboard}
 
-      onMinhasDemandas={() => {
+    const email = novoEmail.trim()
 
-        setContaAberta(false)
 
-      }}
 
-      onConfiguracoes={onConfiguracoes}
+    const senha = novaSenha
 
-      onMinhaConta={() => {
 
-        if (onConfiguracoes) {
 
-          onConfiguracoes()
 
-          return
 
-        }
 
 
+    if (!email) {
 
-        abrirConta()
 
-      }}
 
-      onSair={onVoltar}
+      setErroConta('Informe Um E-mail Válido.')
 
-    >
 
-      <div className="minhas-demandas-page">
 
-        <div className="minhas-demandas-heading">
+      return
 
-          <div>
 
-            <h2>Minhas Demandas</h2>
 
-            <p>Demandas Atualmente Atribuídas A <strong>{usuario.nome}</strong>.</p>
+    }
 
-          </div>
 
-        </div>
 
 
 
-        <div className="md-summary">
 
-          <span>
 
-            <strong>{indicadores.total}</strong>{' '}
+    if (senha && senha.length < MINIMO_SENHA) {
 
-            {indicadores.total === 1 ? 'Demanda Atribuída' : 'Demandas Atribuídas'}
 
-          </span>
 
-          <span className={`md-summary-alert ${indicadores.atrasadas > 0 ? 'is-danger' : ''}`}>
+      setErroConta(`A nova senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`)
 
-            <strong>{indicadores.atrasadas}</strong>{' '}
 
-            {indicadores.atrasadas === 1 ? 'Demanda Atrasada' : 'Demandas Atrasadas'}
 
-          </span>
+      return
 
-        </div>
 
 
+    }
 
-        <section className="md-indicators" aria-label="Resumo Das Minhas Demandas">
 
-          <button
 
-            type="button"
 
-            className={`md-indicator ${statusFiltro === 'Em Atendimento' ? 'is-active' : ''}`}
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Em Atendimento' ? 'Todos' : 'Em Atendimento')}
 
-            aria-pressed={statusFiltro === 'Em Atendimento'}
 
-          >
+    if (senha && senha !== confirmacaoSenha) {
 
-            <span>Em Atendimento</span>
 
-            <strong>{indicadores.atendimento}</strong>
 
-            <small>Ver Demandas</small>
+      setErroConta('A Confirmação Da Senha Não Confere.')
 
-          </button>
 
 
+      return
 
-          <button
 
-            type="button"
 
-            className={`md-indicator md-indicator-warning ${statusFiltro === 'Com Pendências' ? 'is-active' : ''}`}
+    }
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Com Pendências' ? 'Todos' : 'Com Pendências')}
 
-            aria-pressed={statusFiltro === 'Com Pendências'}
 
-          >
 
-            <span>Com Pendências</span>
 
-            <strong>{indicadores.pendencias}</strong>
 
-            <small>Ver Pendências</small>
 
-          </button>
+    try {
 
 
 
-          <button
+      const usuarios = carregarUsuarios() as UsuarioSeguranca[]
 
-            type="button"
 
-            className={`md-indicator md-indicator-muted ${statusFiltro === 'Aguardando' ? 'is-active' : ''}`}
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Aguardando' ? 'Todos' : 'Aguardando')}
+      const usuarioAtual = usuarios.find((item) => item.id === usuario.id)
 
-            aria-pressed={statusFiltro === 'Aguardando'}
 
-          >
 
-            <span>Aguardando</span>
 
-            <strong>{indicadores.aguardando}</strong>
 
-            <small>Ver Aguardando</small>
 
-          </button>
 
+      if (!usuarioAtual) {
 
 
-          <button
 
-            type="button"
+        setErroConta('Usuário Não Encontrado.')
 
-            className={`md-indicator md-indicator-success ${statusFiltro === 'Concluída' ? 'is-active' : ''}`}
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Concluída' ? 'Todos' : 'Concluída')}
 
-            aria-pressed={statusFiltro === 'Concluída'}
+        return
 
-          >
 
-            <span>Concluídas</span>
 
-            <strong>{indicadores.concluidas}</strong>
+      }
 
-            <small>Ver Concluídas</small>
 
-          </button>
 
-        </section>
 
 
 
-        <section className="md-filter-card">
 
-          <div className="md-filter-heading">
+      const emailEmUso = usuarios.some(
 
-            <div>
 
-              <h3>Filtros</h3>
 
-              <span>Use Os Filtros Para Encontrar Rapidamente Uma Demanda.</span>
+        (item) => item.id !== usuario.id && item.email.toLowerCase() === email.toLowerCase(),
 
-            </div>
 
-          </div>
 
-          <div className="md-filter-search">
+      )
 
-            <label htmlFor="md-pesquisa">Pesquisar</label>
 
-            <input
 
-              id="md-pesquisa"
 
-              value={pesquisa}
 
-              onChange={(event) => setPesquisa(event.target.value)}
 
-              placeholder="Pesquisar Por ID, Título, Órgão, Sistema Ou Descrição..."
 
-            />
+      if (emailEmUso) {
 
-          </div>
 
 
+        setErroConta('Este E-mail Já Está Sendo Utilizado Por Outro Usuário.')
 
-          <div className="md-filter-field">
 
-            <label htmlFor="md-status">Status</label>
 
-            <select id="md-status" value={statusFiltro} onChange={(event) => setStatusFiltro(event.target.value)}>
+        return
 
-              {STATUS.map((status) => <option key={status} value={status}>{status}</option>)}
 
-            </select>
 
-          </div>
+      }
 
 
 
-          <div className="md-filter-field">
 
-            <label htmlFor="md-prioridade">Criticidade</label>
 
-            <select id="md-prioridade" value={prioridadeFiltro} onChange={(event) => setPrioridadeFiltro(event.target.value)}>
 
-              <option value="Todas">Selecione...</option>
-              {PRIORIDADES.filter((prioridade) => prioridade !== "Todas").map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
 
-            </select>
+      let usuarioAtualizado: UsuarioSeguranca = {
 
-          </div>
 
 
+        ...usuarioAtual,
 
-          <div className="md-filter-field">
 
-            <label htmlFor="md-situacao">Situação</label>
 
-            <select id="md-situacao" value={situacaoFiltro} onChange={(event) => setSituacaoFiltro(event.target.value)}>
+        email,
 
-              <option value="Todos">Todas</option>
 
-              <option value="Abertas">Abertas</option>
 
-              <option value="Concluídas">Concluídas</option>
+        atualizadoEm: new Date().toISOString(),
 
-              <option value="Atrasadas">Atrasadas</option>
 
-            </select>
 
-          </div>
+      }
 
 
 
-          <button type="button" className="md-clear-button btn-secundario" onClick={limparFiltros}>Limpar Filtros</button>
 
-        </section>
 
 
 
-        <section className="md-table-card">
+      if (senha) {
 
-          <div className="md-table-header">
 
-            <div>
 
-              <h3>Minhas Demandas</h3>
+        usuarioAtualizado = {
 
-              <p>
 
-                {demandasFiltradas.length}{' '}
 
-                {demandasFiltradas.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}
+          ...usuarioAtualizado,
 
-              </p>
 
-            </div>
 
+          senhaHash: await hashSenha(senha),
 
 
-            <span className="md-table-count">
 
-              {demandasFiltradas.length === 1 ? '1 Demanda' : `${demandasFiltradas.length} Demandas`}
+          exigirTrocaSenha: false,
 
-            </span>
 
-          </div>
 
+        }
 
 
-          {demandasFiltradas.length === 0 ? (
 
-            <div className="md-empty">
+      }
 
-              <div className="md-empty-icon">📋</div>
 
-              <h3>Nenhuma Demanda Encontrada</h3>
 
-              <p>Não Há Demandas Atribuídas A Você Com Os Filtros Selecionados.</p>
 
-            </div>
 
-          ) : (
 
-            <div className="md-table-wrap">
 
-              <table className="md-table">
+      const atualizados = usuarios.map((item) => item.id === usuario.id ? usuarioAtualizado : item)
 
-                <thead>
 
-                  <tr>
 
-                    <th>ID</th>
+      salvarUsuarios(atualizados)
 
-                    <th>Demanda</th>
 
-                    <th>Órgão</th>
 
-                    <th>Classificação</th>
 
-                    <th>Status</th>
 
-                    <th>Prazo</th>
 
-                    <th>SLA</th>
 
-                    <th>Ações</th>
+      if (usuarioAtual.email !== email) {
 
-                  </tr>
 
-                </thead>
 
-                <tbody>
+        registrarAlteracao(
 
-                  {demandasFiltradas.map((demanda) => {
 
-                    const atrasada = estaAtrasada(demanda)
 
-                    const proxima = estaProxima(demanda)
+          'usuario',
 
 
 
-                    return (
+          usuario.id,
 
-                      <tr key={demanda.id}>
 
-                        <td className="md-id">DEM-{String(demanda.id).padStart(5, '0')}</td>
 
-                        <td>
+          'alteracao_email',
 
-                          <strong>{demanda.titulo}</strong>
 
-                          <small>{demanda.sistema || '—'}</small>
 
-                        </td>
+          `O Usuário ${usuario.nome} Alterou O Próprio E-mail.`,
 
-                        <td>{demanda.cliente || '—'}</td>
 
-                        <td>
 
-                          <div className="md-classificacao-cell">
-                            <span className="md-priority" style={estiloPrioridade(demanda.criticidade || demanda.prioridade)}>
+          usuario.nome,
+
+
+
+          { valorAnterior: usuarioAtual.email, valorNovo: email },
+
+
+
+        )
+
+
+
+      }
+
+
+
+
+
+
+
+      if (senha) {
+
+
+
+        registrarAlteracao(
+
+
+
+          'usuario',
+
+
+
+          usuario.id,
+
+
+
+          'troca_senha',
+
+
+
+          `O Usuário ${usuario.nome} Alterou A Própria Senha.`,
+
+
+
+          usuario.nome,
+
+
+
+        )
+
+
+
+      }
+
+
+
+
+
+
+
+      mostrarToast('Dados Da Conta Atualizados Com Sucesso.')
+
+
+
+      setNovaSenha('')
+
+
+
+      setConfirmacaoSenha('')
+
+
+
+      setContaAberta(false)
+
+
+
+    } catch {
+
+
+
+      setErroConta('Não Foi Possível Salvar As Alterações Da Conta.')
+
+
+
+    }
+
+
+
+  }
+
+
+
+
+
+
+
+  function abrirConta() {
+
+
+
+    setNovoEmail(usuario.email || '')
+
+
+
+    setNovaSenha('')
+
+
+
+    setConfirmacaoSenha('')
+
+
+
+    setErroConta('')
+
+
+
+    setContaAberta(true)
+
+
+
+  }
+
+
+
+
+
+
+
+  function cancelarConta() {
+
+
+
+    setErroConta('')
+
+
+
+    setContaAberta(false)
+
+
+
+    setNovaSenha('')
+
+
+
+    setConfirmacaoSenha('')
+
+
+
+  }
+
+
+
+
+
+
+
+  return (
+
+
+
+    <MenuPrincipal
+
+
+
+      usuarioAtual={usuario}
+
+
+
+      ativo="minhas-demandas"
+
+
+
+      subtitulo="Minhas Demandas"
+
+
+
+      onDashboard={onDashboard}
+
+
+
+      onMinhasDemandas={() => {
+
+
+
+        setContaAberta(false)
+
+
+
+      }}
+
+
+
+      onConfiguracoes={onConfiguracoes}
+
+
+
+      onMinhaConta={() => {
+
+
+
+        if (onConfiguracoes) {
+
+
+
+          onConfiguracoes()
+
+
+
+          return
+
+
+
+        }
+
+
+
+
+
+
+
+        abrirConta()
+
+
+
+      }}
+
+
+
+      onSair={onVoltar}
+
+
+
+    >
+
+
+
+      <div className="minhas-demandas-page">
+
+
+
+        <div className="minhas-demandas-heading">
+
+
+
+          <div>
+
+
+
+            <h2>Minhas Demandas</h2>
+
+
+
+            <p>Demandas Atualmente Atribuídas A <strong>{usuario.nome}</strong>.</p>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div className="md-summary">
+
+
+
+          <span>
+
+
+
+            <strong>{indicadores.total}</strong>{' '}
+
+
+
+            {indicadores.total === 1 ? 'Demanda Atribuída' : 'Demandas Atribuídas'}
+
+
+
+          </span>
+
+
+
+          <span className={`md-summary-alert ${indicadores.atrasadas > 0 ? 'is-danger' : ''}`}>
+
+
+
+            <strong>{indicadores.atrasadas}</strong>{' '}
+
+
+
+            {indicadores.atrasadas === 1 ? 'Demanda Atrasada' : 'Demandas Atrasadas'}
+
+
+
+          </span>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <section className="md-indicators" aria-label="Resumo Das Minhas Demandas">
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            className={`md-indicator ${statusFiltro === 'Em Atendimento' ? 'is-active' : ''}`}
+
+
+
+            onClick={() => setStatusFiltro(statusFiltro === 'Em Atendimento' ? 'Todos' : 'Em Atendimento')}
+
+
+
+            aria-pressed={statusFiltro === 'Em Atendimento'}
+
+
+
+          >
+
+
+
+            <span>Em Atendimento</span>
+
+
+
+            <strong>{indicadores.atendimento}</strong>
+
+
+
+            <small>Ver Demandas</small>
+
+
+
+          </button>
+
+
+
+
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            className={`md-indicator md-indicator-warning ${statusFiltro === 'Com Pendências' ? 'is-active' : ''}`}
+
+
+
+            onClick={() => setStatusFiltro(statusFiltro === 'Com Pendências' ? 'Todos' : 'Com Pendências')}
+
+
+
+            aria-pressed={statusFiltro === 'Com Pendências'}
+
+
+
+          >
+
+
+
+            <span>Com Pendências</span>
+
+
+
+            <strong>{indicadores.pendencias}</strong>
+
+
+
+            <small>Ver Pendências</small>
+
+
+
+          </button>
+
+
+
+
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            className={`md-indicator md-indicator-muted ${statusFiltro === 'Aguardando' ? 'is-active' : ''}`}
+
+
+
+            onClick={() => setStatusFiltro(statusFiltro === 'Aguardando' ? 'Todos' : 'Aguardando')}
+
+
+
+            aria-pressed={statusFiltro === 'Aguardando'}
+
+
+
+          >
+
+
+
+            <span>Aguardando</span>
+
+
+
+            <strong>{indicadores.aguardando}</strong>
+
+
+
+            <small>Ver Aguardando</small>
+
+
+
+          </button>
+
+
+
+
+
+
+
+          <button
+
+
+
+            type="button"
+
+
+
+            className={`md-indicator md-indicator-success ${statusFiltro === 'Concluída' ? 'is-active' : ''}`}
+
+
+
+            onClick={() => setStatusFiltro(statusFiltro === 'Concluída' ? 'Todos' : 'Concluída')}
+
+
+
+            aria-pressed={statusFiltro === 'Concluída'}
+
+
+
+          >
+
+
+
+            <span>Concluídas</span>
+
+
+
+            <strong>{indicadores.concluidas}</strong>
+
+
+
+            <small>Ver Concluídas</small>
+
+
+
+          </button>
+
+
+
+        </section>
+
+
+
+
+
+
+
+        <section className="md-filter-card">
+
+
+
+          <div className="md-filter-heading">
+
+
+
+            <div>
+
+
+
+              <h3>Filtros</h3>
+
+
+
+              <span>Use Os Filtros Para Encontrar Rapidamente Uma Demanda.</span>
+
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+          <div className="md-filter-search">
+
+
+
+            <label htmlFor="md-pesquisa">Pesquisar</label>
+
+
+
+            <input
+
+
+
+              id="md-pesquisa"
+
+
+
+              value={pesquisa}
+
+
+
+              onChange={(event) => setPesquisa(event.target.value)}
+
+
+
+              placeholder="Pesquisar Por ID, Título, Órgão, Sistema Ou Descrição..."
+
+
+
+            />
+
+
+
+          </div>
+
+
+
+
+
+
+
+          <div className="md-filter-field">
+
+
+
+            <label htmlFor="md-status">Status</label>
+
+
+
+            <select id="md-status" value={statusFiltro} onChange={(event) => setStatusFiltro(event.target.value)}>
+
+
+
+              {STATUS.map((status) => <option key={status} value={status}>{status}</option>)}
+
+
+
+            </select>
+
+
+
+          </div>
+
+
+
+
+
+
+
+          <div className="md-filter-field">
+
+
+
+            <label htmlFor="md-prioridade">Criticidade</label>
+
+
+
+            <select id="md-prioridade" value={prioridadeFiltro} onChange={(event) => setPrioridadeFiltro(event.target.value)}>
+
+
+
+              <option value="Todas">Selecione...</option>
+
+              {PRIORIDADES.filter((prioridade) => prioridade !== "Todas").map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
+
+
+
+            </select>
+
+
+
+          </div>
+
+
+
+
+
+
+
+          <div className="md-filter-field">
+
+
+
+            <label htmlFor="md-situacao">Situação</label>
+
+
+
+            <select id="md-situacao" value={situacaoFiltro} onChange={(event) => setSituacaoFiltro(event.target.value)}>
+
+
+
+              <option value="Todos">Todas</option>
+
+
+
+              <option value="Abertas">Abertas</option>
+
+
+
+              <option value="Concluídas">Concluídas</option>
+
+
+
+              <option value="Atrasadas">Atrasadas</option>
+
+
+
+            </select>
+
+
+
+          </div>
+
+
+
+
+
+
+
+          <button type="button" className="md-clear-button btn-secundario" onClick={limparFiltros}>Limpar Filtros</button>
+
+
+
+        </section>
+
+
+
+
+
+
+
+        <section className="md-table-card">
+
+
+
+          <div className="md-table-header">
+
+
+
+            <div>
+
+
+
+              <h3>Minhas Demandas</h3>
+
+
+
+              <p>
+
+
+
+                {demandasFiltradas.length}{' '}
+
+
+
+                {demandasFiltradas.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}
+
+
+
+              </p>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <span className="md-table-count">
+
+
+
+              {demandasFiltradas.length === 1 ? '1 Demanda' : `${demandasFiltradas.length} Demandas`}
+
+
+
+            </span>
+
+
+
+          </div>
+
+
+
+
+
+
+
+          {demandasFiltradas.length === 0 ? (
+
+
+
+            <div className="md-empty">
+
+
+
+              <div className="md-empty-icon">📋</div>
+
+
+
+              <h3>Nenhuma Demanda Encontrada</h3>
+
+
+
+              <p>Não Há Demandas Atribuídas A Você Com Os Filtros Selecionados.</p>
+
+
+
+            </div>
+
+
+
+          ) : (
+
+
+
+            <div className="md-table-wrap">
+
+
+
+              <table className="md-table">
+
+
+
+                <thead>
+
+
+
+                  <tr>
+
+
+
+                    <th>ID</th>
+
+
+
+                    <th>Demanda</th>
+
+
+
+                    <th>Órgão</th>
+
+
+
+                    <th>Classificação</th>
+
+
+
+                    <th>Status</th>
+
+
+
+                    <th>Prazo</th>
+
+
+
+                    <th>SLA</th>
+
+
+
+                    <th>Ações</th>
+
+
+
+                  </tr>
+
+
+
+                </thead>
+
+
+
+                <tbody>
+
+
+
+                  {demandasFiltradas.map((demanda) => {
+
+
+
+                    const atrasada = estaAtrasada(demanda)
+
+
+
+                    const proxima = estaProxima(demanda)
+
+
+
+
+
+
+
+                    return (
+
+
+
+                      <tr
+                        key={demanda.id}
+                        className={classeLinhaCriticidade(demanda.criticidade || demanda.prioridade)}
+                      >
+
+
+
+                        <td className="md-id">DEM-{String(demanda.id).padStart(5, '0')}</td>
+
+
+
+                        <td>
+
+
+
+                          <strong>{demanda.titulo}</strong>
+
+
+
+                          <small>{demanda.sistema || '—'}</small>
+
+
+
+                        </td>
+
+
+
+                        <td>{demanda.cliente || '—'}</td>
+
+
+
+                        <td>
+
+
+
+                          <div className="md-classificacao-cell">
+
+                            <span className={`md-priority ${classeCriticidade(demanda.criticidade || demanda.prioridade)}`}>
+
                               {demanda.criticidade || demanda.prioridade}
+
                             </span>
-                            <small>{demanda.prioridadeAtendimento || '—'}</small>
+
+                            <small className={classePrioridadeAtendimento(demanda.prioridadeAtendimento || '')}>
+                              {demanda.prioridadeAtendimento || '—'}
+                            </small>
+
                           </div>
 
-                        </td>
 
-                        <td><span className={`md-status ${classeStatus(demanda.status)}`}>{demanda.status}</span></td>
 
-                        <td>{formatarData(demanda.prazo)}</td>
+                        </td>
 
-                        <td>
 
-                          <span className={`md-sla ${atrasada ? 'danger' : proxima ? 'warning' : 'ok'}`}>
 
-                            {atrasada ? 'Atrasada' : proxima ? 'Próxima' : 'No Prazo'}
+                        <td><span className={`md-status ${classeStatus(demanda.status)}`}>{demanda.status}</span></td>
 
-                          </span>
 
-                        </td>
 
-                        <td>
+                        <td>{formatarData(demanda.prazo)}</td>
 
-                          <div className="md-actions">
 
-                            <button type="button" onClick={() => onAbrirDetalhe(demanda)}>Detalhes</button>
 
+                        <td>
 
 
-                            {demanda.status === 'Aguardando' && (
 
-                              <button
+                          <span className={`md-sla ${atrasada ? 'danger' : proxima ? 'warning' : 'ok'}`}>
 
-                                type="button"
 
-                                className="md-action-primary"
 
-                                onClick={() => onAlterarStatus(demanda.id, 'Em Atendimento')}
+                            {atrasada ? 'Atrasada' : proxima ? 'Próxima' : 'No Prazo'}
 
-                              >
 
-                                Atender
 
-                              </button>
+                          </span>
 
-                            )}
 
 
+                        </td>
 
-                            {demanda.status !== 'Concluída' && demanda.status !== 'Cancelada' && (
 
-                              <>
 
-                                <button type="button" className="md-action-warning" onClick={() => {
+                        <td>
 
-                                  const motivo = window.prompt('Informe O Motivo Da Pendência:')
 
-                                  if (motivo?.trim()) onAlterarStatus(demanda.id, 'Com Pendências', motivo)
 
-                                }}>Pendência</button>
+                          <div className="md-actions">
 
 
 
-                                <button type="button" className="md-action-success" onClick={() => {
+                            <button type="button" onClick={() => onAbrirDetalhe(demanda)}>Detalhes</button>
 
-                                  const comentario = window.prompt('Informe O Comentário De Conclusão:')
 
-                                  if (comentario?.trim()) onAlterarStatus(demanda.id, 'Concluída', comentario)
 
-                                }}>Concluir</button>
 
-                              </>
 
-                            )}
 
-                          </div>
 
-                        </td>
+                            {demanda.status === 'Aguardando' && (
 
-                      </tr>
 
-                    )
 
-                  })}
+                              <button
 
-                </tbody>
 
-              </table>
 
-            </div>
+                                type="button"
 
-          )}
 
-        </section>
 
-      </div>
+                                className="md-action-primary"
 
 
 
-      {contaAberta && (
+                                onClick={() => onAlterarStatus(demanda.id, 'Em Atendimento')}
 
-        <div className="md-modal-backdrop" role="presentation">
 
-          <div className="md-modal" role="dialog" aria-modal="true" aria-labelledby="md-conta-title">
 
-            <div className="md-modal-header">
+                              >
 
-              <div>
 
-                <h3 id="md-conta-title">Minha Conta</h3>
 
-                <p>Altere seu e-mail e sua senha quando desejar.</p>
+                                Atender
 
-              </div>
 
-              <button type="button" className="md-modal-close" onClick={cancelarConta} aria-label="Fechar">×</button>
 
-            </div>
+                              </button>
 
 
 
-            <form onSubmit={salvarConta}>
+                            )}
 
-              <div className="md-account-grid">
 
-                <label>
 
-                  Nome
 
-                  <input value={usuario.nome} readOnly />
 
-                </label>
 
-                <label>
 
-                  Login
+                            {demanda.status !== 'Concluída' && demanda.status !== 'Cancelada' && (
 
-                  <input value={usuario.login} readOnly />
 
-                </label>
 
-                <label className="md-account-full">
+                              <>
 
-                  E-mail
 
-                  <input type="email" value={novoEmail} onChange={(event) => setNovoEmail(event.target.value)} autoComplete="email" />
 
-                </label>
+                                <button type="button" className="md-action-warning" onClick={() => {
 
-                <label>
 
-                  Nova Senha
 
-                  <div className="md-password-wrap">
+                                  const motivo = window.prompt('Informe O Motivo Da Pendência:')
 
-                    <input
 
-                      type={mostrarNovaSenha ? 'text' : 'password'}
 
-                      value={novaSenha}
+                                  if (motivo?.trim()) onAlterarStatus(demanda.id, 'Com Pendências', motivo)
 
-                      onChange={(event) => setNovaSenha(event.target.value)}
 
-                      minLength={MINIMO_SENHA}
 
-                      placeholder={`Mínimo ${MINIMO_SENHA} Caracteres`}
+                                }}>Pendência</button>
 
-                      autoComplete="new-password"
 
-                    />
 
-                    <button type="button" onClick={() => setMostrarNovaSenha((valor) => !valor)} aria-label={mostrarNovaSenha ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
 
-                  </div>
 
-                </label>
 
-                <label>
 
-                  Confirmar Senha
+                                <button type="button" className="md-action-success" onClick={() => {
 
-                  <div className="md-password-wrap">
 
-                    <input
 
-                      type={mostrarConfirmacao ? 'text' : 'password'}
+                                  const comentario = window.prompt('Informe O Comentário De Conclusão:')
 
-                      value={confirmacaoSenha}
 
-                      onChange={(event) => setConfirmacaoSenha(event.target.value)}
 
-                      minLength={MINIMO_SENHA}
+                                  if (comentario?.trim()) onAlterarStatus(demanda.id, 'Concluída', comentario)
 
-                      placeholder="Repita A Senha"
 
-                      autoComplete="new-password"
 
-                    />
+                                }}>Concluir</button>
 
-                    <button type="button" onClick={() => setMostrarConfirmacao((valor) => !valor)} aria-label={mostrarConfirmacao ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
 
-                  </div>
 
-                </label>
+                              </>
 
-              </div>
 
 
+                            )}
 
-              <div className="md-account-note">A Alteração De Senha Exige No Mínimo 6 Caracteres. Deixe Os Campos De Senha Vazios Para Manter A Senha Atual.</div>
 
 
+                          </div>
 
-              {erroConta && <div className="md-account-error">{erroConta}</div>}
 
 
+                        </td>
 
-              <div className="md-modal-actions">
 
-                <button type="button" className="md-cancel-button btn-secundario" onClick={cancelarConta}>Cancelar</button>
 
-                <button type="submit" className="md-save-button btn-principal">Salvar Alterações</button>
+                      </tr>
 
-              </div>
 
-            </form>
 
-          </div>
+                    )
 
-        </div>
 
-      )}
 
+                  })}
 
 
-    </MenuPrincipal>
 
-  )
+                </tbody>
+
+
+
+              </table>
+
+
+
+            </div>
+
+
+
+          )}
+
+
+
+        </section>
+
+
+
+      </div>
+
+
+
+
+
+
+
+      {contaAberta && (
+
+
+
+        <div className="md-modal-backdrop" role="presentation">
+
+
+
+          <div className="md-modal" role="dialog" aria-modal="true" aria-labelledby="md-conta-title">
+
+
+
+            <div className="md-modal-header">
+
+
+
+              <div>
+
+
+
+                <h3 id="md-conta-title">Minha Conta</h3>
+
+
+
+                <p>Altere seu e-mail e sua senha quando desejar.</p>
+
+
+
+              </div>
+
+
+
+              <button type="button" className="md-modal-close" onClick={cancelarConta} aria-label="Fechar">×</button>
+
+
+
+            </div>
+
+
+
+
+
+
+
+            <form onSubmit={salvarConta}>
+
+
+
+              <div className="md-account-grid">
+
+
+
+                <label>
+
+
+
+                  Nome
+
+
+
+                  <input value={usuario.nome} readOnly />
+
+
+
+                </label>
+
+
+
+                <label>
+
+
+
+                  Login
+
+
+
+                  <input value={usuario.login} readOnly />
+
+
+
+                </label>
+
+
+
+                <label className="md-account-full">
+
+
+
+                  E-mail
+
+
+
+                  <input type="email" value={novoEmail} onChange={(event) => setNovoEmail(event.target.value)} autoComplete="email" />
+
+
+
+                </label>
+
+
+
+                <label>
+
+
+
+                  Nova Senha
+
+
+
+                  <div className="md-password-wrap">
+
+
+
+                    <input
+
+
+
+                      type={mostrarNovaSenha ? 'text' : 'password'}
+
+
+
+                      value={novaSenha}
+
+
+
+                      onChange={(event) => setNovaSenha(event.target.value)}
+
+
+
+                      minLength={MINIMO_SENHA}
+
+
+
+                      placeholder={`Mínimo ${MINIMO_SENHA} Caracteres`}
+
+
+
+                      autoComplete="new-password"
+
+
+
+                    />
+
+
+
+                    <button type="button" onClick={() => setMostrarNovaSenha((valor) => !valor)} aria-label={mostrarNovaSenha ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
+
+
+
+                  </div>
+
+
+
+                </label>
+
+
+
+                <label>
+
+
+
+                  Confirmar Senha
+
+
+
+                  <div className="md-password-wrap">
+
+
+
+                    <input
+
+
+
+                      type={mostrarConfirmacao ? 'text' : 'password'}
+
+
+
+                      value={confirmacaoSenha}
+
+
+
+                      onChange={(event) => setConfirmacaoSenha(event.target.value)}
+
+
+
+                      minLength={MINIMO_SENHA}
+
+
+
+                      placeholder="Repita A Senha"
+
+
+
+                      autoComplete="new-password"
+
+
+
+                    />
+
+
+
+                    <button type="button" onClick={() => setMostrarConfirmacao((valor) => !valor)} aria-label={mostrarConfirmacao ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
+
+
+
+                  </div>
+
+
+
+                </label>
+
+
+
+              </div>
+
+
+
+
+
+
+
+              <div className="md-account-note">A Alteração De Senha Exige No Mínimo 6 Caracteres. Deixe Os Campos De Senha Vazios Para Manter A Senha Atual.</div>
+
+
+
+
+
+
+
+              {erroConta && <div className="md-account-error">{erroConta}</div>}
+
+
+
+
+
+
+
+              <div className="md-modal-actions">
+
+
+
+                <button type="button" className="md-cancel-button btn-secundario" onClick={cancelarConta}>Cancelar</button>
+
+
+
+                <button type="submit" className="md-save-button btn-principal">Salvar Alterações</button>
+
+
+
+              </div>
+
+
+
+            </form>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+      )}
+
+
+
+
+
+
+
+    </MenuPrincipal>
+
+
+
+  )
+
+
 
 }

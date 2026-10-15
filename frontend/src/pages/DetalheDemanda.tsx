@@ -46,11 +46,11 @@
 
 import {
 
-  useEffect,
+  useEffect,
 
-  useState,
+  useState,
 
-  type ChangeEvent,
+  type ChangeEvent,
 
 } from 'react'
 
@@ -61,15 +61,15 @@ import { ehPerfilOperacional } from '../types'
 import type {
 
 
-  Demanda,
+  Demanda,
 
-  Comentario,
+  Comentario,
 
-  Arquivo,
+  Arquivo,
 
-  Historico,
+  Historico,
 
-  Usuario,
+  Usuario,
 
 } from '../types'
 
@@ -93,143 +93,143 @@ import { PRIORIDADES_ATENDIMENTO } from '../sla'
 
 type Props = {
 
-  demanda: Demanda
+  demanda: Demanda
 
 
 
-  onVoltar: () => void
+  onVoltar: () => void
 
 
 
-  nomeUsuario: string
+  nomeUsuario: string
 
-  perfilUsuarioGlobal: string
+  perfilUsuarioGlobal: string
 
-  onDashboard: () => void
+  onDashboard: () => void
 
-  onMinhasDemandas?: () => void
+  onMinhasDemandas?: () => void
 
-  onTodasDemandas: () => void
+  onTodasDemandas: () => void
 
-  onNovaDemanda: () => void
+  onNovaDemanda: () => void
 
-  onClientes: () => void
+  onClientes: () => void
 
-  onResponsaveis: () => void
+  onResponsaveis: () => void
 
-  onFeriados: () => void
+  onFeriados: () => void
 
-  onRelatorios: () => void
+  onRelatorios: () => void
 
-  onConfiguracoes?: () => void
+  onConfiguracoes?: () => void
 
-  onLogout: () => void
+  onLogout: () => void
 
 
 
-  onAlterarStatus: (
+  onAlterarStatus: (
 
-    id: number,
+    id: number,
 
-    novoStatus: string,
+    novoStatus: string,
 
-    motivo?: string
+    motivo?: string
 
-  ) => void
+  ) => void
 
 
 
-  onAlterarResponsavel?: (
+  onAlterarResponsavel?: (
 
-    id: number,
+    id: number,
 
-    novoResponsavel: string
+    novoResponsavel: string
 
-  ) => void
+  ) => void
 
 
 
-  onAdicionarComentario?: (
+  onAdicionarComentario?: (
 
-    id: number,
+    id: number,
 
-    texto: string
+    texto: string
 
-  ) => void
+  ) => void
 
 
 
-  onAdicionarArquivo?: (
+  onAdicionarArquivo?: (
 
-    id: number,
+    id: number,
 
-    arquivo: Arquivo
+    arquivo: Arquivo
 
-  ) => void
+  ) => void
 
 
 
-  perfilUsuario?: Usuario['perfil']
+  perfilUsuario?: Usuario['perfil']
 
 
 
-  analistas?: Usuario[]
+  analistas?: Usuario[]
 
 
 
-  onAlterarPrioridade?: (
+  onAlterarPrioridade?: (
 
-    id: number,
+    id: number,
 
-    novaPrioridade: string,
+    novaPrioridade: string,
 
-    motivo?: string
+    motivo?: string
 
-  ) => void
+  ) => boolean | void
 
 
 
-  onAlterarPrioridadeAtendimento?: (
+  onAlterarPrioridadeAtendimento?: (
 
-    id: number,
+    id: number,
 
-    novaPrioridadeAtendimento: string,
+    novaPrioridadeAtendimento: string,
 
-    motivo?: string
+    motivo?: string
 
-  ) => void
+  ) => boolean | void
 
 
 
-  onAlterarPrazoManual?: (
+  onAlterarPrazoManual?: (
 
-    id: number,
+    id: number,
 
-    novoPrazo: string,
+    novoPrazo: string,
 
-    motivo: string
+    motivo: string
 
-  ) => void
+  ) => void
 
 
 
-  onReabrirDemanda?: (
+  onReabrirDemanda?: (
 
-    id: number,
+    id: number,
 
-    motivo: string
+    motivo: string
 
-  ) => void
+  ) => void
 
 
 
-  onCancelarDemanda?: (
+  onCancelarDemanda?: (
 
-    id: number,
+    id: number,
 
-    motivo: string
+    motivo: string
 
-  ) => void
+  ) => void
 
 }
 
@@ -245,15 +245,15 @@ type Props = {
 
 const STATUS = [
 
-  'Nova',
+  'Nova',
 
-  'Aguardando',
+  'Aguardando',
 
-  'Em Atendimento',
+  'Em Atendimento',
 
-  'Com Pendências',
+  'Com Pendências',
 
-  'Concluída',
+  'Concluída',
 
 ]
 
@@ -286,27 +286,27 @@ const PRIORIDADES = [
 
 function formatarData(data: string) {
 
-  if (!data) {
+  if (!data) {
 
-    return '-'
+    return '-'
 
-  }
-
-
-
-  const partes = data.split('-')
+  }
 
 
 
-  if (partes.length === 3) {
-
-    return `${partes[2]}/${partes[1]}/${partes[0]}`
-
-  }
+  const partes = data.split('-')
 
 
 
-  return data
+  if (partes.length === 3) {
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`
+
+  }
+
+
+
+  return data
 
 }
 
@@ -318,31 +318,31 @@ function formatarData(data: string) {
 
 function formatarDataHora(data: string) {
 
-  const objeto = new Date(data)
+  const objeto = new Date(data)
 
 
 
-  if (Number.isNaN(objeto.getTime())) {
+  if (Number.isNaN(objeto.getTime())) {
 
-    return data
+    return data
 
-  }
+  }
 
 
 
-  return objeto.toLocaleString('pt-BR', {
+  return objeto.toLocaleString('pt-BR', {
 
-    day: '2-digit',
+    day: '2-digit',
 
-    month: '2-digit',
+    month: '2-digit',
 
-    year: 'numeric',
+    year: 'numeric',
 
-    hour: '2-digit',
+    hour: '2-digit',
 
-    minute: '2-digit',
+    minute: '2-digit',
 
-  })
+  })
 
 }
 
@@ -354,23 +354,23 @@ function formatarDataHora(data: string) {
 
 function formatarTamanho(bytes: number) {
 
-  if (bytes < 1024) {
+  if (bytes < 1024) {
 
-    return `${bytes} B`
+    return `${bytes} B`
 
-  }
-
-
-
-  if (bytes < 1024 * 1024) {
-
-    return `${(bytes / 1024).toFixed(1)} KB`
-
-  }
+  }
 
 
 
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1024 * 1024) {
+
+    return `${(bytes / 1024).toFixed(1)} KB`
+
+  }
+
+
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 
 }
 
@@ -386,49 +386,49 @@ function formatarTamanho(bytes: number) {
 
 function classeStatus(status: string) {
 
-  switch (status) {
+  switch (status) {
 
-    case 'Nova':
+    case 'Nova':
 
-      return 'status-nova'
-
-
-
-    case 'Aguardando':
-
-      return 'status-nova'
+      return 'status-nova'
 
 
 
-    case 'Em Atendimento':
+    case 'Aguardando':
 
-      return 'status-em-atendimento'
-
-
-
-    case 'Com Pendências':
-
-      return 'status-com-pendencias'
+      return 'status-nova'
 
 
 
-    case 'Concluída':
+    case 'Em Atendimento':
 
-      return 'status-concluida'
-
-
-
-    case 'Cancelada':
-
-      return 'status-cancelada'
+      return 'status-em-atendimento'
 
 
 
-    default:
+    case 'Com Pendências':
 
-      return 'status-nova'
+      return 'status-com-pendencias'
 
-  }
+
+
+    case 'Concluída':
+
+      return 'status-concluida'
+
+
+
+    case 'Cancelada':
+
+      return 'status-cancelada'
+
+
+
+    default:
+
+      return 'status-nova'
+
+  }
 
 }
 
@@ -444,36 +444,65 @@ function classeStatus(status: string) {
 
 function classePrioridade(
 
-  prioridade: string
+  prioridade: string
 
 ) {
 
-  switch (prioridade) {
+  switch (prioridade) {
 
-    case 'Urgente':
+    case 'Urgente':
 
-      return 'prioridade-alta'
-
-
-
-    case 'Alta':
-
-      return 'prioridade-alta'
+      return 'prioridade-alta'
 
 
 
-    case 'Média':
+    case 'Alta':
 
-      return 'prioridade-media'
+      return 'prioridade-alta'
 
 
 
-    default:
+    case 'Média':
 
-      return 'prioridade-baixa'
+      return 'prioridade-media'
 
-  }
 
+
+    default:
+
+      return 'prioridade-baixa'
+
+  }
+
+}
+
+
+
+// ============================================================
+// CLASSE DA PRIORIDADE DE ATENDIMENTO
+// P1 vermelho escuro | P2 vermelho | P3 azul | P4 verde
+// ============================================================
+
+function classePrioridadeAtendimento(prioridade: string) {
+  const valor = prioridade.trim().toLocaleUpperCase('pt-BR')
+
+  if (valor.startsWith('P1') || valor.includes('IMEDIATA')) {
+    return 'prioridade-atendimento-p1'
+  }
+
+  if (valor.startsWith('P2') || valor.includes('URGENTE')) {
+    return 'prioridade-atendimento-p2'
+  }
+
+  if (valor.startsWith('P3') || valor.includes('NORMAL')) {
+    return 'prioridade-atendimento-p3'
+  }
+
+  if (valor.startsWith('P4') || valor.includes('PLANEJADA')) {
+    return 'prioridade-atendimento-p4'
+  }
+
+  return ''
 }
 
 
@@ -488,1241 +517,1241 @@ function classePrioridade(
 
 export function DetalheDemandaPage({
 
-  demanda,
+  demanda,
 
-  onVoltar,
+  onVoltar,
 
-  nomeUsuario,
+  nomeUsuario,
 
-  perfilUsuarioGlobal,
+  perfilUsuarioGlobal,
 
-  onDashboard,
+  onDashboard,
 
-  onMinhasDemandas,
+  onMinhasDemandas,
 
-  onTodasDemandas,
+  onTodasDemandas,
 
-  onNovaDemanda,
+  onNovaDemanda,
 
-  onClientes,
+  onClientes,
 
-  onResponsaveis,
+  onResponsaveis,
 
-  onFeriados,
+  onFeriados,
 
-  onRelatorios,
+  onRelatorios,
 
-  onConfiguracoes,
+  onConfiguracoes,
 
-  onLogout,
+  onLogout,
 
-  onAlterarStatus,
+  onAlterarStatus,
 
-  onAlterarResponsavel,
+  onAlterarResponsavel,
 
-  onAdicionarComentario,
+  onAdicionarComentario,
 
-  onAdicionarArquivo,
+  onAdicionarArquivo,
 
-  perfilUsuario,
+  perfilUsuario,
 
-  analistas = [],
+  analistas = [],
 
-  onAlterarPrioridade,
+  onAlterarPrioridade,
 
-  onAlterarPrioridadeAtendimento,
+  onAlterarPrioridadeAtendimento,
 
-  onAlterarPrazoManual,
+  onAlterarPrazoManual,
 
-  onReabrirDemanda,
+  onReabrirDemanda,
 
-  onCancelarDemanda,
+  onCancelarDemanda,
 
 }: Props) {
 
-  // ==========================================================
+  // ==========================================================
 
-  // STATUS
+  // STATUS
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    statusSelecionado,
+    statusSelecionado,
 
-    setStatusSelecionado,
+    setStatusSelecionado,
 
-  ] = useState(
+  ] = useState(
 
-    demanda.status
+    demanda.status
 
-  )
+  )
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // ANALISTA
+  // ANALISTA
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    responsavelSelecionado,
+    responsavelSelecionado,
 
-    setResponsavelSelecionado,
+    setResponsavelSelecionado,
 
-  ] = useState(
+  ] = useState(
 
-    demanda.responsavel || ''
+    demanda.responsavel || ''
 
-  )
+  )
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // COMENTÁRIO
+  // COMENTÁRIO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    comentario,
+    comentario,
 
-    setComentario,
+    setComentario,
 
-  ] = useState('')
+  ] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // COMENTÁRIOS LOCAIS
+  // COMENTÁRIOS LOCAIS
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    comentariosLocais,
+    comentariosLocais,
 
-    setComentariosLocais,
+    setComentariosLocais,
 
-  ] = useState<Comentario[]>(
+  ] = useState<Comentario[]>(
 
-    demanda.comentarios || []
+    demanda.comentarios || []
 
-  )
+  )
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // ARQUIVOS
+  // ARQUIVOS
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    arquivosLocais,
+    arquivosLocais,
 
-    setArquivosLocais,
+    setArquivosLocais,
 
-  ] = useState<Arquivo[]>(
+  ] = useState<Arquivo[]>(
 
-    demanda.arquivos || []
+    demanda.arquivos || []
 
-  )
+  )
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // HISTÓRICO
+  // HISTÓRICO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    historicoLocal,
+    historicoLocal,
 
-    setHistoricoLocal,
+    setHistoricoLocal,
 
-  ] = useState<Historico[]>(
+  ] = useState<Historico[]>(
 
-    demanda.historico || []
+    demanda.historico || []
 
-  )
+  )
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // COMENTÁRIOS PENDENTES
+  // COMENTÁRIOS PENDENTES
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    comentariosPendentes,
+    comentariosPendentes,
 
-    setComentariosPendentes,
+    setComentariosPendentes,
 
-  ] = useState<number[]>([])
+  ] = useState<number[]>([])
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // ARQUIVOS PENDENTES
+  // ARQUIVOS PENDENTES
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    arquivosPendentes,
+    arquivosPendentes,
 
-    setArquivosPendentes,
+    setArquivosPendentes,
 
-  ] = useState<number[]>([])
+  ] = useState<number[]>([])
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // SALVANDO
+  // SALVANDO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    salvando,
+    salvando,
 
-    setSalvando,
+    setSalvando,
 
-  ] = useState(false)
+  ] = useState(false)
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // PENDÊNCIA
+  // PENDÊNCIA
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    mostrarPendencia,
+    mostrarPendencia,
 
-    setMostrarPendencia,
+    setMostrarPendencia,
 
-  ] = useState(false)
+  ] = useState(false)
 
 
 
-  const [
+  const [
 
-    motivoPendencia,
+    motivoPendencia,
 
-    setMotivoPendencia,
+    setMotivoPendencia,
 
-  ] = useState('')
+  ] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // CONCLUSÃO
+  // CONCLUSÃO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    mostrarConclusao,
+    mostrarConclusao,
 
-    setMostrarConclusao,
+    setMostrarConclusao,
 
-  ] = useState(false)
+  ] = useState(false)
 
 
 
-  const [
+  const [
 
-    comentarioConclusao,
+    comentarioConclusao,
 
-    setComentarioConclusao,
+    setComentarioConclusao,
 
-  ] = useState('')
+  ] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // CRITICIDADE
+  // CRITICIDADE
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    prioridadeSelecionada,
+    prioridadeSelecionada,
 
-    setPrioridadeSelecionada,
+    setPrioridadeSelecionada,
 
-  ] = useState(''
+  ] = useState(''
 
 )
 
 
 
-  // PRIORIDADE DE ATENDIMENTO
+  // PRIORIDADE DE ATENDIMENTO
 
-  const [prioridadeAtendimentoSelecionada, setPrioridadeAtendimentoSelecionada] = useState('')
+  const [prioridadeAtendimentoSelecionada, setPrioridadeAtendimentoSelecionada] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // PRAZO
+  // PRAZO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    novoPrazo,
+    novoPrazo,
 
-    setNovoPrazo,
+    setNovoPrazo,
 
-  ] = useState(
+  ] = useState(
 
-    demanda.prazo || ''
+    demanda.prazo || ''
 
-  )
+  )
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // MOTIVO ALTERAÇÃO
+  // MOTIVO ALTERAÇÃO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    motivoAlteracao,
+    motivoAlteracao,
 
-    setMotivoAlteracao,
+    setMotivoAlteracao,
 
-  ] = useState('')
+  ] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // MOTIVO REABERTURA
+  // MOTIVO REABERTURA
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    motivoReabertura,
+    motivoReabertura,
 
-    setMotivoReabertura,
+    setMotivoReabertura,
 
-  ] = useState('')
+  ] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // MOTIVO CANCELAMENTO
+  // MOTIVO CANCELAMENTO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    motivoCancelamento,
+    motivoCancelamento,
 
-    setMotivoCancelamento,
+    setMotivoCancelamento,
 
-  ] = useState('')
+  ] = useState('')
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // EXIBIR CANCELAMENTO
+  // EXIBIR CANCELAMENTO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const [
+  const [
 
-    mostrarCancelamento,
+    mostrarCancelamento,
 
-    setMostrarCancelamento,
+    setMostrarCancelamento,
 
-  ] = useState(false)
+  ] = useState(false)
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // SINCRONIZAR COM A DEMANDA
+  // SINCRONIZAR COM A DEMANDA
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  useEffect(() => {
+  useEffect(() => {
 
-    setStatusSelecionado(
+    setStatusSelecionado(
 
-      demanda.status
+      demanda.status
 
-    )
+    )
 
 
 
-    setPrioridadeSelecionada('')
+    setPrioridadeSelecionada('')
 
 
 
-    setPrioridadeAtendimentoSelecionada('')
+    setPrioridadeAtendimentoSelecionada('')
 
 
 
-    setNovoPrazo(
+    setNovoPrazo(
 
-      demanda.prazo || ''
+      demanda.prazo || ''
 
-    )
+    )
 
 
 
-    setMotivoAlteracao('')
+    setMotivoAlteracao('')
 
 
 
-    setMotivoReabertura('')
+    setMotivoReabertura('')
 
 
 
-    setMotivoCancelamento('')
+    setMotivoCancelamento('')
 
 
 
-    setMostrarCancelamento(
+    setMostrarCancelamento(
 
-      false
+      false
 
-    )
+    )
 
 
 
-    setResponsavelSelecionado(
+    setResponsavelSelecionado(
 
-      demanda.responsavel || ''
+      demanda.responsavel || ''
 
-    )
+    )
 
 
 
-    setComentariosLocais(
+    setComentariosLocais(
 
-      demanda.comentarios || []
+      demanda.comentarios || []
 
-    )
+    )
 
 
 
-    setArquivosLocais(
+    setArquivosLocais(
 
-      demanda.arquivos || []
+      demanda.arquivos || []
 
-    )
+    )
 
 
 
-    setHistoricoLocal(
+    setHistoricoLocal(
 
-      demanda.historico || []
+      demanda.historico || []
 
-    )
+    )
 
 
 
-    setComentariosPendentes([])
+    setComentariosPendentes([])
 
 
 
-    setArquivosPendentes([])
+    setArquivosPendentes([])
 
 
 
-    setComentario('')
+    setComentario('')
 
 
 
-    setMostrarPendencia(false)
+    setMostrarPendencia(false)
 
 
 
-    setMotivoPendencia('')
+    setMotivoPendencia('')
 
 
 
-    setMostrarConclusao(false)
+    setMostrarConclusao(false)
 
 
 
-    setComentarioConclusao('')
+    setComentarioConclusao('')
 
-  }, [demanda])
+  }, [demanda])
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // ADICIONAR COMENTÁRIO LOCAL
+  // ADICIONAR COMENTÁRIO LOCAL
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function adicionarComentarioLocal() {
+  function adicionarComentarioLocal() {
 
-    const texto =
+    const texto =
 
-      comentario.trim()
+      comentario.trim()
 
 
 
-    if (!texto) {
+    if (!texto) {
 
-      return
+      return
 
-    }
+    }
 
 
 
-    const id =
+    const id =
 
-      Date.now()
+      Date.now()
 
 
 
-    const data =
+    const data =
 
-      new Date().toISOString()
+      new Date().toISOString()
 
 
 
-    const novoComentario:
+    const novoComentario:
 
-      Comentario = {
+      Comentario = {
 
-      id,
+      id,
 
 
 
-      texto,
+      texto,
 
 
 
-      usuario:
+      usuario:
 
-        nomeUsuario,
+        nomeUsuario,
 
 
 
-      data,
+      data,
 
-    }
+    }
 
 
 
-    const novoHistorico:
+    const novoHistorico:
 
-      Historico = {
+      Historico = {
 
-      id:
+      id:
 
-        id + 1,
+        id + 1,
 
 
 
-      tipo:
+      tipo:
 
-        'comentario',
+        'comentario',
 
 
 
-      titulo:
+      titulo:
 
-        'Comentário adicionado',
+        'Comentário adicionado',
 
 
 
-      descricao:
+      descricao:
 
-        texto,
+        texto,
 
 
 
-      data,
+      data,
 
 
 
-      usuario:
+      usuario:
 
-        nomeUsuario,
+        nomeUsuario,
 
 
 
-      referenciaId:
+      referenciaId:
 
-        id,
+        id,
 
-    }
+    }
 
 
 
-    setComentariosLocais(
+    setComentariosLocais(
 
-      (atual) => [
+      (atual) => [
 
-        ...atual,
+        ...atual,
 
-        novoComentario,
+        novoComentario,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setComentariosPendentes(
+    setComentariosPendentes(
 
-      (atual) => [
+      (atual) => [
 
-        ...atual,
+        ...atual,
 
-        id,
+        id,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setHistoricoLocal(
+    setHistoricoLocal(
 
-      (atual) => [
+      (atual) => [
 
-        novoHistorico,
+        novoHistorico,
 
-        ...atual,
+        ...atual,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setComentario('')
+    setComentario('')
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // EXCLUIR COMENTÁRIO PENDENTE
+  // EXCLUIR COMENTÁRIO PENDENTE
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function excluirComentario(
+  function excluirComentario(
 
-    id: number
+    id: number
 
-  ) {
+  ) {
 
-    if (
+    if (
 
-      !comentariosPendentes.includes(
+      !comentariosPendentes.includes(
 
-        id
+        id
 
-      )
+      )
 
-    ) {
+    ) {
 
-      return
+      return
 
-    }
+    }
 
 
 
-    setComentariosLocais(
+    setComentariosLocais(
 
-      (atual) =>
+      (atual) =>
 
-        atual.filter(
+        atual.filter(
 
-          (item) =>
+          (item) =>
 
-            item.id !== id
+            item.id !== id
 
-        )
+        )
 
-    )
+    )
 
 
 
-    setComentariosPendentes(
+    setComentariosPendentes(
 
-      (atual) =>
+      (atual) =>
 
-        atual.filter(
+        atual.filter(
 
-          (item) =>
+          (item) =>
 
-            item !== id
+            item !== id
 
-        )
+        )
 
-    )
+    )
 
 
 
-    setHistoricoLocal(
+    setHistoricoLocal(
 
-      (atual) =>
+      (atual) =>
 
-        atual.filter(
+        atual.filter(
 
-          (item) =>
+          (item) =>
 
-            item.referenciaId !==
+            item.referenciaId !==
 
-            id
+            id
 
-        )
+        )
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // SELECIONAR ARQUIVO
+  // SELECIONAR ARQUIVO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function selecionarArquivo(
+  function selecionarArquivo(
 
-    event: ChangeEvent<HTMLInputElement>
+    event: ChangeEvent<HTMLInputElement>
 
-  ) {
+  ) {
 
-    const arquivo =
+    const arquivo =
 
-      event.target.files?.[0]
+      event.target.files?.[0]
 
 
 
-    if (!arquivo) {
+    if (!arquivo) {
 
-      return
+      return
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // LIMITE 20 MB
+    // LIMITE 20 MB
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    if (
+    if (
 
-      arquivo.size >
+      arquivo.size >
 
-      20 * 1024 * 1024
+      20 * 1024 * 1024
 
-    ) {
+    ) {
 
-      alert(
+      alert(
 
-        'O arquivo não pode ultrapassar 20 MB.'
+        'O arquivo não pode ultrapassar 20 MB.'
 
-      )
+      )
 
 
 
-      event.target.value =
+      event.target.value =
 
-        ''
+        ''
 
 
 
-      return
+      return
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // EXTENSÃO
+    // EXTENSÃO
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    const extensao =
+    const extensao =
 
-      arquivo.name
+      arquivo.name
 
-        .split('.')
+        .split('.')
 
-        .pop()
+        .pop()
 
-        ?.toLowerCase()
+        ?.toLowerCase()
 
 
 
-    const permitidos = [
+    const permitidos = [
 
-      'pdf',
+      'pdf',
 
-      'doc',
+      'doc',
 
-      'docx',
+      'docx',
 
-      'xls',
+      'xls',
 
-      'xlsx',
+      'xlsx',
 
-      'csv',
+      'csv',
 
-      'txt',
+      'txt',
 
-      'png',
+      'png',
 
-      'jpg',
+      'jpg',
 
-      'jpeg',
+      'jpeg',
 
-    ]
+    ]
 
 
 
-    if (
+    if (
 
-      !extensao ||
+      !extensao ||
 
-      !permitidos.includes(
+      !permitidos.includes(
 
-        extensao
+        extensao
 
-      )
+      )
 
-    ) {
+    ) {
 
-      alert(
+      alert(
 
-        'Formato de arquivo não permitido.'
+        'Formato de arquivo não permitido.'
 
-      )
+      )
 
 
 
-      event.target.value =
+      event.target.value =
 
-        ''
+        ''
 
 
 
-      return
+      return
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // LEITURA
+    // LEITURA
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    const leitor =
+    const leitor =
 
-      new FileReader()
+      new FileReader()
 
 
 
-    leitor.onload = () => {
+    leitor.onload = () => {
 
-      const id =
+      const id =
 
-        Date.now()
+        Date.now()
 
 
 
-      const data =
+      const data =
 
-        new Date().toISOString()
+        new Date().toISOString()
 
 
 
-      const novoArquivo:
+      const novoArquivo:
 
-        Arquivo = {
+        Arquivo = {
 
-        id,
+        id,
 
 
 
-        nome:
+        nome:
 
-          arquivo.name,
+          arquivo.name,
 
 
 
-        tamanho:
+        tamanho:
 
-          arquivo.size,
+          arquivo.size,
 
 
 
-        data,
+        data,
 
 
 
-        usuario:
+        usuario:
 
-          nomeUsuario,
+          nomeUsuario,
 
 
 
-        url:
+        url:
 
-          typeof leitor.result ===
+          typeof leitor.result ===
 
-          'string'
+          'string'
 
-            ? leitor.result
+            ? leitor.result
 
-            : '',
+            : '',
 
-      }
+      }
 
 
 
-      const novoHistorico:
+      const novoHistorico:
 
-        Historico = {
+        Historico = {
 
-        id:
+        id:
 
-          id + 1,
+          id + 1,
 
 
 
-        tipo:
+        tipo:
 
-          'arquivo',
+          'arquivo',
 
 
 
-        titulo:
+        titulo:
 
-          'Arquivo anexado',
+          'Arquivo anexado',
 
 
 
-        descricao:
+        descricao:
 
-          `O arquivo "${arquivo.name}" foi anexado à demanda.`,
+          `O arquivo "${arquivo.name}" foi anexado à demanda.`,
 
 
 
-        data,
+        data,
 
 
 
-        usuario:
+        usuario:
 
-          nomeUsuario,
+          nomeUsuario,
 
 
 
-        referenciaId:
+        referenciaId:
 
-          id,
+          id,
 
-      }
+      }
 
 
 
-      setArquivosLocais(
+      setArquivosLocais(
 
-        (atual) => [
+        (atual) => [
 
-          ...atual,
+          ...atual,
 
-          novoArquivo,
+          novoArquivo,
 
-        ]
+        ]
 
-      )
+      )
 
 
 
-      setArquivosPendentes(
+      setArquivosPendentes(
 
-        (atual) => [
+        (atual) => [
 
-          ...atual,
+          ...atual,
 
-          id,
+          id,
 
-        ]
+        ]
 
-      )
+      )
 
 
 
-      setHistoricoLocal(
+      setHistoricoLocal(
 
-        (atual) => [
+        (atual) => [
 
-          novoHistorico,
+          novoHistorico,
 
-          ...atual,
+          ...atual,
 
-        ]
+        ]
 
-      )
+      )
 
-    }
+    }
 
 
 
-    leitor.readAsDataURL(
+    leitor.readAsDataURL(
 
-      arquivo
+      arquivo
 
-    )
+    )
 
 
 
-    event.target.value =
+    event.target.value =
 
-      ''
+      ''
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // EXCLUIR ARQUIVO PENDENTE
+  // EXCLUIR ARQUIVO PENDENTE
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function excluirArquivo(
+  function excluirArquivo(
 
-    id: number
+    id: number
 
-  ) {
+  ) {
 
-    if (
+    if (
 
-      !arquivosPendentes.includes(
+      !arquivosPendentes.includes(
 
-        id
+        id
 
-      )
+      )
 
-    ) {
+    ) {
 
-      return
+      return
 
-    }
+    }
 
 
 
-    setArquivosLocais(
+    setArquivosLocais(
 
-      (atual) =>
+      (atual) =>
 
-        atual.filter(
+        atual.filter(
 
-          (arquivo) =>
+          (arquivo) =>
 
-            arquivo.id !== id
+            arquivo.id !== id
 
-        )
+        )
 
-    )
+    )
 
 
 
-    setArquivosPendentes(
+    setArquivosPendentes(
 
-      (atual) =>
+      (atual) =>
 
-        atual.filter(
+        atual.filter(
 
-          (item) =>
+          (item) =>
 
-            item !== id
+            item !== id
 
-        )
+        )
 
-    )
+    )
 
 
 
-    setHistoricoLocal(
+    setHistoricoLocal(
 
-      (atual) =>
+      (atual) =>
 
-        atual.filter(
+        atual.filter(
 
-          (item) =>
+          (item) =>
 
-            item.referenciaId !==
+            item.referenciaId !==
 
-            id
+            id
 
-        )
+        )
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // BAIXAR ARQUIVO
+  // BAIXAR ARQUIVO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function baixarArquivo(
+  function baixarArquivo(
 
-    arquivo: Arquivo
+    arquivo: Arquivo
 
-  ) {
+  ) {
 
-    if (!arquivo.url) {
+    if (!arquivo.url) {
 
-      return
+      return
 
-    }
+    }
 
 
 
-    const link =
+    const link =
 
-      document.createElement(
+      document.createElement(
 
-        'a'
+        'a'
 
-      )
+      )
 
 
 
-    link.href =
+    link.href =
 
-      arquivo.url
+      arquivo.url
 
 
 
-    link.download =
+    link.download =
 
-      arquivo.nome
+      arquivo.nome
 
 
 
-    document.body.appendChild(
+    document.body.appendChild(
 
-      link
+      link
 
-    )
+    )
 
 
 
-    link.click()
+    link.click()
 
 
 
-    document.body.removeChild(
+    document.body.removeChild(
 
-      link
+      link
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // SELECIONAR STATUS
+  // SELECIONAR STATUS
 
-  // ==========================================================
+  // ==========================================================
 
 
 
@@ -1909,523 +1938,523 @@ export function DetalheDemandaPage({
 
   }
 
-  // CONFIRMAR PENDÊNCIA
+  // CONFIRMAR PENDÊNCIA
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function confirmarPendencia() {
+  function confirmarPendencia() {
 
-    const motivo =
+    const motivo =
 
-      motivoPendencia.trim()
+      motivoPendencia.trim()
 
 
 
-    if (!motivo) {
+    if (!motivo) {
 
-      alert(
+      alert(
 
-        'Informe obrigatoriamente o motivo da pendência.'
+        'Informe obrigatoriamente o motivo da pendência.'
 
-      )
+      )
 
 
 
-      return
+      return
 
-    }
+    }
 
 
 
-    const id =
+    const id =
 
-      Date.now()
+      Date.now()
 
 
 
-    const data =
+    const data =
 
-      new Date().toISOString()
+      new Date().toISOString()
 
 
 
-    setStatusSelecionado(
+    setStatusSelecionado(
 
-      'Com Pendências'
+      'Com Pendências'
 
-    )
+    )
 
 
 
-    const historicoStatus:
+    const historicoStatus:
 
-      Historico = {
+      Historico = {
 
-      id,
+      id,
 
 
 
-      tipo:
+      tipo:
 
-        'status',
+        'status',
 
 
 
-      titulo:
+      titulo:
 
-        'Demanda colocada em Com Pendências',
+        'Demanda colocada em Com Pendências',
 
 
 
-      descricao:
+      descricao:
 
-        'A demanda foi colocada em "Com Pendências".',
+        'A demanda foi colocada em "Com Pendências".',
 
 
 
-      data,
+      data,
 
 
 
-      usuario:
+      usuario:
 
-        nomeUsuario,
+        nomeUsuario,
 
 
 
-      referenciaId:
+      referenciaId:
 
-        demanda.id,
+        demanda.id,
 
 
 
-      valorAnterior:
+      valorAnterior:
 
-        demanda.status,
+        demanda.status,
 
 
 
-      valorNovo:
+      valorNovo:
 
-        'Com Pendências',
+        'Com Pendências',
 
 
 
-      motivo,
+      motivo,
 
-    }
+    }
 
 
 
-    const historicoMotivo:
+    const historicoMotivo:
 
-      Historico = {
+      Historico = {
 
-      id:
+      id:
 
-        id + 1,
+        id + 1,
 
 
 
-      tipo:
+      tipo:
 
-        'pendencia',
+        'pendencia',
 
 
 
-      titulo:
+      titulo:
 
-        'Motivo da Pendência',
+        'Motivo da Pendência',
 
 
 
-      descricao:
+      descricao:
 
-        motivo,
+        motivo,
 
 
 
-      data,
+      data,
 
 
 
-      usuario:
+      usuario:
 
-        nomeUsuario,
+        nomeUsuario,
 
 
 
-      referenciaId:
+      referenciaId:
 
-        demanda.id,
+        demanda.id,
 
 
 
-      motivo,
+      motivo,
 
-    }
+    }
 
 
 
-    setHistoricoLocal(
+    setHistoricoLocal(
 
-      (atual) => [
+      (atual) => [
 
-        historicoMotivo,
+        historicoMotivo,
 
-        historicoStatus,
+        historicoStatus,
 
-        ...atual,
+        ...atual,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setMostrarPendencia(
+    setMostrarPendencia(
 
-      false
+      false
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // CONFIRMAR CONCLUSÃO
+  // CONFIRMAR CONCLUSÃO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function confirmarConclusao() {
+  function confirmarConclusao() {
 
-    const texto =
+    const texto =
 
-      comentarioConclusao.trim()
+      comentarioConclusao.trim()
 
 
 
-    if (!texto) {
+    if (!texto) {
 
-      alert(
+      alert(
 
-        'Informe obrigatoriamente um comentário para concluir a demanda.'
+        'Informe obrigatoriamente um comentário para concluir a demanda.'
 
-      )
+      )
 
 
 
-      return
+      return
 
-    }
+    }
 
 
 
-    const id =
+    const id =
 
-      Date.now()
+      Date.now()
 
 
 
-    const data =
+    const data =
 
-      new Date().toISOString()
+      new Date().toISOString()
 
 
 
-    const novoComentario:
+    const novoComentario:
 
-      Comentario = {
+      Comentario = {
 
-      id,
+      id,
 
 
 
-      texto,
+      texto,
 
 
 
-      usuario:
+      usuario:
 
-        nomeUsuario,
+        nomeUsuario,
 
 
 
-      data,
+      data,
 
-    }
+    }
 
 
 
-    const novoHistorico:
+    const novoHistorico:
 
-      Historico = {
+      Historico = {
 
-      id:
+      id:
 
-        id + 1,
+        id + 1,
 
 
 
-      tipo:
+      tipo:
 
-        'conclusao',
+        'conclusao',
 
 
 
-      titulo:
+      titulo:
 
-        'Demanda concluída',
+        'Demanda concluída',
 
 
 
-      descricao:
+      descricao:
 
-        `A demanda foi concluída. Comentário: ${texto}`,
+        `A demanda foi concluída. Comentário: ${texto}`,
 
 
 
-      data,
+      data,
 
 
 
-      usuario:
+      usuario:
 
-        nomeUsuario,
+        nomeUsuario,
 
 
 
-      referenciaId:
+      referenciaId:
 
-        id,
+        id,
 
 
 
-      valorAnterior:
+      valorAnterior:
 
-        demanda.status,
+        demanda.status,
 
 
 
-      valorNovo:
+      valorNovo:
 
-        'Concluída',
+        'Concluída',
 
 
 
-      motivo:
+      motivo:
 
-        texto,
+        texto,
 
-    }
+    }
 
 
 
-    setStatusSelecionado(
+    setStatusSelecionado(
 
-      'Concluída'
+      'Concluída'
 
-    )
+    )
 
 
 
-    setComentariosLocais(
+    setComentariosLocais(
 
-      (atual) => [
+      (atual) => [
 
-        ...atual,
+        ...atual,
 
-        novoComentario,
+        novoComentario,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setComentariosPendentes(
+    setComentariosPendentes(
 
-      (atual) => [
+      (atual) => [
 
-        ...atual,
+        ...atual,
 
-        id,
+        id,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setHistoricoLocal(
+    setHistoricoLocal(
 
-      (atual) => [
+      (atual) => [
 
-        novoHistorico,
+        novoHistorico,
 
-        ...atual,
+        ...atual,
 
-      ]
+      ]
 
-    )
+    )
 
 
 
-    setComentarioConclusao(
+    setComentarioConclusao(
 
-      ''
+      ''
 
-    )
+    )
 
 
 
-    setMostrarConclusao(
+    setMostrarConclusao(
 
-      false
+      false
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // CANCELAR PENDÊNCIA
+  // CANCELAR PENDÊNCIA
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function cancelarPendencia() {
+  function cancelarPendencia() {
 
-    setMotivoPendencia(
+    setMotivoPendencia(
 
-      ''
+      ''
 
-    )
+    )
 
 
 
-    setMostrarPendencia(
+    setMostrarPendencia(
 
-      false
+      false
 
-    )
+    )
 
 
 
-    setStatusSelecionado(
+    setStatusSelecionado(
 
-      demanda.status
+      demanda.status
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // CANCELAR CONCLUSÃO
+  // CANCELAR CONCLUSÃO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function cancelarConclusao() {
+  function cancelarConclusao() {
 
-    setComentarioConclusao(
+    setComentarioConclusao(
 
-      ''
+      ''
 
-    )
+    )
 
 
 
-    setMostrarConclusao(
+    setMostrarConclusao(
 
-      false
+      false
 
-    )
+    )
 
 
 
-    setStatusSelecionado(
+    setStatusSelecionado(
 
-      demanda.status
+      demanda.status
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // CONFIRMAR CANCELAMENTO
+  // CONFIRMAR CANCELAMENTO
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function confirmarCancelamento() {
+  function confirmarCancelamento() {
 
-    const motivo =
+    const motivo =
 
-      motivoCancelamento.trim()
+      motivoCancelamento.trim()
 
 
 
-    if (!motivo) {
+    if (!motivo) {
 
-      alert(
+      alert(
 
-        'Informe obrigatoriamente o motivo do cancelamento.'
+        'Informe obrigatoriamente o motivo do cancelamento.'
 
-      )
+      )
 
 
 
-      return
+      return
 
-    }
+    }
 
 
 
-    if (
+    if (
 
-      !onCancelarDemanda
+      !onCancelarDemanda
 
-    ) {
+    ) {
 
-      alert(
+      alert(
 
-        'A operação de cancelamento não está disponível.'
+        'A operação de cancelamento não está disponível.'
 
-      )
+      )
 
 
 
-      return
+      return
 
-    }
+    }
 
 
 
-    onCancelarDemanda(
+    onCancelarDemanda(
 
-      demanda.id,
+      demanda.id,
 
-      motivo
+      motivo
 
-    )
+    )
 
     mostrarToast(
       'Demanda Cancelada Com Sucesso.'
@@ -2434,648 +2463,648 @@ export function DetalheDemandaPage({
     
 
 
-    setMotivoCancelamento(
+    setMotivoCancelamento(
 
-      ''
+      ''
 
-    )
+    )
 
 
 
-    setMostrarCancelamento(
+    setMostrarCancelamento(
 
-      false
+      false
 
-    )
+    )
 
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // ALTERAÇÕES PENDENTES
+  // ALTERAÇÕES PENDENTES
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  const alteracoesPendentes =
+  const alteracoesPendentes =
 
-    statusSelecionado !==
+    statusSelecionado !==
 
-      demanda.status ||
+      demanda.status ||
 
-    responsavelSelecionado !==
+    responsavelSelecionado !==
 
-      (demanda.responsavel ||
+      (demanda.responsavel ||
 
-        '') ||
+        '') ||
 
-    comentariosPendentes.length >
+    comentariosPendentes.length >
 
-      0 ||
+      0 ||
 
-    arquivosPendentes.length >
+    arquivosPendentes.length >
 
-      0
+      0
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // SALVAR ALTERAÇÕES
+  // SALVAR ALTERAÇÕES
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  function salvarAlteracoes() {
+  function salvarAlteracoes() {
 
-    if (
+    if (
 
-      !alteracoesPendentes
+      !alteracoesPendentes
 
-    ) {
+    ) {
 
-      return
+      return
 
-    }
+    }
 
 
 
-    setSalvando(
+    setSalvando(
 
-      true
+      true
 
-    )
+    )
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // STATUS
+    // STATUS
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    if (
+    if (
 
-      statusSelecionado !==
+      statusSelecionado !==
 
-      demanda.status
+      demanda.status
 
-    ) {
+    ) {
 
-      let motivoStatus:
+      let motivoStatus:
 
-        string | undefined
+        string | undefined
 
 
 
-      if (
+      if (
 
-        statusSelecionado ===
+        statusSelecionado ===
 
-        'Com Pendências'
+        'Com Pendências'
 
-      ) {
+      ) {
 
-        motivoStatus =
+        motivoStatus =
 
-          motivoPendencia.trim()
+          motivoPendencia.trim()
 
-      } else if (
+      } else if (
 
-        statusSelecionado ===
+        statusSelecionado ===
 
-        'Concluída'
+        'Concluída'
 
-      ) {
+      ) {
 
-        // A conclusão exige comentário obrigatório no App.
+        // A conclusão exige comentário obrigatório no App.
 
-        // O comentário de conclusão foi criado como pendente
+        // O comentário de conclusão foi criado como pendente
 
-        // logo antes da mudança de status.
+        // logo antes da mudança de status.
 
-        const comentarioConclusaoPendente =
+        const comentarioConclusaoPendente =
 
-          comentariosLocais
+          comentariosLocais
 
-            .filter((item) =>
+            .filter((item) =>
 
-              comentariosPendentes.includes(item.id)
+              comentariosPendentes.includes(item.id)
 
-            )
+            )
 
-            .at(-1)
+            .at(-1)
 
 
 
-        motivoStatus =
+        motivoStatus =
 
-          comentarioConclusaoPendente?.texto?.trim() ||
+          comentarioConclusaoPendente?.texto?.trim() ||
 
-          undefined
+          undefined
 
-      }
+      }
 
 
 
-      onAlterarStatus(
+      onAlterarStatus(
 
-        demanda.id,
+        demanda.id,
 
-        statusSelecionado,
+        statusSelecionado,
 
-        motivoStatus
+        motivoStatus
 
-      )
+      )
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // ANALISTA
+    // ANALISTA
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    if (
+    if (
 
-      responsavelSelecionado !==
+      responsavelSelecionado !==
 
-        (demanda.responsavel ||
+        (demanda.responsavel ||
 
-          '') &&
+          '') &&
 
-      onAlterarResponsavel
+      onAlterarResponsavel
 
-    ) {
+    ) {
 
-      onAlterarResponsavel(
+      onAlterarResponsavel(
 
-        demanda.id,
+        demanda.id,
 
-        responsavelSelecionado
+        responsavelSelecionado
 
-      )
+      )
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // COMENTÁRIOS
+    // COMENTÁRIOS
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    if (
+    if (
 
-      onAdicionarComentario
+      onAdicionarComentario
 
-    ) {
+    ) {
 
-      const pendentes =
+      const pendentes =
 
-        comentariosLocais.filter(
+        comentariosLocais.filter(
 
-          (item) =>
+          (item) =>
 
-            comentariosPendentes.includes(
+            comentariosPendentes.includes(
 
-              item.id
+              item.id
 
-            )
+            )
 
-        )
+        )
 
 
 
-      pendentes.forEach(
+      pendentes.forEach(
 
-        (item) => {
+        (item) => {
 
-          onAdicionarComentario(
+          onAdicionarComentario(
 
-            demanda.id,
+            demanda.id,
 
-            item.texto
+            item.texto
 
-          )
+          )
 
-        }
+        }
 
-      )
+      )
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // ARQUIVOS
+    // ARQUIVOS
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    if (
+    if (
 
-      onAdicionarArquivo
+      onAdicionarArquivo
 
-    ) {
+    ) {
 
-      const pendentes =
+      const pendentes =
 
-        arquivosLocais.filter(
+        arquivosLocais.filter(
 
-          (item) =>
+          (item) =>
 
-            arquivosPendentes.includes(
+            arquivosPendentes.includes(
 
-              item.id
+              item.id
 
-            )
+            )
 
-        )
+        )
 
 
 
-      pendentes.forEach(
+      pendentes.forEach(
 
-        (arquivo) => {
+        (arquivo) => {
 
-          onAdicionarArquivo(
+          onAdicionarArquivo(
 
-            demanda.id,
+            demanda.id,
 
-            arquivo
+            arquivo
 
-          )
+          )
 
-        }
+        }
 
-      )
+      )
 
-    }
+    }
 
 
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
-    // LIMPAR PENDÊNCIAS
+    // LIMPAR PENDÊNCIAS
 
-    // --------------------------------------------------------
+    // --------------------------------------------------------
 
 
 
-    setComentariosPendentes(
+    setComentariosPendentes(
 
-      []
+      []
 
-    )
+    )
 
 
 
-    setArquivosPendentes(
+    setArquivosPendentes(
 
-      []
+      []
 
-    )
+    )
 
 
 
-    setSalvando(
+    setSalvando(
 
-      false
+      false
 
-    )
+    )
 
     mostrarToast(
       'Alterações Da Demanda Salvas Com Sucesso.'
     )
-  }
+  }
 
 
 
-  // ==========================================================
+  // ==========================================================
 
-  // RENDER
+  // RENDER
 
-  // ==========================================================
+  // ==========================================================
 
 
 
-  return (
+  return (
 
-    <>
+    <>
 
-      <MenuPrincipal
+      <MenuPrincipal
 
-        usuarioAtual={{
+        usuarioAtual={{
 
-          id: 0,
+          id: 0,
 
-          nome: nomeUsuario,
+          nome: nomeUsuario,
 
-          login: '',
+          login: '',
 
-          email: '',
+          email: '',
 
-          perfil:
+          perfil:
 
-            ehPerfilOperacional(perfilUsuarioGlobal)
+            ehPerfilOperacional(perfilUsuarioGlobal)
 
-              ? perfilUsuarioGlobal as Usuario['perfil']
+              ? perfilUsuarioGlobal as Usuario['perfil']
 
-              : 'Gestor/Administrador',
+              : 'Gestor/Administrador',
 
-          status: 'Ativo',
+          status: 'Ativo',
 
-          criadoEm: '',
+          criadoEm: '',
 
-        }}
+        }}
 
-        ativo={ehPerfilOperacional(perfilUsuarioGlobal) ? 'minhas-demandas' : 'todas-demandas'}
+        ativo={ehPerfilOperacional(perfilUsuarioGlobal) ? 'minhas-demandas' : 'todas-demandas'}
 
-        onDashboard={onDashboard}
+        onDashboard={onDashboard}
 
-        onMinhasDemandas={onMinhasDemandas}
+        onMinhasDemandas={onMinhasDemandas}
 
-        onTodasDemandas={onTodasDemandas}
+        onTodasDemandas={onTodasDemandas}
 
-        onNovaDemanda={onNovaDemanda}
+        onNovaDemanda={onNovaDemanda}
 
-        onClientes={onClientes}
+        onClientes={onClientes}
 
-        onResponsaveis={onResponsaveis}
+        onResponsaveis={onResponsaveis}
 
-        onFeriados={onFeriados}
+        onFeriados={onFeriados}
 
-        onRelatorios={onRelatorios}
+        onRelatorios={onRelatorios}
 
-        onConfiguracoes={onConfiguracoes}
+        onConfiguracoes={onConfiguracoes}
 
-        onMinhaConta={ehPerfilOperacional(perfilUsuarioGlobal) ? onConfiguracoes : undefined}
+        onMinhaConta={ehPerfilOperacional(perfilUsuarioGlobal) ? onConfiguracoes : undefined}
 
-        onSair={onLogout}
+        onSair={onLogout}
 
-        subtitulo="Detalhamento e acompanhamento da demanda"
+        subtitulo="Detalhamento e acompanhamento da demanda"
 
-        rodapeAcoes={
+        rodapeAcoes={
 
-          <>
+          <>
 
-            <button
+            <button
 
-              className="btn-secundario"
+              className="btn-secundario"
 
-              type="button"
+              type="button"
 
-              onClick={onVoltar}
+              onClick={onVoltar}
 
-            >
+            >
 
-              ← Voltar ao Dashboard
+              ← Voltar ao Dashboard
 
-            </button>
+            </button>
 
 
 
-            <button
+            <button
 
-              className="btn-principal"
+              className="btn-principal"
 
-              type="button"
+              type="button"
 
-              disabled={!alteracoesPendentes || salvando}
+              disabled={!alteracoesPendentes || salvando}
 
-              onClick={salvarAlteracoes}
+              onClick={salvarAlteracoes}
 
-            >
+            >
 
-              {salvando ? 'Salvando...' : '✓ Salvar Alterações'}
+              {salvando ? 'Salvando...' : '✓ Salvar Alterações'}
 
-            </button>
+            </button>
 
-          </>
+          </>
 
-        }
+        }
 
-      >
+      >
 
-        <div className="detalhe-page">
+        <div className="detalhe-page">
 
 
 
-        <div className="detalhe-container">
+        <div className="detalhe-container">
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            CABEÇALHO
+            CABEÇALHO
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        <div className="detalhe-header">
+        <div className="detalhe-header">
 
 
 
-          <div>
+          <div>
 
 
 
-            <div className="detalhe-codigo">
+            <div className="detalhe-codigo">
 
-              DEMANDA #{demanda.id}
+              DEMANDA #{demanda.id}
 
-            </div>
+            </div>
 
 
 
-            <h1>
+            <h1>
 
-              {demanda.titulo}
+              {demanda.titulo}
 
-            </h1>
+            </h1>
 
 
 
-            <p>
+            <p>
 
-              Detalhamento da demanda de TI
+              Detalhamento da demanda de TI
 
-            </p>
+            </p>
 
 
 
-          </div>
+          </div>
 
 
 
-          <span
+          <span
 
-            className={`status-badge ${classeStatus(
+            className={`status-badge ${classeStatus(
 
-              statusSelecionado
+              statusSelecionado
 
-            )}`}
+            )}`}
 
-          >
+          >
 
-            {statusSelecionado}
+            {statusSelecionado}
 
-          </span>
+          </span>
 
 
 
-        </div>
+        </div>
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            DADOS DA DEMANDA
+            DADOS DA DEMANDA
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        <section className="detalhe-card">
+        <section className="detalhe-card">
 
 
 
-          <div className="card-title">
+          <div className="card-title">
 
-            Dados da Demanda
+            Dados da Demanda
 
-          </div>
+          </div>
 
 
 
-          <div className="dados-grid">
+          <div className="dados-grid">
 
 
 
-            <div>
+            <div>
 
 
 
-              <span>
+              <span>
 
-                CLIENTE / ÓRGÃO
+                CLIENTE / ÓRGÃO
 
-              </span>
+              </span>
 
 
 
-              <strong>
+              <strong>
 
-                {demanda.cliente ||
+                {demanda.cliente ||
 
-                  '-'}
+                  '-'}
 
-              </strong>
+              </strong>
 
 
 
-            </div>
+            </div>
 
 
 
-            <div>
+            <div>
 
 
 
-              <span>
+              <span>
 
-                SISTEMA
+                SISTEMA
 
-              </span>
+              </span>
 
 
 
-              <strong>
+              <strong>
 
-                {demanda.sistema ||
+                {demanda.sistema ||
 
-                  'Não informado'}
+                  'Não informado'}
 
-              </strong>
+              </strong>
 
 
 
-            </div>
+            </div>
 
 
 
-            <div>
+            <div>
 
 
 
-              <span>
+              <span>
 
-                TIPO DA DEMANDA
+                TIPO DA DEMANDA
 
-              </span>
+              </span>
 
 
 
-              <strong>
+              <strong>
 
-                {demanda.tipo ||
+                {demanda.tipo ||
 
-                  'Não informado'}
+                  'Não informado'}
 
-              </strong>
+              </strong>
 
 
 
-            </div>
+            </div>
 
 
 
-            <div>
+            <div>
 
 
 
-              <span>
+              <span>
 
-                RESPONSÁVEL
+                RESPONSÁVEL
 
-              </span>
+              </span>
 
 
 
-              <strong>
+              <strong>
 
-                {responsavelSelecionado ||
+                {responsavelSelecionado ||
 
-                  'Não atribuído'}
+                  'Não atribuído'}
 
-              </strong>
+              </strong>
 
 
 
-            </div>
+            </div>
 
 
 
-            <div>
+            <div>
               <span>CRITICIDADE</span>
               <strong className={classePrioridade(demanda.criticidade || demanda.prioridade)}>
                 {demanda.criticidade || demanda.prioridade}
@@ -3084,166 +3113,169 @@ export function DetalheDemandaPage({
 
             <div>
               <span>PRIORIDADE DE ATENDIMENTO</span>
-              <strong>{demanda.prioridadeAtendimento || 'Não definida'}</strong>
+
+              <strong className={classePrioridadeAtendimento(demanda.prioridadeAtendimento || '')}>
+                {demanda.prioridadeAtendimento || 'Não definida'}
+              </strong>
             </div>
 
             <div>
 
 
 
-              <span>
+              <span>
 
-                PRAZO
+                PRAZO
 
-              </span>
+              </span>
 
 
 
-              <strong>
+              <strong>
 
-                {formatarData(
+                {formatarData(
 
-                  demanda.prazo
+                  demanda.prazo
 
-                )}
+                )}
 
-              </strong>
+              </strong>
 
 
 
-            </div>
+            </div>
 
 
 
-          </div>
+          </div>
 
 
 
 
 
-          {/* =================================================
+          {/* =================================================
 
-              CONTROLES DO GESTOR
+              CONTROLES DO GESTOR
 
-              ================================================= */}
+              ================================================= */}
 
 
 
-          {perfilUsuario ===
+          {perfilUsuario ===
 
-            'Gestor/Administrador' && (
+            'Gestor/Administrador' && (
 
 
 
-            <div
+            <div
 
-              className="gestor-controles"
+              className="gestor-controles"
 
-              style={{
+              style={{
 
-                marginTop:
+                marginTop:
 
-                  '18px',
+                  '18px',
 
 
 
-                padding:
+                padding:
 
-                  '16px',
+                  '16px',
 
 
 
-                border:
+                border:
 
-                  '1px solid #dce5ef',
+                  '1px solid #dce5ef',
 
 
 
-                borderRadius:
+                borderRadius:
 
-                  '10px',
+                  '10px',
 
 
 
-                background:
+                background:
 
-                  '#f8fbff',
+                  '#f8fbff',
 
-              }}
+              }}
 
-            >
+            >
 
 
 
-              <strong
+              <strong
 
-                style={{
+                style={{
 
-                  display:
+                  display:
 
-                    'block',
+                    'block',
 
 
 
-                  marginBottom:
+                  marginBottom:
 
-                    '12px',
+                    '12px',
 
-                }}
+                }}
 
-              >
+              >
 
-                Controles do Gestor
+                Controles do Gestor
 
-              </strong>
+              </strong>
 
 
 
 
 
-              <div className="dados-grid">
+              <div className="dados-grid">
 
 
 
-                {/* CRITICIDADE */}
+                {/* CRITICIDADE */}
 
 
 
-                <div className="campo-acao">
+                <div className="campo-acao">
 
 
 
-                  <label>
+                  <label>
 
-                    Criticidade
+                    Criticidade
 
-                  </label>
+                  </label>
 
 
 
-                  <select
+                  <select
 
-                    value={
+                    value={
 
-                      prioridadeSelecionada
+                      prioridadeSelecionada
 
-                    }
+                    }
 
-                    onChange={(event) =>
+                    onChange={(event) =>
 
-                      setPrioridadeSelecionada(
+                      setPrioridadeSelecionada(
 
-                        event.target.value
+                        event.target.value
 
-                      )
+                      )
 
-                    }
+                    }
 
-                  >
+                  >
 
 
 
-                    <option value="">
+                    <option value="">
 
                       Selecione...
 
@@ -3252,37 +3284,37 @@ export function DetalheDemandaPage({
 
 
 
-                    {PRIORIDADES.map(
+                    {PRIORIDADES.map(
 
-                      (item) => (
-
-
-
-                        <option
-
-                          key={item}
-
-                          value={item}
-
-                        >
-
-                          {item}
-
-                        </option>
+                      (item) => (
 
 
 
-                      )
+                        <option
 
-                    )}
+                          key={item}
+
+                          value={item}
+
+                        >
+
+                          {item}
+
+                        </option>
 
 
 
-                  </select>
+                      )
+
+                    )}
 
 
 
-                </div>
+                  </select>
+
+
+
+                </div>
 
 
 
@@ -3295,159 +3327,166 @@ export function DetalheDemandaPage({
                   </label>
                   <select
                     id="prioridade-atendimento-gestor"
+                    className={`prioridade-atendimento-select ${classePrioridadeAtendimento(prioridadeAtendimentoSelecionada)}`}
                     value={prioridadeAtendimentoSelecionada}
                     onChange={(event) => setPrioridadeAtendimentoSelecionada(event.target.value)}
                     disabled={demanda.status === 'Concluída' || demanda.status === 'Cancelada'}
                   >
                     <option value="">Selecione...</option>
                     {PRIORIDADES_ATENDIMENTO.map((item) => (
-                      <option key={item} value={item}>{item}</option>
+                      <option
+                        key={item}
+                        value={item}
+                        className={classePrioridadeAtendimento(item)}
+                      >
+                        {item}
+                      </option>
                     ))}
                   </select>
                 </div>
-                {/* PRAZO */}
+                {/* PRAZO */}
 
 
 
-                <div className="campo-acao">
+                <div className="campo-acao">
 
 
 
-                  <label>
+                  <label>
 
-                    Novo prazo
+                    Novo prazo
 
-                  </label>
+                  </label>
 
 
 
-                  <input
+                  <input
 
-                    type="date"
+                    type="date"
 
-                    value={
+                    value={
 
-                      novoPrazo
+                      novoPrazo
 
-                    }
+                    }
 
-                    onChange={(event) =>
+                    onChange={(event) =>
 
-                      setNovoPrazo(
+                      setNovoPrazo(
 
-                        event.target.value
+                        event.target.value
 
-                      )
+                      )
 
-                    }
+                    }
 
-                  />
+                  />
 
 
 
-                </div>
+                </div>
 
 
 
-              </div>
+              </div>
 
 
 
 
 
-              {/* MOTIVO */}
+              {/* MOTIVO */}
 
 
 
-              <textarea
+              <textarea
 
-                value={
+                value={
 
-                  motivoAlteracao
+                  motivoAlteracao
 
-                }
+                }
 
-                onChange={(event) =>
+                onChange={(event) =>
 
-                  setMotivoAlteracao(
+                  setMotivoAlteracao(
 
-                    event.target.value
+                    event.target.value
 
-                  )
+                  )
 
-                }
+                }
 
-                placeholder="Motivo obrigatório para alteração de prazo ou prioridade."
+                placeholder="Motivo obrigatório para alteração de prazo ou prioridade."
 
-                style={{
+                style={{
 
-                  width:
+                  width:
 
-                    '100%',
+                    '100%',
 
 
 
-                  minHeight:
+                  minHeight:
 
-                    '70px',
+                    '70px',
 
 
 
-                  marginTop:
+                  marginTop:
 
-                    '10px',
+                    '10px',
 
-                }}
+                }}
 
-              />
+              />
 
 
 
 
 
-              {/* BOTÕES */}
+              {/* BOTÕES */}
 
 
 
-              <div
+              <div
 
-                style={{
+                style={{
 
-                  display:
+                  display:
 
-                    'flex',
+                    'flex',
 
 
 
-                  gap:
+                  gap:
 
-                    '10px',
+                    '10px',
 
 
 
-                  marginTop:
+                  marginTop:
 
-                    '10px',
+                    '10px',
 
 
 
-                  flexWrap:
+                  flexWrap:
 
-                    'wrap',
+                    'wrap',
 
-                }}
+                }}
 
-              >
+              >
 
 
 
-                <button
+                <button
 
-                  type="button"
+                  type="button"
 
-                  className="btn-principal"
+                  className="btn-principal"
 
-                  disabled={
+                  disabled={
 
                     !prioridadeSelecionada ||
 
@@ -3457,39 +3496,44 @@ export function DetalheDemandaPage({
 
                   }
 
-                  onClick={() => {
+                  onClick={() => {
 
 
 
-                    if (
+                    if (
 
-                      !motivoAlteracao.trim()
+                      !motivoAlteracao.trim()
 
-                    ) {
+                    ) {
 
-                      alert(
+                      alert(
 
-                        'Informe o motivo da alteração de prioridade.'
+                        'Informe o motivo da alteração de prioridade.'
 
-                      )
-
-
-
-                      return
-
-                    }
+                      )
 
 
 
-                    onAlterarPrioridade?.(
+                      return
 
-                      demanda.id,
+                    }
 
-                      prioridadeSelecionada,
 
-                      motivoAlteracao.trim()
 
-                    )
+                    if (!onAlterarPrioridade) {
+                      alert('A alteração da Criticidade não está disponível.')
+                      return
+                    }
+
+                    const alteracaoConcluida = onAlterarPrioridade(
+                      demanda.id,
+                      prioridadeSelecionada,
+                      motivoAlteracao.trim()
+                    )
+
+                    if (alteracaoConcluida === false) {
+                      return
+                    }
 
                     mostrarToast(
                       'Criticidade Da Demanda Alterada Com Sucesso.'
@@ -3500,19 +3544,19 @@ export function DetalheDemandaPage({
                     
 
 
-                    setMotivoAlteracao(
+                    setMotivoAlteracao(
 
-                      ''
+                      ''
 
-                    )
+                    )
 
-                  }}
+                  }}
 
-                >
+                >
 
-                  Alterar Criticidade
+                  Alterar Criticidade
 
-                </button>
+                </button>
                 <button
                   type="button"
                   className="btn-principal"
@@ -3531,11 +3575,16 @@ export function DetalheDemandaPage({
                       alert('A alteração da Prioridade de Atendimento não está disponível.')
                       return
                     }
-                    onAlterarPrioridadeAtendimento(
+                    const alteracaoConcluida = onAlterarPrioridadeAtendimento(
                       demanda.id,
                       prioridadeAtendimentoSelecionada,
                       motivoAlteracao.trim()
                     )
+
+                    if (alteracaoConcluida === false) {
+                      return
+                    }
+
                     mostrarToast('Prioridade de Atendimento alterada com sucesso.')
                     setPrioridadeAtendimentoSelecionada('')
                     setMotivoAlteracao('')
@@ -3549,65 +3598,65 @@ export function DetalheDemandaPage({
 
 
 
-                <button
+                <button
 
-                  type="button"
+                  type="button"
 
-                  className="btn-principal"
+                  className="btn-principal"
 
-                  onClick={() => {
-
-
-
-                    if (
-
-                      !novoPrazo
-
-                    ) {
-
-                      alert(
-
-                        'Informe o novo prazo.'
-
-                      )
+                  onClick={() => {
 
 
 
-                      return
+                    if (
 
-                    }
+                      !novoPrazo
 
+                    ) {
 
+                      alert(
 
-                    if (
+                        'Informe o novo prazo.'
 
-                      !motivoAlteracao.trim()
-
-                    ) {
-
-                      alert(
-
-                        'Informe o motivo da alteração do prazo.'
-
-                      )
+                      )
 
 
 
-                      return
+                      return
 
-                    }
+                    }
 
 
 
-                    onAlterarPrazoManual?.(
+                    if (
 
-                      demanda.id,
+                      !motivoAlteracao.trim()
 
-                      novoPrazo,
+                    ) {
 
-                      motivoAlteracao.trim()
+                      alert(
 
-                    )
+                        'Informe o motivo da alteração do prazo.'
+
+                      )
+
+
+
+                      return
+
+                    }
+
+
+
+                    onAlterarPrazoManual?.(
+
+                      demanda.id,
+
+                      novoPrazo,
+
+                      motivoAlteracao.trim()
+
+                    )
 
                     mostrarToast(
                       'Prazo Da Demanda Alterado Com Sucesso.'
@@ -3616,175 +3665,175 @@ export function DetalheDemandaPage({
                     
 
 
-                    setMotivoAlteracao(
+                    setMotivoAlteracao(
 
-                      ''
+                      ''
 
-                    )
+                    )
 
-                  }}
+                  }}
 
-                >
+                >
 
-                  Alterar Prazo
+                  Alterar Prazo
 
-                </button>
+                </button>
 
 
 
-              </div>
+              </div>
 
 
 
 
 
-              {/* =================================================
+              {/* =================================================
 
-                  REABERTURA
+                  REABERTURA
 
-                  ================================================= */}
+                  ================================================= */}
 
 
 
-              {demanda.status ===
+              {demanda.status ===
 
-                'Concluída' && (
+                'Concluída' && (
 
 
 
-                <div
+                <div
 
-                  style={{
+                  style={{
 
-                    marginTop:
+                    marginTop:
 
-                      '16px',
+                      '16px',
 
 
 
-                    paddingTop:
+                    paddingTop:
 
-                      '14px',
+                      '14px',
 
 
 
-                    borderTop:
+                    borderTop:
 
-                      '1px solid #dce5ef',
+                      '1px solid #dce5ef',
 
-                  }}
+                  }}
 
-                >
+                >
 
 
 
-                  <strong
+                  <strong
 
-                    style={{
+                    style={{
 
-                      display:
+                      display:
 
-                        'block',
+                        'block',
 
 
 
-                      marginBottom:
+                      marginBottom:
 
-                        '8px',
+                        '8px',
 
-                    }}
+                    }}
 
-                  >
+                  >
 
-                    Reabertura da Demanda
+                    Reabertura da Demanda
 
-                  </strong>
+                  </strong>
 
 
 
-                  <textarea
+                  <textarea
 
-                    value={
+                    value={
 
-                      motivoReabertura
+                      motivoReabertura
 
-                    }
+                    }
 
-                    onChange={(event) =>
+                    onChange={(event) =>
 
-                      setMotivoReabertura(
+                      setMotivoReabertura(
 
-                        event.target.value
+                        event.target.value
 
-                      )
+                      )
 
-                    }
+                    }
 
-                    placeholder="Informe obrigatoriamente o motivo da reabertura."
+                    placeholder="Informe obrigatoriamente o motivo da reabertura."
 
-                    style={{
+                    style={{
 
-                      width:
+                      width:
 
-                        '100%',
+                        '100%',
 
 
 
-                      minHeight:
+                      minHeight:
 
-                        '70px',
+                        '70px',
 
-                    }}
+                    }}
 
-                  />
+                  />
 
 
 
-                  <button
+                  <button
 
-                    type="button"
+                    type="button"
 
-                    className="btn-principal"
+                    className="btn-principal"
 
-                    style={{
+                    style={{
 
-                      marginTop:
+                      marginTop:
 
-                        '10px',
+                        '10px',
 
-                    }}
+                    }}
 
-                    onClick={() => {
+                    onClick={() => {
 
 
 
-                      if (
+                      if (
 
-                        !motivoReabertura.trim()
+                        !motivoReabertura.trim()
 
-                      ) {
+                      ) {
 
-                        alert(
+                        alert(
 
-                          'Informe o motivo da reabertura.'
+                          'Informe o motivo da reabertura.'
 
-                        )
+                        )
 
 
 
-                        return
+                        return
 
-                      }
+                      }
 
 
 
-                      onReabrirDemanda?.(
+                      onReabrirDemanda?.(
 
-                        demanda.id,
+                        demanda.id,
 
-                        motivoReabertura.trim()
+                        motivoReabertura.trim()
 
-                      )
+                      )
 
                       mostrarToast(
                         'Demanda Reaberta Com Sucesso.'
@@ -3793,577 +3842,577 @@ export function DetalheDemandaPage({
                       
 
 
-                      setMotivoReabertura(
+                      setMotivoReabertura(
 
-                        ''
+                        ''
 
-                      )
+                      )
 
-                    }}
+                    }}
 
-                  >
+                  >
 
-                    ↻ Reabrir Demanda
+                    ↻ Reabrir Demanda
 
-                  </button>
+                  </button>
 
 
 
-                </div>
+                </div>
 
 
 
-              )}
+              )}
 
 
 
 
 
-              {/* =================================================
+              {/* =================================================
 
-                  CANCELAMENTO
+                  CANCELAMENTO
 
-                  ================================================= */}
+                  ================================================= */}
 
 
 
-              {demanda.status !==
+              {demanda.status !==
 
-                'Concluída' &&
+                'Concluída' &&
 
-                demanda.status !==
+                demanda.status !==
 
-                  'Cancelada' && (
+                  'Cancelada' && (
 
 
 
-                <div
+                <div
 
-                  style={{
+                  style={{
 
-                    marginTop:
+                    marginTop:
 
-                      '16px',
+                      '16px',
 
 
 
-                    paddingTop:
+                    paddingTop:
 
-                      '14px',
+                      '14px',
 
 
 
-                    borderTop:
+                    borderTop:
 
-                      '1px solid #dce5ef',
+                      '1px solid #dce5ef',
 
-                  }}
+                  }}
 
-                >
+                >
 
 
 
-                  {!mostrarCancelamento ? (
+                  {!mostrarCancelamento ? (
 
 
 
-                    <button
+                    <button
 
-                      type="button"
+                      type="button"
 
-                      className="btn-danger-outline"
+                      className="btn-danger-outline"
 
-                      onClick={() =>
+                      onClick={() =>
 
-                        setMostrarCancelamento(
+                        setMostrarCancelamento(
 
-                          true
+                          true
 
-                        )
+                        )
 
-                      }
+                      }
 
-                    >
+                    >
 
-                      ✕ Cancelar Demanda
+                      ✕ Cancelar Demanda
 
-                    </button>
+                    </button>
 
 
 
-                  ) : (
+                  ) : (
 
 
 
-                    <>
+                    <>
 
 
 
-                      <strong
+                      <strong
 
-                        style={{
+                        style={{
 
-                          display:
+                          display:
 
-                            'block',
+                            'block',
 
 
 
-                          marginBottom:
+                          marginBottom:
 
-                            '8px',
+                            '8px',
 
-                        }}
+                        }}
 
-                      >
+                      >
 
-                        Motivo do cancelamento
+                        Motivo do cancelamento
 
-                      </strong>
+                      </strong>
 
 
 
-                      <textarea
+                      <textarea
 
-                        value={
+                        value={
 
-                          motivoCancelamento
+                          motivoCancelamento
 
-                        }
+                        }
 
-                        onChange={(event) =>
+                        onChange={(event) =>
 
-                          setMotivoCancelamento(
+                          setMotivoCancelamento(
 
-                            event.target.value
+                            event.target.value
 
-                          )
+                          )
 
-                        }
+                        }
 
-                        placeholder="Informe obrigatoriamente o motivo do cancelamento."
+                        placeholder="Informe obrigatoriamente o motivo do cancelamento."
 
-                        style={{
+                        style={{
 
-                          width:
+                          width:
 
-                            '100%',
+                            '100%',
 
 
 
-                          minHeight:
+                          minHeight:
 
-                            '80px',
+                            '80px',
 
-                        }}
+                        }}
 
-                      />
+                      />
 
 
 
-                      <div
+                      <div
 
-                        style={{
+                        style={{
 
-                          display:
+                          display:
 
-                            'flex',
+                            'flex',
 
 
 
-                          gap:
+                          gap:
 
-                            '10px',
+                            '10px',
 
 
 
-                          marginTop:
+                          marginTop:
 
-                            '10px',
+                            '10px',
 
 
 
-                          flexWrap:
+                          flexWrap:
 
-                            'wrap',
+                            'wrap',
 
-                        }}
+                        }}
 
-                      >
+                      >
 
 
 
-                        <button
+                        <button
 
-                          type="button"
+                          type="button"
 
-                          className="btn-secundario"
+                          className="btn-secundario"
 
-                          onClick={() => {
+                          onClick={() => {
 
 
 
-                            setMotivoCancelamento(
+                            setMotivoCancelamento(
 
-                              ''
+                              ''
 
-                            )
+                            )
 
 
 
-                            setMostrarCancelamento(
+                            setMostrarCancelamento(
 
-                              false
+                              false
 
-                            )
+                            )
 
-                          }}
+                          }}
 
-                        >
+                        >
 
-                          Voltar
+                          Voltar
 
-                        </button>
+                        </button>
 
 
 
 
 
-                        <button
+                        <button
 
-                          type="button"
+                          type="button"
 
-                          className="btn-principal"
+                          className="btn-principal"
 
-                          onClick={
+                          onClick={
 
-                            confirmarCancelamento
+                            confirmarCancelamento
 
-                          }
+                          }
 
-                        >
+                        >
 
-                          Confirmar Cancelamento
+                          Confirmar Cancelamento
 
-                        </button>
+                        </button>
 
 
 
-                      </div>
+                      </div>
 
 
 
-                    </>
+                    </>
 
 
 
-                  )}
+                  )}
 
 
 
-                </div>
+                </div>
 
 
 
-              )}
+              )}
 
 
 
-            </div>
+            </div>
 
 
 
-          )}
+          )}
 
 
 
 
 
-          {/* =================================================
+          {/* =================================================
 
-              DESCRIÇÃO
+              DESCRIÇÃO
 
-              ================================================= */}
+              ================================================= */}
 
 
 
-          <div className="descricao-area">
+          <div className="descricao-area">
 
 
 
-            <span>
+            <span>
 
-              DESCRIÇÃO
+              DESCRIÇÃO
 
-            </span>
+            </span>
 
 
 
-            <p>
+            <p>
 
-              {demanda.descricao ||
+              {demanda.descricao ||
 
-                'Nenhuma descrição registrada.'}
+                'Nenhuma descrição registrada.'}
 
-            </p>
+            </p>
 
 
 
-          </div>
+          </div>
 
 
 
 
 
-          {/* =================================================
+          {/* =================================================
 
-              OBSERVAÇÕES
+              OBSERVAÇÕES
 
-              ================================================= */}
+              ================================================= */}
 
 
 
-          <div className="observacao-box">
+          <div className="observacao-box">
 
 
 
-            <span>
+            <span>
 
-              OBSERVAÇÕES
+              OBSERVAÇÕES
 
-            </span>
+            </span>
 
 
 
-            <p>
+            <p>
 
-              {demanda.observacao ||
+              {demanda.observacao ||
 
-                'Nenhuma observação registrada.'}
+                'Nenhuma observação registrada.'}
 
-            </p>
+            </p>
 
 
 
-          </div>
+          </div>
 
 
 
-        </section>
+        </section>
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            AÇÕES
+            AÇÕES
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        <section className="detalhe-card">
+        <section className="detalhe-card">
 
 
 
-          <div className="card-title">
+          <div className="card-title">
 
-            Ações
+            Ações
 
-          </div>
+          </div>
 
 
 
 
 
-          <div className="acoes-content">
+          <div className="acoes-content">
 
 
 
-            {/* ANALISTA */}
+            {/* ANALISTA */}
 
 
 
-            <div className="campo-acao">
+            <div className="campo-acao">
 
 
 
-              <label>
+              <label>
 
-                Responsável
+                Responsável
 
-              </label>
+              </label>
 
 
 
-              <select
+              <select
 
-                value={
+                value={
 
-                  responsavelSelecionado
+                  responsavelSelecionado
 
-                }
+                }
 
-                onChange={(event) =>
+                onChange={(event) =>
 
-                  setResponsavelSelecionado(
+                  setResponsavelSelecionado(
 
-                    event.target.value
+                    event.target.value
 
-                  )
+                  )
 
-                }
+                }
 
-                disabled={
+                disabled={
 
-                  demanda.status ===
+                  demanda.status ===
 
-                    'Concluída' ||
+                    'Concluída' ||
 
-                  demanda.status ===
+                  demanda.status ===
 
-                    'Cancelada'
+                    'Cancelada'
 
-                }
+                }
 
-              >
+              >
 
 
 
-                <option value="">
+                <option value="">
 
-                  Não atribuído
+                  Não atribuído
 
-                </option>
+                </option>
 
 
 
-                {analistas.map(
+                {analistas.map(
 
-                  (item) => (
+                  (item) => (
 
 
 
-                    <option
+                    <option
 
-                      key={item.id}
+                      key={item.id}
 
-                      value={item.nome}
+                      value={item.nome}
 
-                    >
+                    >
 
-                      {item.nome}
+                      {item.nome}
 
-                    </option>
+                    </option>
 
 
 
-                  )
+                  )
 
-                )}
+                )}
 
 
 
-              </select>
+              </select>
 
 
 
-            </div>
+            </div>
 
 
 
-            {/* STATUS */}
+            {/* STATUS */}
 
 
 
-            <div className="campo-acao">
+            <div className="campo-acao">
 
 
 
-              <label>
+              <label>
 
-                Status
+                Status
 
-              </label>
+              </label>
 
 
 
-              <select
+              <select
 
-                value={
+                value={
 
-                  statusSelecionado
+                  statusSelecionado
 
-                }
+                }
 
-                onChange={(event) =>
+                onChange={(event) =>
 
-                  selecionarStatus(
+                  selecionarStatus(
 
-                    event.target.value
+                    event.target.value
 
-                  )
+                  )
 
-                }
+                }
 
-                disabled={
+                disabled={
 
-                  demanda.status ===
+                  demanda.status ===
 
-                    'Concluída' ||
+                    'Concluída' ||
 
-                  demanda.status ===
+                  demanda.status ===
 
-                    'Cancelada'
+                    'Cancelada'
 
-                }
+                }
 
-              >
+              >
 
 
 
-                {STATUS.map(
+                {STATUS.map(
 
-                  (item) => (
+                  (item) => (
 
 
 
-                    <option
+                    <option
 
-                      key={item}
+                      key={item}
 
-                      value={item}
+                      value={item}
 
-                    >
+                    >
 
-                      {item}
+                      {item}
 
-                    </option>
+                    </option>
 
 
 
-                  )
+                  )
 
-                )}
+                )}
 
 
 
-              </select>
+              </select>
 
 
 
-            </div>
+            </div>
 
 
 
 
 
-            {/* RETOMAR ATENDIMENTO */}
+            {/* RETOMAR ATENDIMENTO */}
 
 
 
-            {demanda.status ===
+            {demanda.status ===
               'Com Pendências' &&
             statusSelecionado ===
               'Com Pendências' &&
@@ -4371,1249 +4420,1249 @@ export function DetalheDemandaPage({
 
 
 
-              <div className="campo-acao">
+              <div className="campo-acao">
 
 
 
-                <label>
+                <label>
 
-                  Ação
+                  Ação
 
-                </label>
+                </label>
 
 
 
-                <button
+                <button
 
-                  type="button"
+                  type="button"
 
-                  className="btn-principal"
+                  className="btn-principal"
 
-                  style={{
+                  style={{
 
-                    width: '100%',
+                    width: '100%',
 
-                    minHeight: '42px',
+                    minHeight: '42px',
 
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'nowrap',
 
-                  }}
+                  }}
 
-                  onClick={() => {
+                  onClick={() => {
 
 
 
-                    if (
+                    if (
 
-                      !responsavelSelecionado.trim()
+                      !responsavelSelecionado.trim()
 
-                    ) {
+                    ) {
 
-                      alert(
+                      alert(
 
-                        'Defina um Responsável antes de retomar o atendimento.'
+                        'Defina um Responsável antes de retomar o atendimento.'
 
-                      )
+                      )
 
 
 
-                      return
+                      return
 
-                    }
+                    }
 
 
 
-                    setStatusSelecionado(
+                    setStatusSelecionado(
 
-                      'Em Atendimento'
+                      'Em Atendimento'
 
-                    )
+                    )
 
-                  }}
+                  }}
 
-                >
+                >
 
-                  ▶ Retomar Atendimento
+                  ▶ Retomar Atendimento
 
-                </button>
+                </button>
 
 
 
-              </div>
+              </div>
 
 
 
-            )}
+            )}
 
 
 
-          </div>
+          </div>
 
 
 
-        </section>
+        </section>
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            PENDÊNCIA
+            PENDÊNCIA
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        {mostrarPendencia && (
+        {mostrarPendencia && (
 
 
 
-          <section className="detalhe-card">
+          <section className="detalhe-card">
 
 
 
-            <div className="card-title">
+            <div className="card-title">
 
-              Motivo da Pendência
+              Motivo da Pendência
 
-            </div>
+            </div>
 
 
 
-            <div className="comentarios-content">
+            <div className="comentarios-content">
 
 
 
-              <textarea
+              <textarea
 
-                value={
+                value={
 
-                  motivoPendencia
+                  motivoPendencia
 
-                }
+                }
 
-                onChange={(event) =>
+                onChange={(event) =>
 
-                  setMotivoPendencia(
+                  setMotivoPendencia(
 
-                    event.target.value
+                    event.target.value
 
-                  )
+                  )
 
-                }
+                }
 
-                placeholder="Informe o motivo da pendência..."
+                placeholder="Informe o motivo da pendência..."
 
-              />
+              />
 
 
 
-              <div className="comentario-actions">
+              <div className="comentario-actions">
 
 
 
-                <button
+                <button
 
-                  className="btn-secundario"
+                  className="btn-secundario"
 
-                  type="button"
+                  type="button"
 
-                  onClick={
+                  onClick={
 
-                    cancelarPendencia
+                    cancelarPendencia
 
-                  }
+                  }
 
-                >
+                >
 
-                  Cancelar
+                  Cancelar
 
-                </button>
+                </button>
 
 
 
-                <button
+                <button
 
-                  className="btn-principal"
+                  className="btn-principal"
 
-                  type="button"
+                  type="button"
 
-                  onClick={
+                  onClick={
 
-                    confirmarPendencia
+                    confirmarPendencia
 
-                  }
+                  }
 
-                >
+                >
 
-                  Confirmar Pendência
+                  Confirmar Pendência
 
-                </button>
+                </button>
 
 
 
-              </div>
+              </div>
 
 
 
-            </div>
+            </div>
 
 
 
-          </section>
+          </section>
 
 
 
-        )}
+        )}
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            CONCLUSÃO
+            CONCLUSÃO
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        {mostrarConclusao && (
+        {mostrarConclusao && (
 
 
 
-          <section className="detalhe-card">
+          <section className="detalhe-card">
 
 
 
-            <div className="card-title">
+            <div className="card-title">
 
-              Concluir Demanda
+              Concluir Demanda
 
-            </div>
+            </div>
 
 
 
-            <div className="comentarios-content">
+            <div className="comentarios-content">
 
 
 
-              <textarea
+              <textarea
 
-                value={
+                value={
 
-                  comentarioConclusao
+                  comentarioConclusao
 
-                }
+                }
 
-                onChange={(event) =>
+                onChange={(event) =>
 
-                  setComentarioConclusao(
+                  setComentarioConclusao(
 
-                    event.target.value
+                    event.target.value
 
-                  )
+                  )
 
-                }
+                }
 
-                placeholder="Informe obrigatoriamente o comentário de conclusão..."
+                placeholder="Informe obrigatoriamente o comentário de conclusão..."
 
-              />
+              />
 
 
 
-              <div className="comentario-actions">
+              <div className="comentario-actions">
 
 
 
-                <button
+                <button
 
-                  className="btn-secundario"
+                  className="btn-secundario"
 
-                  type="button"
+                  type="button"
 
-                  onClick={
+                  onClick={
 
-                    cancelarConclusao
+                    cancelarConclusao
 
-                  }
+                  }
 
-                >
+                >
 
-                  Cancelar
+                  Cancelar
 
-                </button>
+                </button>
 
 
 
-                <button
+                <button
 
-                  className="btn-principal"
+                  className="btn-principal"
 
-                  type="button"
+                  type="button"
 
-                  onClick={
+                  onClick={
 
-                    confirmarConclusao
+                    confirmarConclusao
 
-                  }
+                  }
 
-                >
+                >
 
-                  Concluir Demanda
+                  Concluir Demanda
 
-                </button>
+                </button>
 
 
 
-              </div>
+              </div>
 
 
 
-            </div>
+            </div>
 
 
 
-          </section>
+          </section>
 
 
 
-        )}
+        )}
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            COMENTÁRIOS
+            COMENTÁRIOS
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        <section className="detalhe-card">
+        <section className="detalhe-card">
 
 
 
-          <div className="card-title">
+          <div className="card-title">
 
-            Comentários
+            Comentários
 
-          </div>
+          </div>
 
 
 
-          <div className="comentarios-content">
+          <div className="comentarios-content">
 
 
 
-            <textarea
+            <textarea
 
-              value={
+              value={
 
-                comentario
+                comentario
 
-              }
+              }
 
-              onChange={(event) =>
+              onChange={(event) =>
 
-                setComentario(
+                setComentario(
 
-                  event.target.value
+                  event.target.value
 
-                )
+                )
 
-              }
+              }
 
-              placeholder="Digite um comentário sobre esta demanda..."
+              placeholder="Digite um comentário sobre esta demanda..."
 
-            />
+            />
 
 
 
-            <div className="comentario-actions">
+            <div className="comentario-actions">
 
 
 
-              <button
+              <button
 
-                className="btn-principal"
+                className="btn-principal"
 
-                type="button"
+                type="button"
 
-                disabled={
+                disabled={
 
-                  !comentario.trim()
+                  !comentario.trim()
 
-                }
+                }
 
-                onClick={
+                onClick={
 
-                  adicionarComentarioLocal
+                  adicionarComentarioLocal
 
-                }
+                }
 
-              >
+              >
 
-                + Adicionar Comentário
+                + Adicionar Comentário
 
-              </button>
+              </button>
 
 
 
-            </div>
+            </div>
 
 
 
 
 
-            {comentariosLocais.length ===
+            {comentariosLocais.length ===
 
-            0 ? (
+            0 ? (
 
 
 
-              <div className="sem-registros">
+              <div className="sem-registros">
 
-                Nenhum comentário registrado.
+                Nenhum comentário registrado.
 
-              </div>
+              </div>
 
 
 
-            ) : (
+            ) : (
 
 
 
-              <div className="lista-comentarios">
+              <div className="lista-comentarios">
 
 
 
-                {comentariosLocais.map(
+                {comentariosLocais.map(
 
-                  (item) => {
+                  (item) => {
 
 
 
-                    const pendente =
+                    const pendente =
 
-                      comentariosPendentes.includes(
+                      comentariosPendentes.includes(
 
-                        item.id
+                        item.id
 
-                      )
+                      )
 
 
 
-                    return (
+                    return (
 
 
 
-                      <div
+                      <div
 
-                        className="comentario-item"
+                        className="comentario-item"
 
-                        key={item.id}
+                        key={item.id}
 
-                      >
+                      >
 
 
 
-                        <div className="comentario-topo">
+                        <div className="comentario-topo">
 
 
 
-                          <strong>
+                          <strong>
 
-                            {item.usuario}
+                            {item.usuario}
 
-                          </strong>
+                          </strong>
 
 
 
-                          <span>
+                          <span>
 
-                            {formatarDataHora(
+                            {formatarDataHora(
 
-                              item.data
+                              item.data
 
-                            )}
+                            )}
 
-                          </span>
+                          </span>
 
 
 
-                        </div>
+                        </div>
 
 
 
 
 
-                        <div className="comentario-texto">
+                        <div className="comentario-texto">
 
-                          {item.texto}
+                          {item.texto}
 
-                        </div>
+                        </div>
 
 
 
 
 
-                        {pendente && (
+                        {pendente && (
 
 
 
-                          <div className="comentario-rodape">
+                          <div className="comentario-rodape">
 
 
 
-                            <span className="aviso-pendente">
+                            <span className="aviso-pendente">
 
-                              Ainda não salvo
+                              Ainda não salvo
 
-                            </span>
+                            </span>
 
 
 
-                            <button
+                            <button
 
-                              type="button"
+                              type="button"
 
-                              className="btn-excluir-pendente"
+                              className="btn-excluir-pendente"
 
-                              onClick={() =>
+                              onClick={() =>
 
-                                excluirComentario(
+                                excluirComentario(
 
-                                  item.id
+                                  item.id
 
-                                )
+                                )
 
-                              }
+                              }
 
-                            >
+                            >
 
-                              Excluir
+                              Excluir
 
-                            </button>
+                            </button>
 
 
 
-                          </div>
+                          </div>
 
 
 
-                        )}
+                        )}
 
 
 
-                      </div>
+                      </div>
 
 
 
-                    )
+                    )
 
-                  }
+                  }
 
-                )}
+                )}
 
 
 
-              </div>
+              </div>
 
 
 
-            )}
+            )}
 
 
 
-          </div>
+          </div>
 
 
 
-        </section>
+        </section>
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            ANEXOS
+            ANEXOS
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        <section className="detalhe-card">
+        <section className="detalhe-card">
 
 
 
-          <div className="card-title">
+          <div className="card-title">
 
-            Evidências e Arquivos
+            Evidências e Arquivos
 
-          </div>
+          </div>
 
 
 
-          <div className="arquivos-content">
+          <div className="arquivos-content">
 
 
 
-            <div className="arquivos-instrucoes">
+            <div className="arquivos-instrucoes">
 
 
 
-              <div>
+              <div>
 
 
 
-                <strong>
+                <strong>
 
-                  Anexe evidências e arquivos relacionados à demanda.
+                  Anexe evidências e arquivos relacionados à demanda.
 
-                </strong>
+                </strong>
 
 
 
-                <span>
+                <span>
 
-                  Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG e JPEG.
+                  Formatos aceitos: PDF, DOC, DOCX, XLS, XLSX, CSV, TXT, PNG, JPG e JPEG.
 
-                </span>
+                </span>
 
 
 
-                <span>
+                <span>
 
-                  Limite máximo: 20 MB por arquivo.
+                  Limite máximo: 20 MB por arquivo.
 
-                </span>
+                </span>
 
 
 
-              </div>
+              </div>
 
 
 
 
 
-              <label className="btn-anexar">
+              <label className="btn-anexar">
 
 
 
-                📎 Anexar arquivo
+                📎 Anexar arquivo
 
 
 
-                <input
+                <input
 
-                  type="file"
+                  type="file"
 
-                  hidden
+                  hidden
 
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg"
 
-                  onChange={
+                  onChange={
 
-                    selecionarArquivo
+                    selecionarArquivo
 
-                  }
+                  }
 
-                />
+                />
 
 
 
-              </label>
+              </label>
 
 
 
-            </div>
+            </div>
 
 
 
 
 
-            {arquivosLocais.length ===
+            {arquivosLocais.length ===
 
-            0 ? (
+            0 ? (
 
 
 
-              <div className="arquivos-vazio">
+              <div className="arquivos-vazio">
 
 
 
-                <div className="clip-icon">
+                <div className="clip-icon">
 
-                  📎
+                  📎
 
-                </div>
+                </div>
 
 
 
-                <strong>
+                <strong>
 
-                  Nenhum arquivo anexado
+                  Nenhum arquivo anexado
 
-                </strong>
+                </strong>
 
 
 
-                <span>
+                <span>
 
-                  As evidências e arquivos relacionados à demanda aparecerão aqui.
+                  As evidências e arquivos relacionados à demanda aparecerão aqui.
 
-                </span>
+                </span>
 
 
 
-              </div>
+              </div>
 
 
 
-            ) : (
+            ) : (
 
 
 
-              <div className="lista-arquivos">
+              <div className="lista-arquivos">
 
 
 
-                {arquivosLocais.map(
+                {arquivosLocais.map(
 
-                  (arquivo) => {
+                  (arquivo) => {
 
 
 
-                    const pendente =
+                    const pendente =
 
-                      arquivosPendentes.includes(
+                      arquivosPendentes.includes(
 
-                        arquivo.id
+                        arquivo.id
 
-                      )
+                      )
 
 
 
-                    return (
+                    return (
 
 
 
-                      <div
+                      <div
 
-                        className="arquivo-item"
+                        className="arquivo-item"
 
-                        key={arquivo.id}
+                        key={arquivo.id}
 
-                      >
+                      >
 
 
 
-                        <div className="arquivo-info">
+                        <div className="arquivo-info">
 
 
 
-                          <div className="arquivo-icone">
+                          <div className="arquivo-icone">
 
-                            📄
+                            📄
 
-                          </div>
+                          </div>
 
 
 
-                          <div>
+                          <div>
 
 
 
-                            <strong>
+                            <strong>
 
-                              {arquivo.nome}
+                              {arquivo.nome}
 
-                            </strong>
+                            </strong>
 
 
 
-                            <span>
+                            <span>
 
 
 
-                              {formatarTamanho(
+                              {formatarTamanho(
 
-                                arquivo.tamanho
+                                arquivo.tamanho
 
-                              )}
+                              )}
 
 
 
-                              {' • Anexado por '}
+                              {' • Anexado por '}
 
 
 
-                              {arquivo.usuario}
+                              {arquivo.usuario}
 
 
 
-                              {' • '}
+                              {' • '}
 
 
 
-                              {formatarDataHora(
+                              {formatarDataHora(
 
-                                arquivo.data
+                                arquivo.data
 
-                              )}
+                              )}
 
 
 
-                            </span>
+                            </span>
 
 
 
-                          </div>
+                          </div>
 
 
 
-                        </div>
+                        </div>
 
 
 
 
 
-                        <div className="arquivo-acoes">
+                        <div className="arquivo-acoes">
 
 
 
-                          {pendente && (
+                          {pendente && (
 
 
 
-                            <button
+                            <button
 
-                              type="button"
+                              type="button"
 
-                              className="btn-excluir-pendente"
+                              className="btn-excluir-pendente"
 
-                              onClick={() =>
+                              onClick={() =>
 
-                                excluirArquivo(
+                                excluirArquivo(
 
-                                  arquivo.id
+                                  arquivo.id
 
-                                )
+                                )
 
-                              }
+                              }
 
-                            >
+                            >
 
-                              Excluir
+                              Excluir
 
-                            </button>
+                            </button>
 
 
 
-                          )}
+                          )}
 
 
 
 
 
-                          <button
+                          <button
 
-                            type="button"
+                            type="button"
 
-                            className="btn-baixar"
+                            className="btn-baixar"
 
-                            onClick={() =>
+                            onClick={() =>
 
-                              baixarArquivo(
+                              baixarArquivo(
 
-                                arquivo
+                                arquivo
 
-                              )
+                              )
 
-                            }
+                            }
 
-                          >
+                          >
 
-                            ↓ Baixar
+                            ↓ Baixar
 
-                          </button>
+                          </button>
 
 
 
-                        </div>
+                        </div>
 
 
 
-                      </div>
+                      </div>
 
 
 
-                    )
+                    )
 
-                  }
+                  }
 
-                )}
+                )}
 
 
 
-              </div>
+              </div>
 
 
 
-            )}
+            )}
 
 
 
-          </div>
+          </div>
 
 
 
-        </section>
+        </section>
 
 
 
 
 
-        {/* ==================================================
+        {/* ==================================================
 
-            HISTÓRICO
+            HISTÓRICO
 
-            ================================================== */}
+            ================================================== */}
 
 
 
-        <section className="detalhe-card">
+        <section className="detalhe-card">
 
 
 
-          <div className="card-title">
+          <div className="card-title">
 
-            Histórico da Demanda
+            Histórico da Demanda
 
-          </div>
+          </div>
 
 
 
-          <div className="historico-content">
+          <div className="historico-content">
 
 
 
-            {historicoLocal.length ===
+            {historicoLocal.length ===
 
-            0 ? (
+            0 ? (
 
 
 
-              <div className="historico-item">
+              <div className="historico-item">
 
 
 
-                <div className="historico-bolinha" />
+                <div className="historico-bolinha" />
 
 
 
-                <div>
+                <div>
 
 
 
-                  <div className="historico-data">
+                  <div className="historico-data">
 
 
 
-                    {formatarDataHora(
+                    {formatarDataHora(
 
-                      demanda.dataAbertura ||
+                      demanda.dataAbertura ||
 
-                        new Date().toISOString()
+                        new Date().toISOString()
 
-                    )}
+                    )}
 
 
 
-                  </div>
+                  </div>
 
 
 
-                  <strong>
+                  <strong>
 
-                    Demanda cadastrada
+                    Demanda cadastrada
 
-                  </strong>
+                  </strong>
 
 
 
-                  <p>
+                  <p>
 
-                    Registro inicial da demanda.
+                    Registro inicial da demanda.
 
-                  </p>
+                  </p>
 
 
 
-                </div>
+                </div>
 
 
 
-              </div>
+              </div>
 
 
 
-            ) : (
+            ) : (
 
 
 
-              historicoLocal.map(
+              historicoLocal.map(
 
-                (item) => {
+                (item) => {
 
 
 
-                  const comentarioRelacionado =
+                  const comentarioRelacionado =
 
-                    item.tipo === 'comentario' &&
+                    item.tipo === 'comentario' &&
 
-                    item.referenciaId
+                    item.referenciaId
 
-                      ? comentariosLocais.find(
+                      ? comentariosLocais.find(
 
-                          (comentarioItem) =>
+                          (comentarioItem) =>
 
-                            comentarioItem.id ===
+                            comentarioItem.id ===
 
-                            item.referenciaId
+                            item.referenciaId
 
-                        )
+                        )
 
-                      : undefined
+                      : undefined
 
 
 
-                  return (
+                  return (
 
 
 
-                    <div
+                    <div
 
-                      className="historico-item"
+                      className="historico-item"
 
-                      key={item.id}
+                      key={item.id}
 
-                    >
+                    >
 
 
 
-                      <div className="historico-bolinha" />
+                      <div className="historico-bolinha" />
 
 
 
-                      <div className="historico-detalhes">
+                      <div className="historico-detalhes">
 
 
 
-                        <div className="historico-data">
+                        <div className="historico-data">
 
 
 
-                          {formatarDataHora(
+                          {formatarDataHora(
 
-                            item.data
+                            item.data
 
-                          )}
+                          )}
 
 
 
-                        </div>
+                        </div>
 
 
 
-                        <strong>
+                        <strong>
 
-                          {item.titulo}
+                          {item.titulo}
 
-                        </strong>
+                        </strong>
 
 
 
-                        {comentarioRelacionado ? (
+                        {comentarioRelacionado ? (
 
 
 
-                          <div className="historico-comentario-texto">
+                          <div className="historico-comentario-texto">
 
 
 
-                            <span
+                            <span
 
-                              className="historico-comentario-label"
+                              className="historico-comentario-label"
 
-                              style={{
+                              style={{
 
-                                display: 'block',
+                                display: 'block',
 
-                                marginBottom: '4px',
+                                marginBottom: '4px',
 
-                                color: '#2563eb',
+                                color: '#2563eb',
 
-                                fontSize: '11px',
+                                fontSize: '11px',
 
-                                fontWeight: 700,
+                                fontWeight: 700,
 
-                              }}
+                              }}
 
-                            >
+                            >
 
-                              Comentário
+                              Comentário
 
-                            </span>
+                            </span>
 
 
 
-                            <div
+                            <div
 
-                              className="historico-comentario-conteudo"
+                              className="historico-comentario-conteudo"
 
-                              style={{
+                              style={{
 
-                                color: '#334155',
+                                color: '#334155',
 
-                                fontSize: '13px',
+                                fontSize: '13px',
 
-                                lineHeight: 1.55,
+                                lineHeight: 1.55,
 
-                                whiteSpace: 'pre-wrap',
+                                whiteSpace: 'pre-wrap',
 
-                              }}
+                              }}
 
-                            >
+                            >
 
-                              {comentarioRelacionado.texto}
+                              {comentarioRelacionado.texto}
 
-                            </div>
+                            </div>
 
 
 
-                          </div>
+                          </div>
 
 
 
-                        ) : (
+                        ) : (
 
 
 
-                          <p>
+                          <p>
 
-                            {item.descricao}
+                            {item.descricao}
 
-                          </p>
+                          </p>
 
 
 
-                        )}
+                        )}
 
 
 
-                        <div className="historico-comentario">
+                        <div className="historico-comentario">
 
 
 
-                          {item.usuario}
+                          {item.usuario}
 
 
 
-                        </div>
+                        </div>
 
 
 
-                        {item.motivo && (
+                        {item.motivo && (
 
 
 
-                          <div
+                          <div
 
-                            style={{
+                            style={{
 
-                              marginTop:
+                              marginTop:
 
-                                '6px',
+                                '6px',
 
 
 
-                              fontSize:
+                              fontSize:
 
-                                '12px',
+                                '12px',
 
 
 
-                              color:
+                              color:
 
-                                '#526579',
+                                '#526579',
 
-                            }}
+                            }}
 
-                          >
+                          >
 
-                            <strong>
+                            <strong>
 
-                              Motivo:
+                              Motivo:
 
-                            </strong>{' '}
+                            </strong>{' '}
 
-                            {item.motivo}
+                            {item.motivo}
 
-                          </div>
+                          </div>
 
 
 
-                        )}
+                        )}
 
 
 
-                      </div>
+                      </div>
 
 
 
-                    </div>
+                    </div>
 
 
 
-                  )
+                  )
 
-                }
+                }
 
-              )
+              )
 
 
 
-            )}
+            )}
 
 
 
-          </div>
+          </div>
 
 
 
-        </section>
+        </section>
 
 
 
 
 
-        </div>
+        </div>
 
 
 
-      </div>
+      </div>
 
-    </MenuPrincipal>
+    </MenuPrincipal>
 
-    </>
+    </>
 
-  )
+  )
 
 }
 

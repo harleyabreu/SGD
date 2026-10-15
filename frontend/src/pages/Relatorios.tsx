@@ -7,6 +7,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import type { Demanda } from '../types'
 import { carregarDemandas } from '../services/storage'
+import { estaAtrasada as estaAtrasadaSLA, PRIORIDADES_ATENDIMENTO } from '../sla'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Relatorios.css'
 
@@ -33,10 +34,53 @@ function carregar(): Demanda[] {
   }
 }
 
+const CRITICIDADES = ['Crítica', 'Alta', 'Média', 'Baixa'] as const
+
+const FILTRO_SEM_CRITICIDADE = '__sem_criticidade__'
+const FILTRO_CRITICIDADE_INVALIDA = '__criticidade_invalida__'
+const FILTRO_SEM_PRIORIDADE_ATENDIMENTO = '__sem_prioridade_atendimento__'
+const FILTRO_PRIORIDADE_ATENDIMENTO_INVALIDA = '__prioridade_atendimento_invalida__'
+
+function obterCriticidade(demanda: Demanda): string {
+  const valor = String(demanda.criticidade || demanda.prioridade || '').trim()
+  // Compatibilidade com dados antigos, em que "Urgente" representava a criticidade.
+  return valor === 'Urgente' ? 'Crítica' : valor
+}
+
+function obterPrioridadeAtendimento(demanda: Demanda): string {
+  return String(demanda.prioridadeAtendimento || '').trim()
+}
+
+function criticidadeValida(valor: string): boolean {
+  return (CRITICIDADES as readonly string[]).includes(valor)
+}
+
+function prioridadeAtendimentoValida(valor: string): boolean {
+  return (PRIORIDADES_ATENDIMENTO as readonly string[]).includes(valor)
+}
+
+function converterDataRelatorio(valor?: string): Date | null {
+  if (!valor) return null
+  const texto = valor.trim()
+  if (!texto) return null
+
+  // Datas sem horário são construídas no fuso local para evitar voltar um dia.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
+    const [ano, mes, dia] = texto.split('-').map(Number)
+    const data = new Date(ano, mes - 1, dia)
+    data.setHours(0, 0, 0, 0)
+    return Number.isNaN(data.getTime()) ? null : data
+  }
+
+  const data = new Date(texto)
+  if (Number.isNaN(data.getTime())) return null
+  data.setHours(0, 0, 0, 0)
+  return data
+}
+
 function formatarData(valor?: string) {
-  if (!valor) return '-'
-  const data = new Date(valor)
-  return Number.isNaN(data.getTime()) ? valor : data.toLocaleDateString('pt-BR')
+  const data = converterDataRelatorio(valor)
+  return data ? data.toLocaleDateString('pt-BR') : (valor || '-')
 }
 
 export default function Relatorios({
@@ -56,10 +100,12 @@ export default function Relatorios({
   const [demandas] = useState<Demanda[]>(carregar)
   const [periodo, setPeriodo] = useState('todos')
   const [status, setStatus] = useState('todos')
-  const [prioridade, setPrioridade] = useState('todas')
+  const [criticidade, setCriticidade] = useState('todas')
+  const [prioridadeAtendimento, setPrioridadeAtendimento] = useState('todas')
 
   const filtradas = useMemo(() => {
     const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
     const limite = new Date(hoje)
 
     if (periodo === '7') limite.setDate(hoje.getDate() - 7)
@@ -67,23 +113,35 @@ export default function Relatorios({
     if (periodo === '90') limite.setDate(hoje.getDate() - 90)
 
     return demandas.filter((demanda) => {
-      const data = new Date(demanda.dataAbertura || '')
+      const data = converterDataRelatorio(demanda.dataAbertura)
 
       const dentroPeriodo =
         periodo === 'todos' ||
-        (!Number.isNaN(data.getTime()) && data >= limite)
+        (data !== null && data >= limite && data <= hoje)
 
       const dentroStatus =
         status === 'todos' ||
         demanda.status === status
 
-      const dentroPrioridade =
-        prioridade === 'todas' ||
-        (demanda.criticidade || demanda.prioridade) === prioridade
+      const criticidadeDemanda = obterCriticidade(demanda)
+      const criticidadeEhValida = criticidadeValida(criticidadeDemanda)
+      const dentroCriticidade =
+        criticidade === 'todas' ||
+        (criticidade === FILTRO_SEM_CRITICIDADE && !criticidadeDemanda) ||
+        (criticidade === FILTRO_CRITICIDADE_INVALIDA && !!criticidadeDemanda && !criticidadeEhValida) ||
+        (criticidadeEhValida && criticidadeDemanda === criticidade)
 
-      return dentroPeriodo && dentroStatus && dentroPrioridade
+      const prioridadeDemanda = obterPrioridadeAtendimento(demanda)
+      const prioridadeEhValida = prioridadeAtendimentoValida(prioridadeDemanda)
+      const dentroPrioridadeAtendimento =
+        prioridadeAtendimento === 'todas' ||
+        (prioridadeAtendimento === FILTRO_SEM_PRIORIDADE_ATENDIMENTO && !prioridadeDemanda) ||
+        (prioridadeAtendimento === FILTRO_PRIORIDADE_ATENDIMENTO_INVALIDA && !!prioridadeDemanda && !prioridadeEhValida) ||
+        (prioridadeEhValida && prioridadeDemanda === prioridadeAtendimento)
+
+      return dentroPeriodo && dentroStatus && dentroCriticidade && dentroPrioridadeAtendimento
     })
-  }, [demandas, periodo, status, prioridade])
+  }, [demandas, periodo, status, criticidade, prioridadeAtendimento])
 
   const concluidas = filtradas.filter(
     (item) => item.status === 'Concluída'
@@ -93,13 +151,7 @@ export default function Relatorios({
     (item) => item.status === 'Com Pendências'
   ).length
 
-  const atrasadas = filtradas.filter(
-    (item) =>
-      item.status !== 'Concluída' &&
-      item.status !== 'Cancelada' &&
-      item.prazo &&
-      item.prazo < new Date().toISOString().slice(0, 10)
-  ).length
+  const atrasadas = filtradas.filter((item) => estaAtrasadaSLA(item)).length
 
   const canceladas = filtradas.filter(
     (item) => item.status === 'Cancelada'
@@ -109,17 +161,41 @@ export default function Relatorios({
     ? Math.round((concluidas / filtradas.length) * 100)
     : 0
 
-  const porPrioridade = [
-    'Crítica',
-    'Alta',
-    'Média',
-    'Baixa',
-  ].map((nome) => ({
-    nome,
-    total: filtradas.filter(
-      (item) => (item.criticidade || item.prioridade) === nome
-    ).length,
-  }))
+  const porCriticidade = [
+    ...CRITICIDADES.map((nome) => ({
+      nome,
+      total: filtradas.filter((item) => obterCriticidade(item) === nome).length,
+    })),
+    {
+      nome: 'Não Definida',
+      total: filtradas.filter((item) => !obterCriticidade(item)).length,
+    },
+    {
+      nome: 'Valor Inválido',
+      total: filtradas.filter((item) => {
+        const valor = obterCriticidade(item)
+        return !!valor && !criticidadeValida(valor)
+      }).length,
+    },
+  ]
+
+  const porPrioridadeAtendimento = [
+    ...PRIORIDADES_ATENDIMENTO.map((nome) => ({
+      nome,
+      total: filtradas.filter((item) => obterPrioridadeAtendimento(item) === nome).length,
+    })),
+    {
+      nome: 'Não Definida',
+      total: filtradas.filter((item) => !obterPrioridadeAtendimento(item)).length,
+    },
+    {
+      nome: 'Valor Inválido',
+      total: filtradas.filter((item) => {
+        const valor = obterPrioridadeAtendimento(item)
+        return !!valor && !prioridadeAtendimentoValida(valor)
+      }).length,
+    },
+  ]
 
   const porStatus = [
     'Nova',
@@ -155,15 +231,20 @@ export default function Relatorios({
       item.cliente,
       item.sistema || '',
       item.responsavel || '',
-      item.criticidade || item.prioridade,
-      item.prioridadeAtendimento || '',
+      obterCriticidade(item),
+      obterPrioridadeAtendimento(item),
       item.status,
       item.prazo,
       item.dataAbertura || '',
     ])
 
+    const protegerCampoCSV = (valor: unknown) => {
+      const texto = String(valor ?? '')
+      return /^[=+\-@]/.test(texto) ? `'${texto}` : texto
+    }
+
     const escapar = (valor: unknown) =>
-      `"${String(valor ?? '').replace(/"/g, '""')}"`
+      `"${protegerCampoCSV(valor).replace(/"/g, '""')}"`
 
     const csv = [cabecalho, ...linhas]
       .map((linha) => linha.map(escapar).join(';'))
@@ -258,7 +339,7 @@ export default function Relatorios({
               </div>
             </div>
 
-            <div style={filtros}>
+            <div className="relatorios-filtros-grid" style={filtros}>
 
               <label style={label}>
                 Período
@@ -317,9 +398,9 @@ export default function Relatorios({
                 Criticidade
 
                 <select
-                  value={prioridade}
+                  value={criticidade}
                   onChange={(event) =>
-                    setPrioridade(event.target.value)
+                    setCriticidade(event.target.value)
                   }
                   style={campo}
                 >
@@ -327,19 +408,31 @@ export default function Relatorios({
                     Todas
                   </option>
 
-                  {[
-                    'Crítica',
-                    'Alta',
-                    'Média',
-                    'Baixa',
-                  ].map((item) => (
-                    <option
-                      key={item}
-                      value={item}
-                    >
+                  {CRITICIDADES.map((item) => (
+                    <option key={item} value={item}>
                       {item}
                     </option>
                   ))}
+                  <option value={FILTRO_SEM_CRITICIDADE}>Não Definida</option>
+                  <option value={FILTRO_CRITICIDADE_INVALIDA}>Valor Inválido</option>
+                </select>
+              </label>
+
+              <label style={label}>
+                Prioridade de Atendimento
+                <select
+                  value={prioridadeAtendimento}
+                  onChange={(event) => setPrioridadeAtendimento(event.target.value)}
+                  style={campo}
+                >
+                  <option value="todas">Todas</option>
+                  {PRIORIDADES_ATENDIMENTO.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                  <option value={FILTRO_SEM_PRIORIDADE_ATENDIMENTO}>Não Definida</option>
+                  <option value={FILTRO_PRIORIDADE_ATENDIMENTO_INVALIDA}>Valor Inválido</option>
                 </select>
               </label>
 
@@ -390,7 +483,7 @@ export default function Relatorios({
 
           </div>
 
-          <div style={duasColunas}>
+          <div className="relatorios-distribuicoes-principais" style={duasColunas}>
 
             <section style={card}>
               <h2 style={tituloSecao}>
@@ -418,7 +511,7 @@ export default function Relatorios({
                 Por Criticidade
               </h2>
 
-              {porPrioridade.map((item) => (
+              {porCriticidade.map((item) => (
                 <div
                   key={item.nome}
                   style={linha}
@@ -435,6 +528,23 @@ export default function Relatorios({
             </section>
 
           </div>
+
+          <section style={card} className="relatorios-prioridade-atendimento">
+            <h2 style={tituloSecao}>
+              Por Prioridade de Atendimento
+            </h2>
+            <p className="relatorios-ajuda-classificacao">
+              Distribuição por prioridade operacional de atendimento. Os valores não definidos ou inválidos ficam destacados para facilitar a auditoria dos dados.
+            </p>
+            <div className="relatorios-distribuicao-prioridade">
+              {porPrioridadeAtendimento.map((item) => (
+                <div key={item.nome} className="relatorios-prioridade-item">
+                  <span>{item.nome}</span>
+                  <strong>{item.total}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <section style={card}>
 
@@ -502,6 +612,9 @@ export default function Relatorios({
             <h2 style={tituloSecao}>
               Demandas Filtradas
             </h2>
+            <p className="relatorios-ajuda-classificacao">
+              Exibindo até 100 registros nesta tabela. A exportação CSV inclui todos os resultados dos filtros selecionados.
+            </p>
 
             <div className="relatorios-table-wrap">
 
@@ -513,7 +626,8 @@ export default function Relatorios({
                     <th>Título</th>
                     <th>Cliente</th>
                     <th>Analista</th>
-                    <th>Classificação</th>
+                    <th>Criticidade</th>
+                    <th>Prioridade de Atendimento</th>
                     <th>Status</th>
                     <th>Prazo</th>
                   </tr>
@@ -547,10 +661,11 @@ export default function Relatorios({
                         </td>
 
                         <td>
-                          <strong>{item.criticidade || item.prioridade}</strong>
-                          <small style={{ display: 'block', marginTop: 4, color: '#475569' }}>
-                            {item.prioridadeAtendimento || '—'}
-                          </small>
+                          {obterCriticidade(item) || 'Não Definida'}
+                        </td>
+
+                        <td>
+                          {obterPrioridadeAtendimento(item) || 'Não Definida'}
                         </td>
 
                         <td>
@@ -567,7 +682,7 @@ export default function Relatorios({
                   {filtradas.length === 0 && (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         style={{
                           padding: 28,
                           textAlign: 'center',
@@ -632,7 +747,7 @@ const barraTopo: CSSProperties = {
 
 const filtros: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
   gap: 14,
   marginTop: 20,
 }

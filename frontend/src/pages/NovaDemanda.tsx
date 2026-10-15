@@ -2,11 +2,23 @@
 
 
 
+
+
+
+
 // GESTÃO DE DEMANDAS DE TI
 
 
 
+
+
+
+
 // V2.9 — NOVA DEMANDA / MENU PRINCIPAL
+
+
+
+
 
 
 
@@ -18,7 +30,19 @@
 
 
 
+
+
+
+
+
+
+
+
 import { useMemo, useState, type FormEvent } from 'react'
+
+
+
+
 
 
 
@@ -26,7 +50,15 @@ import type { Demanda, Usuario } from '../types'
 
 
 
+
+
+
+
 import { diasPrazoPorCriticidade, diasPrazoPorPrioridadeAtendimento, diasSLACombinado, PRIORIDADES_ATENDIMENTO } from '../sla'
+
+
+
+
 
 
 
@@ -34,9 +66,23 @@ import './NovaDemanda.css'
 
 
 
+
+
+
+
 import MenuPrincipal from '../components/MenuPrincipal'
 
+
+
 import { mostrarToast } from '../services/toast'
+
+
+
+
+
+
+
+
 
 
 
@@ -48,7 +94,15 @@ type CadastroItem = {
 
 
 
+
+
+
+
   id?: number
+
+
+
+
 
 
 
@@ -56,7 +110,15 @@ type CadastroItem = {
 
 
 
+
+
+
+
   sigla?: string
+
+
+
+
 
 
 
@@ -64,7 +126,15 @@ type CadastroItem = {
 
 
 
+
+
+
+
   status?: string
+
+
+
+
 
 
 
@@ -72,11 +142,27 @@ type CadastroItem = {
 
 
 
+
+
+
+
   clienteId?: number
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -88,7 +174,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   clientes: CadastroItem[]
+
+
+
+
 
 
 
@@ -96,7 +190,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   tipos: CadastroItem[]
+
+
+
+
 
 
 
@@ -104,7 +206,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   onVoltar: () => void
+
+
+
+
 
 
 
@@ -116,7 +226,19 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
+
+
+
+
   nomeUsuario: string
+
+
+
+
 
 
 
@@ -124,7 +246,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   onDashboard: () => void
+
+
+
+
 
 
 
@@ -132,7 +262,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   onNovaDemanda: () => void
+
+
+
+
 
 
 
@@ -140,7 +278,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   onResponsaveis: () => void
+
+
+
+
 
 
 
@@ -148,7 +294,15 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   onRelatorios: () => void
+
+
+
+
 
 
 
@@ -156,11 +310,27 @@ type NovaDemandaProps = {
 
 
 
+
+
+
+
   onLogout: () => void
 
 
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -176,7 +346,19 @@ const CRITICIDADES = ['Crítica', 'Alta', 'Média', 'Baixa']
 
 
 
+
+
+
+
+
+
+
+
 function textoItem(item: CadastroItem): string {
+
+
+
+
 
 
 
@@ -184,7 +366,36 @@ function textoItem(item: CadastroItem): string {
 
 
 
+
+
+
+
 }
+
+
+function classePrioridadeAtendimento(prioridade: string): string {
+  if (prioridade.startsWith('P1')) return 'prioridade-p1'
+  if (prioridade.startsWith('P2')) return 'prioridade-p2'
+  if (prioridade.startsWith('P3')) return 'prioridade-p3'
+  if (prioridade.startsWith('P4')) return 'prioridade-p4'
+  return ''
+}
+
+function corPrioridadeAtendimento(prioridade: string): string {
+  if (prioridade.startsWith('P1')) return '#7f1d1d'
+  if (prioridade.startsWith('P2')) return '#dc2626'
+  if (prioridade.startsWith('P3')) return '#1d4ed8'
+  if (prioridade.startsWith('P4')) return '#15803d'
+  return '#0f172a'
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -196,7 +407,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   clientes,
+
+
+
+
 
 
 
@@ -204,7 +423,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   tipos,
+
+
+
+
 
 
 
@@ -212,7 +439,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   onVoltar,
+
+
+
+
 
 
 
@@ -220,7 +455,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   nomeUsuario,
+
+
+
+
 
 
 
@@ -228,7 +471,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   onDashboard,
+
+
+
+
 
 
 
@@ -236,7 +487,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   onNovaDemanda,
+
+
+
+
 
 
 
@@ -244,7 +503,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   onResponsaveis,
+
+
+
+
 
 
 
@@ -252,7 +519,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   onRelatorios,
+
+
+
+
 
 
 
@@ -260,7 +535,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   onLogout,
+
+
+
+
 
 
 
@@ -268,13 +551,31 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   const [clienteSelecionado, setClienteSelecionado] = useState('')
 
 
 
+
+
+
+
   const [sistemaSelecionado, setSistemaSelecionado] = useState('')
+
   const [criticidadeSelecionada, setCriticidadeSelecionada] = useState('')
+
   const [prioridadeSelecionada, setPrioridadeSelecionada] = useState('')
+
+
+
+
+
+
+
+
 
 
 
@@ -286,7 +587,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
     () =>
+
+
+
+
 
 
 
@@ -294,7 +603,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         (item) =>
+
+
+
+
 
 
 
@@ -302,7 +619,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       ),
+
+
+
+
 
 
 
@@ -310,7 +635,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
   )
+
+
+
+
+
+
+
+
 
 
 
@@ -322,7 +659,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
     () =>
+
+
+
+
 
 
 
@@ -330,7 +675,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         (item) =>
+
+
+
+
 
 
 
@@ -338,7 +691,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           item.ativo !== false
+
+
+
+
 
 
 
@@ -346,7 +707,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
     [sistemas]
+
+
+
+
 
 
 
@@ -358,7 +727,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
   const sistemasFiltrados = useMemo(() => {
+
+
+
+
 
 
 
@@ -366,7 +747,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       return sistemasAtivos
+
+
+
+
 
 
 
@@ -378,7 +767,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     const vinculados = sistemasAtivos.filter(
+
+
+
+
 
 
 
@@ -386,7 +787,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         item.clienteId === clienteObjetoSelecionado.id
+
+
+
+
 
 
 
@@ -398,7 +807,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     return vinculados.length > 0
+
+
+
+
 
 
 
@@ -406,11 +827,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       : sistemasAtivos
 
 
 
+
+
+
+
   }, [sistemasAtivos, clienteObjetoSelecionado])
+
+
+
+
+
+
+
+
 
 
 
@@ -426,7 +863,23 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     event.preventDefault()
+
+
+
+
+
+
+
+
 
 
 
@@ -442,7 +895,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     const demanda: Omit<Demanda, 'id' | 'status'> = {
+
+
+
+
 
 
 
@@ -450,7 +915,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       descricao: String(formData.get('descricao') || '').trim(),
+
+
+
+
 
 
 
@@ -458,7 +931,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       sistema: String(formData.get('sistema') || '').trim(),
+
+
+
+
 
 
 
@@ -466,13 +947,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       responsavel: String(formData.get('responsavel') || '').trim(),
 
 
 
+
+
+
+
       criticidade: String(formData.get('criticidade') || '').trim(),
+
       prioridade: String(formData.get('criticidade') || '').trim(), // Compatibilidade com telas e demandas antigas.
+
       prioridadeAtendimento: String(formData.get('prioridadeAtendimento') || '').trim(),
+
+
+
+
 
 
 
@@ -480,7 +975,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       observacao: String(formData.get('observacao') || '').trim(),
+
+
+
+
 
 
 
@@ -488,7 +991,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       arquivos: [],
+
+
+
+
 
 
 
@@ -496,6 +1007,10 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
     }
 
 
@@ -504,7 +1019,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     if (
+
+
+
+
 
 
 
@@ -512,7 +1039,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       !demanda.descricao ||
+
+
+
+
 
 
 
@@ -520,7 +1055,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       !demanda.sistema ||
+
+
+
+
 
 
 
@@ -528,8 +1071,17 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       !demanda.criticidade ||
+
       !demanda.prioridadeAtendimento
+
+
+
+
 
 
 
@@ -537,11 +1089,23 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       alert('Preencha Todos Os Campos Obrigatórios.')
 
 
 
+
+
+
+
       return
+
+
+
+
 
 
 
@@ -553,7 +1117,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     if (
+
+
+
+
 
 
 
@@ -561,7 +1137,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
     ) {
+
+
+
+
 
 
 
@@ -569,7 +1153,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         sistemasAtivos.filter(
+
+
+
+
 
 
 
@@ -577,11 +1169,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             item.clienteId === clienteObjetoSelecionado.id
 
 
 
+
+
+
+
         )
+
+
+
+
+
+
+
+
 
 
 
@@ -593,7 +1201,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         sistemasVinculados.length > 0 &&
+
+
+
+
 
 
 
@@ -601,7 +1217,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           (item) =>
+
+
+
+
 
 
 
@@ -609,7 +1233,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         )
+
+
+
+
 
 
 
@@ -617,7 +1249,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         alert(
+
+
+
+
 
 
 
@@ -625,7 +1265,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         )
+
+
+
+
 
 
 
@@ -633,7 +1281,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       }
+
+
+
+
 
 
 
@@ -645,9 +1301,23 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
     onSalvar(demanda)
 
+
+
     mostrarToast('Demanda Cadastrada com Sucesso.')
+
+
+
+
 
 
 
@@ -659,7 +1329,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
   return (
+
+
+
+
 
 
 
@@ -667,7 +1349,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       ativo="nova-demanda"
+
+
+
+
 
 
 
@@ -675,7 +1365,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       perfilUsuario={perfilUsuario}
+
+
+
+
 
 
 
@@ -683,7 +1381,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       onTodasDemandas={onTodasDemandas}
+
+
+
+
 
 
 
@@ -691,7 +1397,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       onClientes={onClientes}
+
+
+
+
 
 
 
@@ -699,7 +1413,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       onFeriados={onFeriados}
+
+
+
+
 
 
 
@@ -707,7 +1429,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       onConfiguracoes={onConfiguracoes}
+
+
+
+
 
 
 
@@ -715,7 +1445,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       subtitulo="Nova Demanda"
+
+
+
+
 
 
 
@@ -723,7 +1461,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
         <>
+
+
+
+
 
 
 
@@ -731,7 +1477,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             type="button"
+
+
+
+
 
 
 
@@ -739,7 +1493,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             onClick={onVoltar}
+
+
+
+
 
 
 
@@ -747,7 +1509,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             ← Voltar Para Todas As Demandas
+
+
+
+
 
 
 
@@ -759,11 +1529,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
           <div className="nova-demanda-acoes-direita">
 
 
 
+
+
+
+
             <button
+
+
+
+
 
 
 
@@ -771,7 +1557,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               className="btn-secundario"
+
+
+
+
 
 
 
@@ -779,7 +1573,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             >
+
+
+
+
 
 
 
@@ -787,7 +1589,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -799,7 +1613,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               type="submit"
+
+
+
+
 
 
 
@@ -807,7 +1629,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               className="btn-principal"
+
+
+
+
 
 
 
@@ -815,7 +1645,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               + Cadastrar Demanda
+
+
+
+
 
 
 
@@ -823,7 +1661,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           </div>
+
+
+
+
 
 
 
@@ -831,7 +1677,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       }
+
+
+
+
 
 
 
@@ -839,7 +1693,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       <div className="nova-demanda-page">
+
+
+
+
 
 
 
@@ -847,7 +1709,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           <div>
+
+
+
+
 
 
 
@@ -855,7 +1725,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             <p>
+
+
+
+
 
 
 
@@ -863,7 +1741,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               O Prazo Será Calculado Automaticamente Em Dias Úteis.
+
+
+
+
 
 
 
@@ -871,11 +1757,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           </div>
 
 
 
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -887,7 +1789,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           <form id="nova-demanda-form" onSubmit={handleSubmit}>
+
+
+
+
 
 
 
@@ -895,7 +1805,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <h2>Dados Da Demanda</h2>
+
+
+
+
 
 
 
@@ -903,7 +1821,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 Informe Os Dados Necessários Para Registrar E Classificar A Demanda.
+
+
+
+
 
 
 
@@ -911,7 +1837,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -923,7 +1861,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <label htmlFor="cliente">Cliente / Órgão *</label>
+
+
+
+
 
 
 
@@ -931,7 +1877,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 id="cliente"
+
+
+
+
 
 
 
@@ -939,7 +1893,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 value={clienteSelecionado}
+
+
+
+
 
 
 
@@ -947,7 +1909,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   setClienteSelecionado(event.target.value)
+
+
+
+
 
 
 
@@ -955,7 +1925,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 }}
+
+
+
+
 
 
 
@@ -963,7 +1941,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 <option value="">Selecione...</option>
+
+
+
+
 
 
 
@@ -971,7 +1957,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   .filter((item) => item.status !== 'Inativo' && item.ativo !== false)
+
+
+
+
 
 
 
@@ -979,7 +1973,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     const valor = textoItem(cliente)
+
+
+
+
 
 
 
@@ -987,7 +1989,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                       <option key={cliente.id ?? `${valor}-${index}`} value={valor}>
+
+
+
+
 
 
 
@@ -995,7 +2005,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                       </option>
+
+
+
+
 
 
 
@@ -1003,7 +2021,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   })}
+
+
+
+
 
 
 
@@ -1011,7 +2037,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1023,7 +2061,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <div className="campo">
+
+
+
+
 
 
 
@@ -1031,7 +2077,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 <select
+
+
+
+
 
 
 
@@ -1039,7 +2093,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   name="sistema"
+
+
+
+
 
 
 
@@ -1047,7 +2109,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   onChange={(event) =>
+
+
+
+
 
 
 
@@ -1055,7 +2125,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   }
+
+
+
+
 
 
 
@@ -1063,7 +2141,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 >
+
+
+
+
 
 
 
@@ -1071,7 +2157,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     {clienteSelecionado
+
+
+
+
 
 
 
@@ -1079,7 +2173,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                       : 'Selecione...'}
+
+
+
+
 
 
 
@@ -1087,7 +2189,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   {sistemasFiltrados.map((sistema, index) => {
+
+
+
+
 
 
 
@@ -1095,7 +2205,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     return (
+
+
+
+
 
 
 
@@ -1103,7 +2221,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                         {valor}
+
+
+
+
 
 
 
@@ -1111,7 +2237,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     )
+
+
+
+
 
 
 
@@ -1119,11 +2253,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 </select>
 
 
 
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1135,7 +2285,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 <label htmlFor="tipo">Tipo Da Demanda *</label>
+
+
+
+
 
 
 
@@ -1143,7 +2301,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   <option value="">Selecione...</option>
+
+
+
+
 
 
 
@@ -1151,7 +2317,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     .filter((item) => item.status !== 'Inativo' && item.ativo !== false)
+
+
+
+
 
 
 
@@ -1159,7 +2333,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                       const valor = textoItem(tipo)
+
+
+
+
 
 
 
@@ -1167,7 +2349,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                         <option key={tipo.id ?? `${valor}-${index}`} value={valor}>
+
+
+
+
 
 
 
@@ -1175,7 +2365,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                         </option>
+
+
+
+
 
 
 
@@ -1183,7 +2381,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     })}
+
+
+
+
 
 
 
@@ -1191,7 +2397,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               </div>
+
+
+
+
 
 
 
@@ -1203,7 +2417,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
             <div className="campo">
+
+
+
+
 
 
 
@@ -1211,7 +2437,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <input
+
+
+
+
 
 
 
@@ -1219,7 +2453,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 name="titulo"
+
+
+
+
 
 
 
@@ -1227,7 +2469,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 placeholder="Digite Um Título Curto E Objetivo"
+
+
+
+
 
 
 
@@ -1235,11 +2485,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               />
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1251,7 +2517,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <label htmlFor="descricao">Descrição *</label>
+
+
+
+
 
 
 
@@ -1259,7 +2533,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 id="descricao"
+
+
+
+
 
 
 
@@ -1267,7 +2549,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 rows={6}
+
+
+
+
 
 
 
@@ -1275,11 +2565,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               />
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1288,52 +2594,118 @@ export default function NovaDemanda({
 
 
             <section className="classificacao-demanda-card">
+
               <div className="classificacao-demanda-heading">
+
                 <div className="classificacao-demanda-icon" aria-hidden="true">◆</div>
+
                 <div>
+
                   <h3>Classificação da Demanda</h3>
+
                   <p>Informe o impacto e a urgência para definir o prazo de atendimento.</p>
+
                 </div>
+
               </div>
+
               <div className="classificacao-demanda-grid">
 
 
 
+
+
+
+
                             <div className="campo">
+
                 <label htmlFor="criticidade">Criticidade *</label>
+
                 <select
+
                   id="criticidade"
+
                   name="criticidade"
+
                   value={criticidadeSelecionada}
+
                   onChange={(event) => setCriticidadeSelecionada(event.target.value)}
+
                   required
+
                 >
+
                   <option value="">Selecione...</option>
+
                   {CRITICIDADES.map((criticidade) => (
+
                     <option key={criticidade} value={criticidade}>{criticidade}</option>
+
                   ))}
+
                 </select>
+
                 <small className="classificacao-ajuda">Impacto caso a demanda não seja resolvida.</small>
+
               </div>
 
+
+
               <div className="campo">
+
                 <label htmlFor="prioridadeAtendimento">Prioridade de Atendimento *</label>
+
                 <select
+
                   id="prioridadeAtendimento"
+
                   name="prioridadeAtendimento"
+
+                  className={`prioridade-atendimento-select ${classePrioridadeAtendimento(prioridadeSelecionada)}`}
+
+                  style={{ color: corPrioridadeAtendimento(prioridadeSelecionada) }}
+
                   value={prioridadeSelecionada}
+
                   onChange={(event) => setPrioridadeSelecionada(event.target.value)}
+
                   required
+
                 >
-                  <option value="">Selecione...</option>
+
+                  <option value="" style={{ color: '#0f172a' }}>Selecione...</option>
+
                   {PRIORIDADES_ATENDIMENTO.map((prioridade) => (
-                    <option key={prioridade} value={prioridade}>{prioridade}</option>
+
+                    <option
+
+                      key={prioridade}
+
+                      value={prioridade}
+
+                      className={classePrioridadeAtendimento(prioridade)}
+
+                      style={{ color: corPrioridadeAtendimento(prioridade) }}
+
+                    >
+
+                      {prioridade}
+
+                    </option>
+
                   ))}
+
                 </select>
+
                 <small className="classificacao-ajuda">Urgência com que a equipe deve iniciar o atendimento.</small>
+
               </div>
+
               </div>
+
             </section>
+
+
 
             <div className="formulario-grid">
 
@@ -1343,7 +2715,19 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
               <div className="campo">
+
+
+
+
 
 
 
@@ -1351,7 +2735,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 <select id="responsavel" name="responsavel" defaultValue="">
+
+
+
+
 
 
 
@@ -1359,7 +2751,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     Selecione...
+
+
+
+
 
 
 
@@ -1367,7 +2767,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                   {analistas
+
+
+
+
 
 
 
@@ -1375,7 +2783,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     .map((usuario) => (
+
+
+
+
 
 
 
@@ -1383,7 +2799,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                         {usuario.nome}
+
+
+
+
 
 
 
@@ -1391,7 +2815,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                     ))}
+
+
+
+
 
 
 
@@ -1399,11 +2831,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               </div>
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1415,7 +2863,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               className="campo sla-resumo-card"
+
+
+
+
 
 
 
@@ -1423,7 +2879,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 padding: '12px 14px',
+
+
+
+
 
 
 
@@ -1431,7 +2895,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 borderRadius: '8px',
+
+
+
+
 
 
 
@@ -1439,7 +2911,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               }}
+
+
+
+
 
 
 
@@ -1447,7 +2927,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <label style={{ marginBottom: '4px' }}>
+
+
+
+
 
 
 
@@ -1455,7 +2943,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               </label>
+
+
+
+
 
 
 
@@ -1463,7 +2959,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 Calculado Automaticamente Após O Cadastro
+
+
+
+
 
 
 
@@ -1471,21 +2975,47 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <small className="sla-resumo-texto">
+
                 {criticidadeSelecionada && prioridadeSelecionada ? (
+
                   <>
+
                     Prazo estimado: <strong>{diasSLACombinado(criticidadeSelecionada, prioridadeSelecionada)} dias úteis</strong>.
+
                     O sistema utiliza o menor prazo entre a Criticidade ({diasPrazoPorCriticidade(criticidadeSelecionada)} dias) e a Prioridade ({diasPrazoPorPrioridadeAtendimento(prioridadeSelecionada)} dias).
+
                   </>
+
                 ) : (
+
                   'Selecione a Criticidade e a Prioridade de Atendimento para visualizar o prazo estimado.'
+
                 )}
+
                 {' '}Finais de semana e feriados cadastrados não são contabilizados.
+
               </small>
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1497,7 +3027,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <label htmlFor="observacao">Observações</label>
+
+
+
+
 
 
 
@@ -1505,7 +3043,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 id="observacao"
+
+
+
+
 
 
 
@@ -1513,7 +3059,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
                 rows={3}
+
+
+
+
 
 
 
@@ -1521,11 +3075,27 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               />
 
 
 
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1537,7 +3107,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               <button type="submit" className="btn-salvar">
+
+
+
+
 
 
 
@@ -1545,7 +3123,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
               </button>
+
+
+
+
 
 
 
@@ -1553,7 +3139,15 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
           </form>
+
+
+
+
 
 
 
@@ -1561,11 +3155,23 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
       </div>
 
 
 
+
+
+
+
     </MenuPrincipal>
+
+
+
+
 
 
 
@@ -1577,8 +3183,12 @@ export default function NovaDemanda({
 
 
 
+
+
+
+
+
+
+
+
 }
-
-
-
-

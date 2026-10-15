@@ -1286,218 +1286,163 @@ function App() {
     id: number,
     novaPrioridade: string,
     motivo?: string
-  ) {
-    if (
-      sessao?.perfil !==
-      'Gestor/Administrador'
-    ) {
-      return
-    }
+  ): boolean {
+    if (!ehGestor(sessao)) return false
+    if (!PRIORIDADES.includes(novaPrioridade)) return false
 
-    if (
-      !PRIORIDADES.includes(
-        novaPrioridade
-      )
-    ) {
-      return
-    }
+    const demandaAlvo = demandas.find((item) => item.id === id)
+    if (!demandaAlvo) return false
 
-    const demandaPrioridade =
-      demandas.find(
-        (item) => item.id === id
-      )
-
-    if (
-      demandaPrioridade?.status === 'Concluída' ||
-      demandaPrioridade?.status === 'Cancelada'
-    ) {
+    if (demandaAlvo.status === 'Concluída' || demandaAlvo.status === 'Cancelada') {
       window.alert(
         'Demandas concluídas ou canceladas não podem ter a criticidade alterada. Reabra a demanda antes, quando aplicável.'
       )
-      return
+      return false
     }
 
-    atualizarDemanda(
-      id,
-      (demanda) => {
-        if (
-          (demanda.criticidade || demanda.prioridade) === novaPrioridade
-        ) {
-          return demanda
+    const criticidadeAtualAlvo = demandaAlvo.criticidade || demandaAlvo.prioridade
+    if (criticidadeAtualAlvo === novaPrioridade) return false
+
+    // Em prazo manual, OK recalcula com o SLA combinado; Cancelar preserva a data manual.
+    let recalcularPrazo = true
+    if (demandaAlvo.prazoManual) {
+      recalcularPrazo = window.confirm(
+        `Esta demanda possui prazo definido manualmente (${demandaAlvo.prazo || 'sem data'}).\n\n` +
+        'Deseja recalcular o prazo conforme o SLA combinado de Criticidade e Prioridade de Atendimento?\n\n' +
+        'OK = Recalcular o prazo conforme o SLA.\n' +
+        'Cancelar = Preservar o prazo manual atual.\n\n' +
+        'A alteração da Criticidade será aplicada em qualquer uma das opções.'
+      )
+    }
+
+    const motivoFinal = motivo?.trim() || 'Alteração de criticidade realizada pelo Gestor.'
+
+    atualizarDemanda(id, (demanda) => {
+      if (demanda.status === 'Concluída' || demanda.status === 'Cancelada') return demanda
+
+      const criticidadeAtual = demanda.criticidade || demanda.prioridade
+      if (criticidadeAtual === novaPrioridade) return demanda
+
+      const consumidos = diasUteisConsumidosSemPendencia(demanda)
+      const novoSla = diasPrazoPorPrioridade(novaPrioridade, demanda.prioridadeAtendimento)
+      const saldo = Math.max(novoSla - consumidos, 0)
+      const preservarPrazoManual = Boolean(demanda.prazoManual && !recalcularPrazo)
+      const novoPrazo = preservarPrazoManual
+        ? demanda.prazo
+        : dataLocalISO(adicionarDiasUteis(new Date(), saldo))
+      const agora = agoraISO()
+      const decisaoPrazo = preservarPrazoManual
+        ? `Prazo manual preservado: ${demanda.prazo}.`
+        : `Prazo recalculado conforme SLA: ${novoPrazo}.`
+      const descricao =
+        `Criticidade alterada de "${criticidadeAtual}" para "${novaPrioridade}". ` +
+        `Tempo já consumido: ${consumidos} dia(s) útil(eis). ` +
+        `Novo SLA combinado: ${novoSla} dia(s) útil(eis). ` +
+        `Saldo considerado: ${saldo} dia(s) útil(eis). ${decisaoPrazo}`
+
+      registrarAlteracao(
+        'demanda', id, 'alteracao_prioridade', descricao, nomeUsuarioAtual,
+        {
+          valorAnterior: criticidadeAtual,
+          valorNovo: novaPrioridade,
+          motivo: `${motivoFinal} ${decisaoPrazo}`,
         }
+      )
 
-        const consumidos =
-          diasUteisConsumidosSemPendencia(
-            demanda
-          )
-
-        const novoSla =
-          diasPrazoPorPrioridade(
-            novaPrioridade,
-            demanda.prioridadeAtendimento
-          )
-
-        const saldo =
-          Math.max(
-            novoSla -
-              consumidos,
-            0
-          )
-
-        const novoPrazo =
-          dataLocalISO(
-            adicionarDiasUteis(
-              new Date(),
-              saldo
-            )
-          )
-
-        const agora =
-          agoraISO()
-
-        const motivoFinal =
-          motivo?.trim() ||
-          'Alteração de criticidade realizada pelo Gestor.'
-
-        const descricao =
-          `Criticidade alterada de "${demanda.prioridade}" para "${novaPrioridade}". Tempo já consumido: ${consumidos} dia(s) útil(eis). Novo SLA: ${novoSla} dia(s) útil(eis). Saldo considerado: ${saldo} dia(s) útil(eis).`
-
-        registrarAlteracao(
-          'demanda',
-          id,
-          'alteracao_prioridade',
-          descricao,
-          nomeUsuarioAtual,
-          {
-            valorAnterior:
-              demanda.prioridade,
-
-            valorNovo:
-              novaPrioridade,
-
-            motivo:
-              motivoFinal,
-          }
-        )
-
-        return {
-          ...demanda,
-
-          criticidade:
-            novaPrioridade,
-
-          prioridade:
-            novaPrioridade,
-
-          prazo:
-            novoPrazo,
-
-          prazoDiasUteis:
-            novoSla,
-
-          prazoManual:
-            false,
-
-          motivoAlteracaoPrioridade:
-            motivoFinal,
-
-          historico: [
-            {
-              id:
-                Date.now(),
-
-              tipo:
-                'prioridade',
-
-              titulo:
-                'Criticidade alterada',
-
-              descricao,
-
-              data:
-                agora,
-
-              usuario:
-                nomeUsuarioAtual,
-
-              referenciaId:
-                id,
-
-              valorAnterior:
-                demanda.prioridade,
-
-              valorNovo:
-                novaPrioridade,
-
-              motivo:
-                motivoFinal,
-            },
-
-            ...(demanda.historico ||
-              []),
-          ],
-        }
+      const historico: Historico = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        tipo: 'prioridade',
+        titulo: 'Criticidade alterada',
+        descricao,
+        data: agora,
+        usuario: nomeUsuarioAtual,
+        referenciaId: id,
+        valorAnterior: criticidadeAtual,
+        valorNovo: novaPrioridade,
+        motivo: `${motivoFinal} ${decisaoPrazo}`,
       }
-    )
+
+      return {
+        ...demanda,
+        criticidade: novaPrioridade,
+        prioridade: novaPrioridade,
+        prazo: novoPrazo,
+        prazoDiasUteis: novoSla,
+        prazoManual: preservarPrazoManual,
+        motivoAlteracaoPrioridade: motivoFinal,
+        historico: [historico, ...(demanda.historico || [])],
+      }
+    })
+
+    return true
   }
 
   // ==========================================================
   // ALTERAR PRIORIDADE DE ATENDIMENTO
-  // Aplica o SLA combinado de Criticidade e Prioridade sobre o saldo restante.
+  // Em prazo manual, o Gestor escolhe preservar ou recalcular o prazo.
   // ==========================================================
   function alterarPrioridadeAtendimento(
     id: number,
     novaPrioridadeAtendimento: string,
     motivo?: string
-  ) {
-    if (!ehGestor(sessao)) {
-      return
-    }
-
-    if (!PRIORIDADES_ATENDIMENTO.includes(novaPrioridadeAtendimento as typeof PRIORIDADES_ATENDIMENTO[number])) {
-      return
-    }
+  ): boolean {
+    if (!ehGestor(sessao)) return false
+    if (!PRIORIDADES_ATENDIMENTO.includes(novaPrioridadeAtendimento as typeof PRIORIDADES_ATENDIMENTO[number])) return false
 
     const demandaAlvo = demandas.find((item) => item.id === id)
-    if (!demandaAlvo) {
-      return
-    }
+    if (!demandaAlvo) return false
 
     if (demandaAlvo.status === 'Concluída' || demandaAlvo.status === 'Cancelada') {
       window.alert('Demandas concluídas ou canceladas não podem ter a Prioridade de Atendimento alterada. Reabra a demanda antes, quando aplicável.')
-      return
+      return false
+    }
+
+    const prioridadeAlvoAtual = demandaAlvo.prioridadeAtendimento || ''
+    if (prioridadeAlvoAtual === novaPrioridadeAtendimento) return false
+
+    let recalcularPrazo = true
+    if (demandaAlvo.prazoManual) {
+      recalcularPrazo = window.confirm(
+        `Esta demanda possui prazo definido manualmente (${demandaAlvo.prazo || 'sem data'}).\n\n` +
+        'Deseja recalcular o prazo conforme o SLA combinado de Criticidade e Prioridade de Atendimento?\n\n' +
+        'OK = Recalcular o prazo conforme o SLA.\n' +
+        'Cancelar = Preservar o prazo manual atual.\n\n' +
+        'A alteração da Prioridade de Atendimento será aplicada em qualquer uma das opções.'
+      )
     }
 
     const motivoFinal = motivo?.trim() || 'Alteração de Prioridade de Atendimento realizada pelo Gestor.'
 
     atualizarDemanda(id, (demanda) => {
-      if (demanda.status === 'Concluída' || demanda.status === 'Cancelada') {
-        return demanda
-      }
+      if (demanda.status === 'Concluída' || demanda.status === 'Cancelada') return demanda
 
       const prioridadeAtual = demanda.prioridadeAtendimento || ''
-      if (prioridadeAtual === novaPrioridadeAtendimento) {
-        return demanda
-      }
+      if (prioridadeAtual === novaPrioridadeAtendimento) return demanda
 
       const criticidadeAtual = demanda.criticidade || demanda.prioridade || 'Média'
       const consumidos = diasUteisConsumidosSemPendencia(demanda)
       const novoSla = diasSLACombinado(criticidadeAtual, novaPrioridadeAtendimento)
       const saldo = Math.max(novoSla - consumidos, 0)
-      const novoPrazo = dataLocalISO(adicionarDiasUteis(new Date(), saldo))
+      const preservarPrazoManual = Boolean(demanda.prazoManual && !recalcularPrazo)
+      const novoPrazo = preservarPrazoManual
+        ? demanda.prazo
+        : dataLocalISO(adicionarDiasUteis(new Date(), saldo))
       const agora = agoraISO()
-      const descricao = `Prioridade de Atendimento alterada de "${prioridadeAtual || 'Não definida'}" para "${novaPrioridadeAtendimento}". Tempo já consumido: ${consumidos} dia(s) útil(eis). Novo SLA combinado: ${novoSla} dia(s) útil(eis). Saldo considerado: ${saldo} dia(s) útil(eis).`
+      const decisaoPrazo = preservarPrazoManual
+        ? `Prazo manual preservado: ${demanda.prazo}.`
+        : `Prazo recalculado conforme SLA: ${novoPrazo}.`
+      const descricao =
+        `Prioridade de Atendimento alterada de "${prioridadeAtual || 'Não definida'}" para "${novaPrioridadeAtendimento}". ` +
+        `Tempo já consumido: ${consumidos} dia(s) útil(eis). ` +
+        `Novo SLA combinado: ${novoSla} dia(s) útil(eis). ` +
+        `Saldo considerado: ${saldo} dia(s) útil(eis). ${decisaoPrazo}`
 
       registrarAlteracao(
-        'demanda',
-        id,
-        'alteracao_prioridade_atendimento',
-        descricao,
-        nomeUsuarioAtual,
+        'demanda', id, 'alteracao_prioridade_atendimento', descricao, nomeUsuarioAtual,
         {
           valorAnterior: prioridadeAtual || 'Não definida',
           valorNovo: novaPrioridadeAtendimento,
-          motivo: motivoFinal,
+          motivo: `${motivoFinal} ${decisaoPrazo}`,
         }
       )
 
@@ -1511,7 +1456,7 @@ function App() {
         referenciaId: id,
         valorAnterior: prioridadeAtual || 'Não definida',
         valorNovo: novaPrioridadeAtendimento,
-        motivo: motivoFinal,
+        motivo: `${motivoFinal} ${decisaoPrazo}`,
       }
 
       return {
@@ -1519,11 +1464,13 @@ function App() {
         prioridadeAtendimento: novaPrioridadeAtendimento,
         prazo: novoPrazo,
         prazoDiasUteis: novoSla,
-        prazoManual: false,
+        prazoManual: preservarPrazoManual,
         motivoAlteracaoPrioridade: motivoFinal,
         historico: [historico, ...(demanda.historico || [])],
       }
     })
+
+    return true
   }
 
   // ==========================================================
