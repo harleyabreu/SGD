@@ -5328,3 +5328,227 @@ body {
     grid-template-columns: 24px minmax(0, 1fr) 62px;
   }
 }
+
+
+/* ============================================================
+   INTEGRAÇÃO DA PRIORIDADE DE ATENDIMENTO — DASHBOARD DO GESTOR
+   Regras complementares; preservam os estilos existentes.
+   ============================================================ */
+.filter-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+}
+
+.priority-attendance-panel {
+  margin-bottom: 18px !important;
+}
+
+.priority-attendance-panel::before {
+  background: #2563eb !important;
+}
+
+.priority-attendance-panel .panel-header {
+  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%) !important;
+}
+
+.priority-attendance-panel .panel-header > div:first-child::before {
+  background: #2563eb !important;
+}
+
+.priority-attendance-panel .panel-header h3 {
+  color: #1d4ed8 !important;
+}
+
+.priority-attendance-panel .priority-item {
+  min-width: 0;
+}
+
+.priority-attendance-panel .priority-info > span:not(.priority-dot) {
+  overflow-wrap: anywhere;
+}
+
+.priority-attendance-panel .priority-dot.p1-imediata,
+.priority-attendance-panel .priority-progress-bar.p1-imediata {
+  background: #991b1b !important;
+}
+
+.priority-attendance-panel .priority-dot.p2-urgente,
+.priority-attendance-panel .priority-progress-bar.p2-urgente {
+  background: #dc2626 !important;
+}
+
+.priority-attendance-panel .priority-dot.p3-normal,
+.priority-attendance-panel .priority-progress-bar.p3-normal {
+  background: #2563eb !important;
+}
+
+.priority-attendance-panel .priority-dot.p4-planejada,
+.priority-attendance-panel .priority-progress-bar.p4-planejada {
+  background: #16a34a !important;
+}
+
+.priority-attendance-panel .priority-dot.nao-definida,
+.priority-attendance-panel .priority-progress-bar.nao-definida {
+  background: #64748b !important;
+}
+
+.priority-attendance-panel .priority-dot.valor-invalido,
+.priority-attendance-panel .priority-progress-bar.valor-invalido {
+  background: #d97706 !important;
+}
+
+@media (max-width: 1250px) {
+  .filter-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .priority-attendance-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .priority-attendance-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .filter-grid,
+  .priority-attendance-list {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* FILTRO INDEPENDENTE DE PRIORIDADE DE ATENDIMENTO — DASHBOARD DO GESTOR */
+@media (min-width: 1251px) {
+  .dashboard-filters .filter-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  }
+}
+
+.dashboard-filters .filter-field-prioridade-atendimento {
+  display: block !important;
+  min-width: 0 !important;
+}
+
+.dashboard-filters .filter-field-prioridade-atendimento select {
+  width: 100% !important;
+}
+
+
+/* ============================================================
+   AJUSTE PONTUAL — ALINHAMENTO DE DEMANDAS QUE EXIGEM ATENÇÃO
+   Mantém a lógica do Dashboard.tsx e alinha os campos por coluna.
+   ============================================================ */
+@media (min-width: 1001px) {
+  .attention-panel .attention-item {
+    display: grid !important;
+    grid-template-columns:
+      minmax(0, 2.65fr)
+      minmax(100px, 0.85fr)
+      minmax(115px, 1fr)
+      minmax(140px, 1.18fr)
+      minmax(110px, 112px) !important;
+    align-items: center !important;
+    column-gap: 14px !important;
+    row-gap: 8px !important;
+  }
+
+  /* Os três dados viram itens da mesma grade do título e do status. */
+  .attention-panel .attention-details {
+    display: contents !important;
+  }
+
+  .attention-panel .attention-main,
+  .attention-panel .attention-details span,
+  .attention-panel .attention-badge {
+    min-width: 0 !important;
+    grid-row: auto !important;
+  }
+
+  .attention-panel .attention-details span {
+    display: block !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .attention-panel .attention-badge {
+    grid-column: auto !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1000px) {
+  .attention-panel .attention-item {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px 14px !important;
+  }
+
+  .attention-panel .attention-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .attention-panel .attention-details {
+    display: grid !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .attention-panel .attention-badge {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .attention-panel .attention-item {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .attention-panel .attention-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .attention-panel .attention-main strong {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .attention-panel .attention-details {
+    display: grid !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .attention-panel .attention-details span {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .attention-panel .attention-badge {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    justify-self: start !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}

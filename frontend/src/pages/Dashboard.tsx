@@ -91,6 +91,8 @@ type Notificacao = {
   data: string
   demandaId: number
   prioridade?: string
+  criticidade?: string
+  prioridadeAtendimento?: string
   lida: boolean
 }
 
@@ -131,7 +133,7 @@ function carregarDemandas(): Demanda[] {
           ? 'Em Atendimento'
           : demanda.status,
       prioridade:
-        demanda.criticidade || (demanda.prioridade === 'Crítica' ? 'Crítica' : demanda.prioridade),
+        demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
     }))
 
     const houveMigracao = dados.some(
@@ -363,6 +365,8 @@ function gerarNotificacoes(
         data: prazoEfetivo,
         demandaId: demanda.id,
         prioridade: demanda.prioridade,
+        criticidade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
+        prioridadeAtendimento: demanda.prioridadeAtendimento,
         lida: false,
       })
     }
@@ -383,6 +387,8 @@ function gerarNotificacoes(
         data: prazoEfetivo,
         demandaId: demanda.id,
         prioridade: demanda.prioridade,
+        criticidade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
+        prioridadeAtendimento: demanda.prioridadeAtendimento,
         lida: false,
       })
     }
@@ -414,6 +420,8 @@ function gerarNotificacoes(
           data: item.data,
           demandaId: demanda.id,
           prioridade: demanda.prioridade,
+          criticidade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
+          prioridadeAtendimento: demanda.prioridadeAtendimento,
           lida: false,
         })
       }
@@ -446,6 +454,8 @@ function gerarNotificacoes(
             data: item.data,
             demandaId: demanda.id,
             prioridade: demanda.prioridade,
+            criticidade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
+            prioridadeAtendimento: demanda.prioridadeAtendimento,
             lida: false,
           })
         }
@@ -469,6 +479,8 @@ function gerarNotificacoes(
             data: item.data,
             demandaId: demanda.id,
             prioridade: demanda.prioridade,
+            criticidade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
+            prioridadeAtendimento: demanda.prioridadeAtendimento,
             lida: false,
           })
         }
@@ -509,6 +521,8 @@ function gerarNotificacoes(
             data: item.data,
             demandaId: demanda.id,
             prioridade: demanda.prioridade,
+            criticidade: demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade),
+            prioridadeAtendimento: demanda.prioridadeAtendimento,
             lida: false,
           })
         }
@@ -599,16 +613,25 @@ function Dashboard({
   const [filtroPeriodo, setFiltroPeriodo] = useState('Todos')
   const [filtroCliente, setFiltroCliente] = useState('Todos')
   const [filtroResponsavel, setFiltroResponsavel] = useState('Todos')
-  const [filtroPrioridade, setFiltroPrioridade] = useState('Todas')
+  const [filtroCriticidade, setFiltroCriticidade] = useState('Todas')
+  // Filtro independente: classificação de impacto não substitui urgência operacional.
+  const [filtroPrioridadeAtendimento, setFiltroPrioridadeAtendimento] = useState('Todas')
   const [filtroStatus, setFiltroStatus] = useState('Todos')
   const [filtroSituacao, setFiltroSituacao] = useState('Todas')
 
-  const prioridades = [
+  const criticidades = [
     'Crítica',
     'Alta',
     'Média',
     'Baixa',
   ]
+
+  const prioridadesAtendimento = [
+    'P1 — Imediata',
+    'P2 — Urgente',
+    'P3 — Normal',
+    'P4 — Planejada',
+  ] as const
 
   const statusOrdemBase = [
     'Nova',
@@ -720,8 +743,10 @@ function Dashboard({
       (filtroCliente === 'Todos' || demanda.cliente === filtroCliente) &&
       (filtroResponsavel === 'Todos' ||
         demanda.responsavel === filtroResponsavel) &&
-      (filtroPrioridade === 'Todas' ||
-        (demanda.criticidade || demanda.prioridade) === filtroPrioridade) &&
+      (filtroCriticidade === 'Todas' ||
+        (demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade)) === filtroCriticidade) &&
+      (filtroPrioridadeAtendimento === 'Todas' ||
+        String(demanda.prioridadeAtendimento || '').trim() === filtroPrioridadeAtendimento) &&
       (filtroStatus === 'Todos' || demanda.status === filtroStatus) &&
       situacaoAtendida
     )
@@ -873,7 +898,7 @@ function Dashboard({
   // URGENTES
   // ==========================================================
 
-  const demandasCriticas = demandas
+  const demandasCriticas = demandasFiltradas
     .filter(
       (demanda) =>
         ((demanda.criticidade || demanda.prioridade) === 'Crítica' || demanda.prioridadeAtendimento === 'P1 — Imediata' || demanda.prioridadeAtendimento === 'P2 — Urgente') &&
@@ -914,10 +939,37 @@ function Dashboard({
     'responsavel'
   )
 
-  const porPrioridade = contarPorCampo(
-    demandasFiltradas,
-    'prioridade'
-  )
+  const porCriticidade = demandasFiltradas.reduce<Record<string, number>>((resultado, demanda) => {
+    const valor = String(
+      demanda.criticidade ||
+      (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade) ||
+      'Não Informada'
+    ).trim() || 'Não Informada'
+    resultado[valor] = (resultado[valor] || 0) + 1
+    return resultado
+  }, {})
+
+  const porPrioridadeAtendimento = [
+    ...prioridadesAtendimento.map((nome) => ({
+      nome,
+      total: demandasFiltradas.filter(
+        (demanda) => String(demanda.prioridadeAtendimento || '').trim() === nome
+      ).length,
+    })),
+    {
+      nome: 'Não Definida',
+      total: demandasFiltradas.filter(
+        (demanda) => !String(demanda.prioridadeAtendimento || '').trim()
+      ).length,
+    },
+    {
+      nome: 'Valor Inválido',
+      total: demandasFiltradas.filter((demanda) => {
+        const valor = String(demanda.prioridadeAtendimento || '').trim()
+        return Boolean(valor) && !prioridadesAtendimento.includes(valor as typeof prioridadesAtendimento[number])
+      }).length,
+    },
+  ]
 
   const porStatus = contarPorCampo(demandasFiltradas, 'status')
 
@@ -1284,6 +1336,10 @@ function Dashboard({
                               {formatarDataHoraNotificacao(
                                 notificacao.data
                               )}
+                              {' · Criticidade: '}
+                              {notificacao.criticidade || 'Não Definida'}
+                              {' · Prioridade De Atendimento: '}
+                              {notificacao.prioridadeAtendimento || 'Não Definida'}
                             </small>
 
                           </span>
@@ -1472,13 +1528,13 @@ function Dashboard({
                 Criticidade
               </label>
 
-              <select value={filtroPrioridade} onChange={(event) => setFiltroPrioridade(event.target.value)}>
+              <select value={filtroCriticidade} onChange={(event) => setFiltroCriticidade(event.target.value)}>
 
                 <option value="Todas">
                   Todas
                 </option>
 
-                {prioridades.map(
+                {criticidades.map(
                   (prioridade) => (
                     <option
                       key={prioridade}
@@ -1491,6 +1547,21 @@ function Dashboard({
 
               </select>
 
+            </div>
+
+            <div className="filter-field filter-field-prioridade-atendimento" data-filter-field="prioridade-atendimento">
+              <label>Prioridade De Atendimento</label>
+              <select
+                value={filtroPrioridadeAtendimento}
+                onChange={(event) => setFiltroPrioridadeAtendimento(event.target.value)}
+              >
+                <option value="Todas">Todas</option>
+                {prioridadesAtendimento.map((prioridadeAtendimento) => (
+                  <option key={prioridadeAtendimento} value={prioridadeAtendimento}>
+                    {prioridadeAtendimento}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="filter-field">
@@ -1916,6 +1987,10 @@ function Dashboard({
 
                         <small>
                           #{demanda.id}
+                          {' · Criticidade: '}
+                          {demanda.criticidade || (demanda.prioridade === 'Urgente' ? 'Crítica' : demanda.prioridade) || 'Não Definida'}
+                          {' · Prioridade De Atendimento: '}
+                          {demanda.prioridadeAtendimento || 'Não Definida'}
                         </small>
                       </div>
 
@@ -2274,11 +2349,11 @@ function Dashboard({
 
           <div className="priority-list">
 
-            {prioridades.map(
+            {criticidades.map(
               (prioridade) => {
 
                 const quantidade =
-                  porPrioridade[
+                  porCriticidade[
                     prioridade
                   ] || 0
 
@@ -2355,6 +2430,46 @@ function Dashboard({
 
         </section>
 
+
+        {/* ====================================================
+            PRIORIDADE DE ATENDIMENTO — DISTRIBUIÇÃO INDEPENDENTE
+        ==================================================== */}
+
+        <section className="dashboard-panel priority-attendance-panel">
+          <div className="panel-header">
+            <div>
+              <h3>Demandas Por Prioridade De Atendimento</h3>
+              <small>Urgência Operacional, Independente Da Criticidade</small>
+            </div>
+            <span>{totalDemandas}</span>
+          </div>
+
+          <div className="priority-list priority-attendance-list">
+            {porPrioridadeAtendimento.map((item) => {
+              const classe = gerarClasse(item.nome)
+              const percentual = totalDemandas > 0
+                ? Math.round((item.total / totalDemandas) * 100)
+                : 0
+
+              return (
+                <div className="priority-item" key={item.nome}>
+                  <div className="priority-info">
+                    <span className={`priority-dot ${classe}`} />
+                    <span>{item.nome}</span>
+                    <strong>{item.total}</strong>
+                  </div>
+                  <div className="priority-progress">
+                    <div
+                      className={`priority-progress-bar ${classe}`}
+                      style={{ width: `${percentual}%` }}
+                    />
+                  </div>
+                  <small>{percentual}%</small>
+                </div>
+              )
+            })}
+          </div>
+        </section>
 
         {/* ====================================================
             PRODUÇÃO POR SETOR
@@ -2627,15 +2742,19 @@ function Dashboard({
                       'Com Pendências'
 
                   } else if (
-                    demanda.prioridade ===
-                      'Urgente'
+                    demanda.prioridadeAtendimento === 'P1 — Imediata' ||
+                    demanda.prioridadeAtendimento === 'P2 — Urgente' ||
+                    (demanda.criticidade || demanda.prioridade) === 'Crítica' ||
+                    demanda.prioridade === 'Urgente'
                   ) {
 
                     classe =
                       'attention-crítica'
 
                     texto =
-                      demanda.prioridade
+                      demanda.prioridadeAtendimento === 'P1 — Imediata' || demanda.prioridadeAtendimento === 'P2 — Urgente'
+                        ? demanda.prioridadeAtendimento
+                        : 'Crítica'
 
                   } else if (proxima) {
 

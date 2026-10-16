@@ -140,7 +140,6 @@ function ehGestor(sessaoAtual: SessaoUsuario | null): boolean {
   return sessaoAtual?.perfil === 'Gestor/Administrador' || String(sessaoAtual?.perfil) === 'Gestor'
 }
 
-
 // Perfis que podem ser definidos como Responsável pela Demanda.
 // Mantemos a validação centralizada para que criação, redistribuição,
 // reabertura e alteração de status utilizem exatamente a mesma regra.
@@ -1202,7 +1201,7 @@ function App() {
 
         comentarios: [],
 
-        arquivos: [],
+        arquivos: demanda.arquivos || [],
 
         historico: [
           {
@@ -1229,6 +1228,7 @@ function App() {
             referenciaId:
               id,
           },
+          ...(demanda.historico || []),
         ],
       })
 

@@ -10,15 +10,11 @@
 
 }
 
-
-
 .minhas-demandas-heading {
 
   margin-bottom: 18px;
 
 }
-
-
 
 .minhas-demandas-heading h2 {
 
@@ -36,8 +32,6 @@
 
 }
 
-
-
 .minhas-demandas-heading p {
 
   margin: 6px 0 0;
@@ -50,8 +44,6 @@
 
 }
 
-
-
 .md-indicators {
 
   display: grid;
@@ -63,8 +55,6 @@
   margin-bottom: 14px;
 
 }
-
-
 
 .md-indicator {
 
@@ -82,8 +72,6 @@
 
 }
 
-
-
 .md-indicator span {
 
   display: block;
@@ -95,8 +83,6 @@
   line-height: 1.2;
 
 }
-
-
 
 .md-indicator strong {
 
@@ -114,19 +100,15 @@
 
 }
 
-
-
 .md-indicator-danger strong { color: #dc2626; }
 
 .md-indicator-success strong { color: #15803d; }
-
-
 
 .md-filter-card {
 
   display: grid;
 
-  grid-template-columns: minmax(280px, 2fr) repeat(3, minmax(135px, 1fr)) auto;
+  grid-template-columns: minmax(220px, 1.8fr) repeat(4, minmax(110px, 1fr)) auto;
 
   gap: 10px;
 
@@ -144,8 +126,6 @@
 
 }
 
-
-
 .md-filter-search,
 
 .md-filter-field {
@@ -153,8 +133,6 @@
   min-width: 0;
 
 }
-
-
 
 .md-filter-search label,
 
@@ -175,8 +153,6 @@
   font-weight: 700;
 
 }
-
-
 
 .md-filter-search input,
 
@@ -208,8 +184,6 @@
 
 }
 
-
-
 .md-filter-search input:focus,
 
 .md-filter-field select:focus,
@@ -221,8 +195,6 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08);
 
 }
-
-
 
 .md-clear-button,
 
@@ -248,8 +220,6 @@
 
 }
 
-
-
 .md-clear-button,
 
 .md-cancel-button {
@@ -262,8 +232,6 @@
 
 }
 
-
-
 .md-clear-button:hover,
 
 .md-cancel-button:hover {
@@ -271,8 +239,6 @@
   background: #f8fafc;
 
 }
-
-
 
 .md-table-card {
 
@@ -286,8 +252,6 @@
 
 }
 
-
-
 .md-table-header {
 
   padding: 15px 16px;
@@ -295,8 +259,6 @@
   border-bottom: 1px solid #e2e8f0;
 
 }
-
-
 
 .md-table-header h3 {
 
@@ -312,8 +274,6 @@
 
 }
 
-
-
 .md-table-header p {
 
   margin: 4px 0 0;
@@ -324,8 +284,6 @@
 
 }
 
-
-
 .md-table-wrap {
 
   width: 100%;
@@ -333,8 +291,6 @@
   overflow-x: auto;
 
 }
-
-
 
 .md-table {
 
@@ -347,8 +303,6 @@
   font-family: inherit;
 
 }
-
-
 
 .md-table th {
 
@@ -376,8 +330,6 @@
 
 }
 
-
-
 .md-table td {
 
   padding: 11px 10px;
@@ -394,13 +346,9 @@
 
 }
 
-
-
 .md-table tbody tr:last-child td { border-bottom: 0; }
 
 .md-table tbody tr:hover { background: #f8fafc; }
-
-
 
 .md-table td strong {
 
@@ -414,8 +362,6 @@
 
 }
 
-
-
 .md-table td small {
 
   display: block;
@@ -428,8 +374,6 @@
 
 }
 
-
-
 .md-id {
 
   color: #0f5aa6 !important;
@@ -439,8 +383,6 @@
   white-space: nowrap;
 
 }
-
-
 
 .md-priority,
 
@@ -470,8 +412,6 @@
 
 }
 
-
-
 .md-priority { background: #eff6ff; color: #2563eb; }
 
 .md-status { background: #dbeafe; color: #1d4ed8; }
@@ -488,8 +428,6 @@
 
 .md-sla.danger { background: #fee2e2; color: #b91c1c; }
 
-
-
 .md-actions {
 
   display: flex;
@@ -501,8 +439,6 @@
   white-space: nowrap;
 
 }
-
-
 
 .md-actions button {
 
@@ -524,15 +460,11 @@
 
 }
 
-
-
 .md-actions button:hover { text-decoration: underline; }
 
 .md-actions .md-action-warning { color: #c2410c; }
 
 .md-actions .md-action-success { color: #15803d; }
-
-
 
 .md-empty {
 
@@ -542,8 +474,6 @@
 
 }
 
-
-
 .md-empty-icon {
 
   font-size: 26px;
@@ -551,8 +481,6 @@
   margin-bottom: 10px;
 
 }
-
-
 
 .md-empty h3 {
 
@@ -564,8 +492,6 @@
 
 }
 
-
-
 .md-empty p {
 
   margin: 5px 0 0;
@@ -575,8 +501,6 @@
   font-size: 11px;
 
 }
-
-
 
 .md-modal-backdrop {
 
@@ -598,8 +522,6 @@
 
 }
 
-
-
 .md-modal {
 
   width: min(680px, 100%);
@@ -613,8 +535,6 @@
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
 
 }
-
-
 
 .md-modal-header {
 
@@ -632,8 +552,6 @@
 
 }
 
-
-
 .md-modal-header h3 {
 
   margin: 0;
@@ -644,8 +562,6 @@
 
 }
 
-
-
 .md-modal-header p {
 
   margin: 4px 0 0;
@@ -655,8 +571,6 @@
   font-size: 10px;
 
 }
-
-
 
 .md-modal-close {
 
@@ -678,11 +592,7 @@
 
 }
 
-
-
 .md-modal form { padding: 18px 20px 20px; }
-
-
 
 .md-account-grid {
 
@@ -694,11 +604,7 @@
 
 }
 
-
-
 .md-account-full { grid-column: 1 / -1; }
-
-
 
 .md-account-grid input[readonly] {
 
@@ -708,19 +614,13 @@
 
 }
 
-
-
 .md-password-wrap {
 
   position: relative;
 
 }
 
-
-
 .md-password-wrap input { padding-right: 40px; }
-
-
 
 .md-password-wrap button {
 
@@ -746,8 +646,6 @@
 
 }
 
-
-
 .md-account-note {
 
   margin-top: 14px;
@@ -765,8 +663,6 @@
   line-height: 1.4;
 
 }
-
-
 
 .md-account-error {
 
@@ -788,8 +684,6 @@
 
 }
 
-
-
 .md-modal-actions {
 
   display: flex;
@@ -802,8 +696,6 @@
 
 }
 
-
-
 .md-save-button {
 
   border: 1px solid #2563eb;
@@ -814,11 +706,7 @@
 
 }
 
-
-
 .md-save-button:hover { background: #1d4ed8; }
-
-
 
 .md-toast {
 
@@ -846,19 +734,15 @@
 
 }
 
-
-
 @media (max-width: 1100px) {
 
   .md-indicators { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-  .md-filter-card { grid-template-columns: 2fr 1fr 1fr 1fr; }
+  .md-filter-card { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-  .md-clear-button { grid-column: 4; }
+  .md-clear-button { grid-column: 1 / -1; justify-self: start; }
 
 }
-
-
 
 @media (max-width: 700px) {
 
@@ -876,8 +760,6 @@
 
 }
 
-
-
 /* ============================================================
 
    FASE 5 — PADRONIZAÇÃO FINAL
@@ -885,8 +767,6 @@
    MINHAS DEMANDAS — MESMO PADRÃO VISUAL DO DASHBOARD
 
    ============================================================ */
-
-
 
 .minhas-demandas-page {
 
@@ -904,8 +784,6 @@
 
 }
 
-
-
 .minhas-demandas-heading {
 
   margin: 0 0 20px;
@@ -917,8 +795,6 @@
   border: 0 !important;
 
 }
-
-
 
 .minhas-demandas-heading h2 {
 
@@ -936,8 +812,6 @@
 
 }
 
-
-
 .minhas-demandas-heading p {
 
   margin: 6px 0 0;
@@ -950,8 +824,6 @@
 
 }
 
-
-
 .md-indicators {
 
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
@@ -961,8 +833,6 @@
   margin-bottom: 16px !important;
 
 }
-
-
 
 .md-indicator {
 
@@ -986,8 +856,6 @@
 
 }
 
-
-
 .md-indicator span {
 
   color: var(--gd-text-secondary) !important;
@@ -997,8 +865,6 @@
   font-weight: 700 !important;
 
 }
-
-
 
 .md-indicator strong {
 
@@ -1012,15 +878,11 @@
 
 }
 
-
-
 .md-indicator-danger strong {
 
   color: var(--gd-danger-dark) !important;
 
 }
-
-
 
 .md-indicator-success strong {
 
@@ -1028,11 +890,9 @@
 
 }
 
-
-
 .md-filter-card {
 
-  grid-template-columns: minmax(280px, 2fr) repeat(3, minmax(135px, 1fr)) auto !important;
+  grid-template-columns: minmax(220px, 1.8fr) repeat(4, minmax(110px, 1fr)) auto !important;
 
   gap: 10px !important;
 
@@ -1050,8 +910,6 @@
 
 }
 
-
-
 .md-filter-search label,
 
 .md-filter-field label {
@@ -1063,8 +921,6 @@
   font-weight: 700 !important;
 
 }
-
-
 
 .md-filter-search input,
 
@@ -1084,8 +940,6 @@
 
 }
 
-
-
 .md-filter-search input:focus,
 
 .md-filter-field select:focus {
@@ -1097,8 +951,6 @@
   outline: none !important;
 
 }
-
-
 
 .md-clear-button {
 
@@ -1114,8 +966,6 @@
 
 }
 
-
-
 .md-clear-button:hover {
 
   border-color: var(--gd-primary) !important;
@@ -1125,8 +975,6 @@
   background: var(--gd-primary-light) !important;
 
 }
-
-
 
 .md-table-card {
 
@@ -1139,8 +987,6 @@
   box-shadow: var(--gd-shadow-sm) !important;
 
 }
-
-
 
 .md-table-header {
 
@@ -1156,8 +1002,6 @@
 
 }
 
-
-
 .md-table-header h3 {
 
   color: var(--gd-text) !important;
@@ -1166,8 +1010,6 @@
 
 }
 
-
-
 .md-table-header p {
 
   color: var(--gd-text-muted) !important;
@@ -1175,8 +1017,6 @@
   font-size: 10px !important;
 
 }
-
-
 
 .md-table th {
 
@@ -1192,8 +1032,6 @@
 
 }
 
-
-
 .md-table td {
 
   padding: 11px 10px !important;
@@ -1206,15 +1044,11 @@
 
 }
 
-
-
 .md-table tbody tr:hover {
 
   background: var(--gd-surface-hover) !important;
 
 }
-
-
 
 .md-table td strong {
 
@@ -1224,8 +1058,6 @@
 
 }
 
-
-
 .md-table td small {
 
   color: var(--gd-text-muted) !important;
@@ -1234,23 +1066,17 @@
 
 }
 
-
-
 .md-id {
 
   color: var(--gd-primary-dark) !important;
 
 }
 
-
-
 .md-actions {
 
   gap: 8px !important;
 
 }
-
-
 
 .md-actions button {
 
@@ -1270,8 +1096,6 @@
 
 }
 
-
-
 .md-actions button:hover {
 
   border-color: var(--gd-primary) !important;
@@ -1282,8 +1106,6 @@
 
 }
 
-
-
 .md-actions .md-action-warning {
 
   color: var(--gd-warning) !important;
@@ -1291,8 +1113,6 @@
   border-color: #fed7aa !important;
 
 }
-
-
 
 .md-actions .md-action-success {
 
@@ -1302,15 +1122,11 @@
 
 }
 
-
-
 .md-empty {
 
   color: var(--gd-text-muted) !important;
 
 }
-
-
 
 @media (max-width: 1100px) {
 
@@ -1320,17 +1136,13 @@
 
   }
 
-
-
   .md-filter-card {
 
-    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 
   }
 
 }
-
-
 
 @media (max-width: 700px) {
 
@@ -1340,15 +1152,11 @@
 
   }
 
-
-
   .md-indicators {
 
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 
   }
-
-
 
   .md-filter-card {
 
@@ -1357,10 +1165,6 @@
   }
 
 }
-
-
-
-
 
 /* ============================================================
 
@@ -1375,8 +1179,6 @@
    permanecem preservados.
 
    ============================================================ */
-
-
 
 .gd-page-content .minhas-demandas-page {
 
@@ -1396,8 +1198,6 @@
 
 }
 
-
-
 .gd-page-content .minhas-demandas-heading {
 
   margin: 0 0 14px !important;
@@ -1405,8 +1205,6 @@
   padding: 0 !important;
 
 }
-
-
 
 .gd-page-content .minhas-demandas-heading h2 {
 
@@ -1422,8 +1220,6 @@
 
 }
 
-
-
 .gd-page-content .minhas-demandas-heading p {
 
   margin: 5px 0 0 !important;
@@ -1433,8 +1229,6 @@
   font-size: 11px !important;
 
 }
-
-
 
 /* Indicadores: mesma geometria dos cards de resumo das telas principais. */
 
@@ -1449,8 +1243,6 @@
   margin: 0 0 14px !important;
 
 }
-
-
 
 .gd-page-content .md-indicator {
 
@@ -1468,8 +1260,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator span {
 
   color: var(--gd-text-muted) !important;
@@ -1479,8 +1269,6 @@
   font-weight: 600 !important;
 
 }
-
-
 
 .gd-page-content .md-indicator strong {
 
@@ -1494,13 +1282,9 @@
 
 }
 
-
-
 .gd-page-content .md-indicator-danger strong { color: var(--gd-danger) !important; }
 
 .gd-page-content .md-indicator-success strong { color: var(--gd-success-dark) !important; }
-
-
 
 /* Filtros: painel único, borda discreta e título no mesmo padrão. */
 
@@ -1508,7 +1292,7 @@
 
   display: grid !important;
 
-  grid-template-columns: minmax(280px, 2fr) repeat(3, minmax(135px, 1fr)) auto !important;
+  grid-template-columns: minmax(220px, 1.8fr) repeat(4, minmax(110px, 1fr)) auto !important;
 
   gap: 10px !important;
 
@@ -1528,8 +1312,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-heading {
 
   grid-column: 1 / -1 !important;
@@ -1546,8 +1328,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-heading h3 {
 
   margin: 0 !important;
@@ -1562,8 +1342,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-heading span {
 
   display: block !important;
@@ -1575,8 +1353,6 @@
   font-size: 9px !important;
 
 }
-
-
 
 .gd-page-content .md-filter-search label,
 
@@ -1591,8 +1367,6 @@
   font-weight: 700 !important;
 
 }
-
-
 
 .gd-page-content .md-filter-search input,
 
@@ -1612,8 +1386,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-search input:focus,
 
 .gd-page-content .md-filter-field select:focus {
@@ -1623,8 +1395,6 @@
   box-shadow: var(--gd-focus-ring) !important;
 
 }
-
-
 
 .gd-page-content .md-clear-button {
 
@@ -1644,8 +1414,6 @@
 
 }
 
-
-
 .gd-page-content .md-clear-button:hover {
 
   border-color: var(--gd-primary) !important;
@@ -1655,8 +1423,6 @@
   color: var(--gd-primary-dark) !important;
 
 }
-
-
 
 /* Tabela: mesma hierarquia de Todas as Demandas. */
 
@@ -1674,8 +1440,6 @@
 
 }
 
-
-
 .gd-page-content .md-table-header {
 
   min-height: 58px !important;
@@ -1692,8 +1456,6 @@
 
 }
 
-
-
 .gd-page-content .md-table-header h3 {
 
   color: #173f67 !important;
@@ -1704,8 +1466,6 @@
 
 }
 
-
-
 .gd-page-content .md-table-header p {
 
   margin-top: 3px !important;
@@ -1715,8 +1475,6 @@
   font-size: 9px !important;
 
 }
-
-
 
 .gd-page-content .md-table th {
 
@@ -1734,8 +1492,6 @@
 
 }
 
-
-
 .gd-page-content .md-table td {
 
   padding: 11px 12px !important;
@@ -1748,8 +1504,6 @@
 
 }
 
-
-
 .gd-page-content .md-table td strong {
 
   color: var(--gd-text) !important;
@@ -1760,8 +1514,6 @@
 
 }
 
-
-
 .gd-page-content .md-table td small {
 
   color: var(--gd-text-muted) !important;
@@ -1770,23 +1522,17 @@
 
 }
 
-
-
 .gd-page-content .md-table tbody tr:hover {
 
   background: var(--gd-background) !important;
 
 }
 
-
-
 .gd-page-content .md-id {
 
   color: var(--gd-primary-dark) !important;
 
 }
-
-
 
 .gd-page-content .md-priority,
 
@@ -1806,15 +1552,11 @@
 
 }
 
-
-
 .gd-page-content .md-actions {
 
   gap: 10px !important;
 
 }
-
-
 
 .gd-page-content .md-actions button {
 
@@ -1826,21 +1568,15 @@
 
 }
 
-
-
 .gd-page-content .md-actions button:hover {
 
   color: var(--gd-primary-dark) !important;
 
 }
 
-
-
 .gd-page-content .md-actions .md-action-warning { color: var(--gd-warning) !important; }
 
 .gd-page-content .md-actions .md-action-success { color: var(--gd-success-dark) !important; }
-
-
 
 @media (max-width: 1100px) {
 
@@ -1850,15 +1586,11 @@
 
   }
 
-
-
   .gd-page-content .md-filter-card {
 
-    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 
   }
-
-
 
   .gd-page-content .md-filter-heading {
 
@@ -1868,8 +1600,6 @@
 
 }
 
-
-
 @media (max-width: 700px) {
 
   .gd-page-content .minhas-demandas-page {
@@ -1878,23 +1608,17 @@
 
   }
 
-
-
   .gd-page-content .md-indicators {
 
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 
   }
 
-
-
   .gd-page-content .md-filter-card {
 
     grid-template-columns: 1fr !important;
 
   }
-
-
 
   .gd-page-content .md-filter-heading {
 
@@ -1904,10 +1628,6 @@
 
 }
 
-
-
-
-
 /* ============================================================
 
    FASE 5 — MINHAS DEMANDAS USA TODA A ÁREA DISPONÍVEL
@@ -1915,8 +1635,6 @@
    Sem alterar o conteúdo, filtros, tabela ou ações existentes.
 
    ============================================================ */
-
-
 
 .gd-page-content .minhas-demandas-page {
 
@@ -1930,8 +1648,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicators,
 
 .gd-page-content .md-filter-card,
@@ -1944,17 +1660,11 @@
 
 }
 
-
-
-
-
 /* ============================================================
 
    FASE 5 — PADRONIZAÇÃO FINAL DO ENQUADRAMENTO
 
    MINHAS DEMANDAS
-
-
 
    BASE PRESERVADA INTEGRALMENTE:
 
@@ -1963,8 +1673,6 @@
    Abaixo entram somente os ajustes de alinhamento/altura.
 
    ============================================================ */
-
-
 
 /* Mesma distância da barra lateral azul das outras telas. */
 
@@ -1982,8 +1690,6 @@
 
 }
 
-
-
 /* Mesma largura dos cards em relação à área principal. */
 
 .gd-page-content .minhas-demandas-page,
@@ -1999,8 +1705,6 @@
   box-sizing: border-box !important;
 
 }
-
-
 
 /* Mesmo espaço vertical reservado para o cabeçalho interno
 
@@ -2018,8 +1722,6 @@
 
 }
 
-
-
 /* Preserva o conteúdo do cabeçalho sem criar deslocamento lateral. */
 
 .gd-page-content .minhas-demandas-heading > div {
@@ -2036,8 +1738,6 @@
 
 }
 
-
-
 /* Mantém os indicadores e cards ocupando 100% da área útil. */
 
 .gd-page-content .minhas-demandas-page .md-indicators,
@@ -2052,8 +1752,6 @@
 
 }
 
-
-
 /* Em telas menores, mantém a mesma regra estrutural. */
 
 @media (max-width: 900px) {
@@ -2066,8 +1764,6 @@
 
   }
 
-
-
   .gd-page-content .minhas-demandas-heading {
 
     min-height: 58px !important;
@@ -2076,8 +1772,6 @@
 
   }
 
-
-
   .gd-page-content .minhas-demandas-heading > div {
 
     min-height: 58px !important;
@@ -2085,8 +1779,6 @@
   }
 
 }
-
-
 
 @media (max-width: 700px) {
 
@@ -2096,15 +1788,11 @@
 
   }
 
-
-
   .gd-page-content .minhas-demandas-heading {
 
     min-height: auto !important;
 
   }
-
-
 
   .gd-page-content .minhas-demandas-heading > div {
 
@@ -2113,10 +1801,6 @@
   }
 
 }
-
-
-
-
 
 /* ============================================================
 
@@ -2129,8 +1813,6 @@
    Toda a lógica existente permanece preservada.
 
    ============================================================ */
-
-
 
 .gd-page-content .md-summary {
 
@@ -2152,8 +1834,6 @@
 
 }
 
-
-
 .gd-page-content .md-summary > span {
 
   display: inline-flex !important;
@@ -2164,8 +1844,6 @@
 
 }
 
-
-
 .gd-page-content .md-summary strong {
 
   color: var(--gd-text) !important;
@@ -2173,8 +1851,6 @@
   font-weight: 750 !important;
 
 }
-
-
 
 .gd-page-content .md-summary-alert {
 
@@ -2188,15 +1864,11 @@
 
 }
 
-
-
 .gd-page-content .md-summary-alert strong {
 
   color: var(--gd-success-dark) !important;
 
 }
-
-
 
 .gd-page-content .md-summary-alert.is-danger {
 
@@ -2206,15 +1878,11 @@
 
 }
 
-
-
 .gd-page-content .md-summary-alert.is-danger strong {
 
   color: var(--gd-danger) !important;
 
 }
-
-
 
 .gd-page-content .md-indicators {
 
@@ -2225,8 +1893,6 @@
   margin: 0 0 16px !important;
 
 }
-
-
 
 .gd-page-content .md-indicator {
 
@@ -2266,8 +1932,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:hover {
 
   border-color: var(--gd-primary) !important;
@@ -2280,8 +1944,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator.is-active {
 
   border-color: var(--gd-primary) !important;
@@ -2291,8 +1953,6 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.08) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator span {
 
@@ -2308,8 +1968,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator strong {
 
   margin: 5px 0 0 !important;
@@ -2323,8 +1981,6 @@
   font-weight: 750 !important;
 
 }
-
-
 
 .gd-page-content .md-indicator small {
 
@@ -2340,15 +1996,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator-warning strong {
 
   color: var(--gd-warning) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator-warning:hover,
 
@@ -2358,15 +2010,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator-muted strong {
 
   color: var(--gd-text-secondary) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator-muted:hover,
 
@@ -2376,19 +2024,15 @@
 
 }
 
-
-
 .gd-page-content .md-indicator-success strong {
 
   color: var(--gd-success-dark) !important;
 
 }
 
-
-
 .gd-page-content .md-filter-card {
 
-  grid-template-columns: minmax(280px, 2fr) repeat(3, minmax(135px, 1fr)) auto !important;
+  grid-template-columns: minmax(220px, 1.8fr) repeat(4, minmax(110px, 1fr)) auto !important;
 
   gap: 10px !important;
 
@@ -2399,8 +2043,6 @@
   border-radius: var(--gd-radius-lg) !important;
 
 }
-
-
 
 .gd-page-content .md-filter-heading {
 
@@ -2418,8 +2060,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-heading h3 {
 
   margin: 0 !important;
@@ -2434,8 +2074,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-heading span {
 
   margin-top: 3px !important;
@@ -2448,8 +2086,6 @@
 
 }
 
-
-
 .gd-page-content .md-table-header {
 
   justify-content: space-between !important;
@@ -2457,8 +2093,6 @@
   gap: 16px !important;
 
 }
-
-
 
 .gd-page-content .md-table-count {
 
@@ -2490,8 +2124,6 @@
 
 }
 
-
-
 .gd-page-content .md-action-primary {
 
   color: var(--gd-primary) !important;
@@ -2499,8 +2131,6 @@
   border-color: #bfdbfe !important;
 
 }
-
-
 
 .gd-page-content .md-action-primary:hover {
 
@@ -2510,8 +2140,6 @@
 
 }
 
-
-
 @media (max-width: 1100px) {
 
   .gd-page-content .md-indicators {
@@ -2520,15 +2148,11 @@
 
   }
 
-
-
   .gd-page-content .md-filter-card {
 
-    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 
   }
-
-
 
   .gd-page-content .md-filter-heading {
 
@@ -2537,8 +2161,6 @@
   }
 
 }
-
-
 
 @media (max-width: 700px) {
 
@@ -2552,15 +2174,11 @@
 
   }
 
-
-
   .gd-page-content .md-indicators {
 
     grid-template-columns: 1fr !important;
 
   }
-
-
 
   .gd-page-content .md-filter-card {
 
@@ -2568,15 +2186,11 @@
 
   }
 
-
-
   .gd-page-content .md-filter-heading {
 
     grid-column: auto !important;
 
   }
-
-
 
   .gd-page-content .md-table-header {
 
@@ -2586,8 +2200,6 @@
 
   }
 
-
-
   .gd-page-content .md-table-count {
 
     align-self: flex-start !important;
@@ -2595,8 +2207,6 @@
   }
 
 }
-
-
 
 /* ============================================================
 
@@ -2607,8 +2217,6 @@
    Somente apresentação; nenhuma lógica é alterada.
 
    ============================================================ */
-
-
 
 .gd-page-content .md-indicator {
 
@@ -2628,8 +2236,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator::before {
 
   content: "" !important;
@@ -2644,8 +2250,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:hover {
 
   transform: translateY(-2px) !important;
@@ -2653,8 +2257,6 @@
   box-shadow: var(--gd-shadow-md) !important;
 
 }
-
-
 
 /* EM ATENDIMENTO — azul */
 
@@ -2666,15 +2268,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(1)::before {
 
   background: #2563eb !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(1) span {
 
@@ -2682,15 +2280,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(1) strong {
 
   color: #2563eb !important;
 
 }
-
-
 
 /* COM PENDÊNCIAS — laranja */
 
@@ -2702,15 +2296,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(2)::before {
 
   background: #f59e0b !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(2) span {
 
@@ -2718,15 +2308,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(2) strong {
 
   color: #d97706 !important;
 
 }
-
-
 
 /* AGUARDANDO — roxo */
 
@@ -2738,15 +2324,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(3)::before {
 
   background: #9333ea !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(3) span {
 
@@ -2754,15 +2336,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(3) strong {
 
   color: #9333ea !important;
 
 }
-
-
 
 /* CONCLUÍDAS — verde */
 
@@ -2774,15 +2352,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(4)::before {
 
   background: #16a34a !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(4) span {
 
@@ -2790,15 +2364,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(4) strong {
 
   color: #16a34a !important;
 
 }
-
-
 
 /* Estado selecionado mantém a identidade da cor do card. */
 
@@ -2808,23 +2378,17 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(2).is-active {
 
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.12), var(--gd-shadow-sm) !important;
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(3).is-active {
 
   box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.12), var(--gd-shadow-sm) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(4).is-active {
 
@@ -2850,15 +2414,11 @@
 
    ============================================================ */
 
-
-
 /* ------------------------------------------------------------
 
    PÁGINA / ENQUADRAMENTO
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .minhas-demandas-page {
 
@@ -2878,15 +2438,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    CABEÇALHO
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .minhas-demandas-heading {
 
@@ -2906,8 +2462,6 @@
 
 }
 
-
-
 .gd-page-content .minhas-demandas-heading h2 {
 
   margin: 0 !important;
@@ -2924,8 +2478,6 @@
 
 }
 
-
-
 .gd-page-content .minhas-demandas-heading p {
 
   margin: 5px 0 0 !important;
@@ -2938,15 +2490,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    RESUMO
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-summary {
 
@@ -2962,8 +2510,6 @@
 
 }
 
-
-
 .gd-page-content .md-summary strong {
 
   color: var(--gd-text) !important;
@@ -2972,15 +2518,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    CARDS DE STATUS
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-indicators {
 
@@ -2996,8 +2538,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator {
 
   position: relative !important;
@@ -3008,8 +2548,6 @@
 
   padding: 14px 16px !important;
 
-
-
   display: flex !important;
 
   flex-direction: column !important;
@@ -3018,33 +2556,21 @@
 
   justify-content: space-between !important;
 
-
-
   overflow: hidden !important;
-
-
 
   border: 1px solid var(--gd-border) !important;
 
   border-radius: var(--gd-radius-lg, 12px) !important;
 
-
-
   background: var(--gd-surface) !important;
 
   color: var(--gd-text) !important;
 
-
-
   box-shadow: var(--gd-shadow-sm) !important;
-
-
 
   font-family: var(--gd-font-family) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator span {
 
@@ -3060,8 +2586,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator strong {
 
   margin: 5px 0 0 !important;
@@ -3075,8 +2599,6 @@
   font-weight: 700 !important;
 
 }
-
-
 
 .gd-page-content .md-indicator small {
 
@@ -3092,8 +2614,6 @@
 
 }
 
-
-
 /* Cores operacionais já definidas no sistema. */
 
 .gd-page-content .md-indicator:nth-child(1) {
@@ -3104,15 +2624,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(1)::before {
 
   background: var(--gd-primary) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(1) span,
 
@@ -3122,8 +2638,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(2) {
 
   border-color: #fed7aa !important;
@@ -3132,15 +2646,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(2)::before {
 
   background: var(--gd-warning) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(2) span,
 
@@ -3150,8 +2660,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(3) {
 
   border-color: #e9d5ff !important;
@@ -3160,15 +2668,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(3)::before {
 
   background: var(--gd-purple) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(3) span,
 
@@ -3178,8 +2682,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(4) {
 
   border-color: #bbf7d0 !important;
@@ -3188,15 +2690,11 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:nth-child(4)::before {
 
   background: var(--gd-success) !important;
 
 }
-
-
 
 .gd-page-content .md-indicator:nth-child(4) span,
 
@@ -3206,8 +2704,6 @@
 
 }
 
-
-
 .gd-page-content .md-indicator:hover {
 
   transform: translateY(-2px) !important;
@@ -3216,15 +2712,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    FILTROS
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-filter-card {
 
@@ -3234,21 +2726,15 @@
 
   padding: 15px 16px !important;
 
-
-
   border: 1px solid var(--gd-border) !important;
 
   border-radius: var(--gd-radius-lg, 12px) !important;
-
-
 
   background: var(--gd-surface) !important;
 
   box-shadow: var(--gd-shadow-sm) !important;
 
 }
-
-
 
 .gd-page-content .md-filter-search label,
 
@@ -3265,8 +2751,6 @@
   font-weight: 700 !important;
 
 }
-
-
 
 .gd-page-content .md-filter-search input,
 
@@ -3286,8 +2770,6 @@
 
 }
 
-
-
 .gd-page-content .md-filter-search input:focus,
 
 .gd-page-content .md-filter-field select:focus {
@@ -3299,8 +2781,6 @@
   box-shadow: var(--gd-focus-ring) !important;
 
 }
-
-
 
 .gd-page-content .md-clear-button {
 
@@ -3324,8 +2804,6 @@
 
 }
 
-
-
 .gd-page-content .md-clear-button:hover {
 
   border-color: var(--gd-primary) !important;
@@ -3336,15 +2814,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    TABELA
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-table-card {
 
@@ -3354,21 +2828,15 @@
 
   overflow: hidden !important;
 
-
-
   border: 1px solid var(--gd-border) !important;
 
   border-radius: var(--gd-radius-lg, 12px) !important;
-
-
 
   background: var(--gd-surface) !important;
 
   box-shadow: var(--gd-shadow-sm) !important;
 
 }
-
-
 
 .gd-page-content .md-table-header {
 
@@ -3390,8 +2858,6 @@
 
 }
 
-
-
 .gd-page-content .md-table-header h3 {
 
   margin: 0 !important;
@@ -3406,8 +2872,6 @@
 
 }
 
-
-
 .gd-page-content .md-table-header p {
 
   margin: 3px 0 0 !important;
@@ -3419,8 +2883,6 @@
   line-height: 1.35 !important;
 
 }
-
-
 
 .gd-page-content .md-table th {
 
@@ -3440,8 +2902,6 @@
 
 }
 
-
-
 .gd-page-content .md-table td {
 
   padding: 12px !important;
@@ -3456,8 +2916,6 @@
 
 }
 
-
-
 .gd-page-content .md-table td strong {
 
   color: var(--gd-text) !important;
@@ -3467,8 +2925,6 @@
   font-weight: 700 !important;
 
 }
-
-
 
 .gd-page-content .md-table td small {
 
@@ -3480,23 +2936,17 @@
 
 }
 
-
-
 .gd-page-content .md-table tbody tr:hover {
 
   background: var(--gd-surface-hover) !important;
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    BADGES DE STATUS / PRIORIDADE / SLA
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-priority,
 
@@ -3518,15 +2968,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    AÇÕES
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-actions {
 
@@ -3534,39 +2980,27 @@
 
 }
 
-
-
 .gd-page-content .md-actions button {
 
   min-height: 32px !important;
 
   padding: 0 9px !important;
 
-
-
   border: 1px solid var(--gd-border) !important;
 
   border-radius: var(--gd-radius-md, 8px) !important;
-
-
 
   background: var(--gd-surface) !important;
 
   color: var(--gd-primary) !important;
 
-
-
   font-size: var(--gd-font-size-xs, 11px) !important;
 
   font-weight: 700 !important;
 
-
-
   text-decoration: none !important;
 
 }
-
-
 
 .gd-page-content .md-actions button:hover {
 
@@ -3578,8 +3012,6 @@
 
 }
 
-
-
 .gd-page-content .md-actions .md-action-warning {
 
   border-color: #fed7aa !important;
@@ -3589,8 +3021,6 @@
   color: var(--gd-warning) !important;
 
 }
-
-
 
 .gd-page-content .md-actions .md-action-success {
 
@@ -3602,15 +3032,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    MODAL — COMPATIBILIDADE COM A CONTA
 
    ------------------------------------------------------------ */
-
-
 
 .gd-page-content .md-modal {
 
@@ -3624,8 +3050,6 @@
 
 }
 
-
-
 .md-modal-header h3 {
 
   font-size: 18px !important;
@@ -3634,15 +3058,11 @@
 
 }
 
-
-
 .md-modal-header p {
 
   font-size: 11px !important;
 
 }
-
-
 
 .md-account-grid label {
 
@@ -3651,8 +3071,6 @@
   font-size: 12px !important;
 
 }
-
-
 
 .md-account-grid input {
 
@@ -3664,8 +3082,6 @@
 
 }
 
-
-
 .md-password-wrap button {
 
   width: 30px !important;
@@ -3673,8 +3089,6 @@
   height: 30px !important;
 
 }
-
-
 
 .md-account-note,
 
@@ -3684,15 +3098,11 @@
 
 }
 
-
-
 .md-modal-actions {
 
   gap: 10px !important;
 
 }
-
-
 
 .md-cancel-button,
 
@@ -3710,15 +3120,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    ESTADO VAZIO / TOAST
 
    ------------------------------------------------------------ */
-
-
 
 .md-empty h3 {
 
@@ -3726,15 +3132,11 @@
 
 }
 
-
-
 .md-empty p {
 
   font-size: 12px !important;
 
 }
-
-
 
 .md-toast {
 
@@ -3746,15 +3148,11 @@
 
 }
 
-
-
 /* ------------------------------------------------------------
 
    RESPONSIVIDADE
 
    ------------------------------------------------------------ */
-
-
 
 @media (max-width: 1100px) {
 
@@ -3764,17 +3162,13 @@
 
   }
 
-
-
   .gd-page-content .md-filter-card {
 
-    grid-template-columns: 2fr 1fr 1fr 1fr !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 
   }
 
 }
-
-
 
 @media (max-width: 700px) {
 
@@ -3784,23 +3178,17 @@
 
   }
 
-
-
   .gd-page-content .md-indicators {
 
     grid-template-columns: 1fr !important;
 
   }
 
-
-
   .gd-page-content .md-filter-card {
 
     grid-template-columns: 1fr !important;
 
   }
-
-
 
   .gd-page-content .md-table-header {
 
@@ -3810,8 +3198,6 @@
 
   }
 
-
-
   .gd-page-content .md-actions {
 
     flex-wrap: wrap !important;
@@ -3819,8 +3205,6 @@
   }
 
 }
-
-
 
 @media (prefers-reduced-motion: reduce) {
 
@@ -3830,8 +3214,6 @@
 
   }
 
-
-
   .gd-page-content .md-indicator:hover {
 
     transform: none !important;
@@ -3840,151 +3222,236 @@
 
 }
 
-
-
-
-
 .md-classificacao-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
 
 .md-classificacao-cell small { color: #475569; font-size: 10px; line-height: 1.3; font-weight: 600; }
 
-
 /* ============================================================
+
    PRIORIDADE DE ATENDIMENTO — TEXTO COLORIDO SEM CÁPSULA
+
    Mantém a criticidade existente; aplica cor apenas a P1/P2/P3/P4.
+
    ============================================================ */
+
 .gd-page-content .md-classificacao-cell small.md-prioridade-atendimento {
+
   display: block !important;
+
   margin-top: 3px !important;
+
   padding: 0 !important;
+
   border: 0 !important;
+
   border-radius: 0 !important;
+
   background: transparent !important;
+
   box-shadow: none !important;
+
   color: #475569 !important;
+
   font-size: 10px !important;
+
   line-height: 1.3 !important;
+
   font-weight: 400 !important;
+
 }
 
 .gd-page-content .md-classificacao-cell small.md-prioridade-p1 {
+
   color: #7f1d1d !important;
+
 }
 
 .gd-page-content .md-classificacao-cell small.md-prioridade-p2 {
+
   color: #dc2626 !important;
+
 }
 
 .gd-page-content .md-classificacao-cell small.md-prioridade-p3 {
+
   color: #1d4ed8 !important;
+
 }
 
 .gd-page-content .md-classificacao-cell small.md-prioridade-p4 {
+
   color: #15803d !important;
+
 }
 
-
 /* ============================================================
+
    CRITICIDADE — DESTAQUE LATERAL PARA DEMANDA CRÍTICA
+
    E cores corretas no campo Classificação.
+
    ============================================================ */
+
 .gd-page-content .md-table tbody tr.md-row-critica td:first-child {
+
   box-shadow: inset 4px 0 0 #B42318 !important;
+
 }
 
 .gd-page-content .md-table tbody tr.md-row-critica:hover {
+
   background: #FFF7F7 !important;
+
 }
 
 /* Cores da Criticidade — texto e fundo suaves */
+
 .gd-page-content .md-classificacao-cell .md-priority {
+
   border: 0 !important;
+
   font-weight: 600 !important;
+
 }
 
-.gd-page-content .md-classificacao-cell .md-priority[style*="#B42318"] {
+.gd-page-content .md-classificacao-cell .md-priority[style\*="#B42318"] {
+
   background: #FDECEC !important;
+
   color: #B42318 !important;
+
 }
 
-.gd-page-content .md-classificacao-cell .md-priority[style*="#C2410C"] {
+.gd-page-content .md-classificacao-cell .md-priority[style\*="#C2410C"] {
+
   background: #FFF1E6 !important;
+
   color: #C2410C !important;
+
 }
 
-.gd-page-content .md-classificacao-cell .md-priority[style*="#A16207"] {
+.gd-page-content .md-classificacao-cell .md-priority[style\*="#A16207"] {
+
   background: #FEF3C7 !important;
+
   color: #A16207 !important;
+
 }
 
-.gd-page-content .md-classificacao-cell .md-priority[style*="#15803D"] {
+.gd-page-content .md-classificacao-cell .md-priority[style\*="#15803D"] {
+
   background: #DCFCE7 !important;
-  color: #15803D !important;
-}
 
+  color: #15803D !important;
+
+}
 
 /* ============================================================
+
    MINHAS DEMANDAS — MESMO PADRÃO DE CLASSIFICAÇÃO DO GESTOR
+
    Criticidade em cápsula colorida + faixa lateral para Crítica.
+
    Prioridade de Atendimento permanece em texto simples, sem cápsula.
+
    ============================================================ */
 
 .gd-page-content .md-table tbody tr.md-row-critica,
+
 .gd-page-content .md-table tbody tr.md-row-critica td {
+
   background: #FFF7F7 !important;
+
 }
 
 .gd-page-content .md-table tbody tr.md-row-critica td:first-child {
+
   border-left: 4px solid #B42318 !important;
+
   box-shadow: none !important;
+
   padding-left: 6px !important;
+
 }
 
 .gd-page-content .md-table tbody tr.md-row-critica:hover,
+
 .gd-page-content .md-table tbody tr.md-row-critica:hover td {
+
   background: #FFF1F1 !important;
+
 }
 
 .gd-page-content .md-classificacao-cell .md-priority {
+
   display: inline-flex !important;
+
   align-items: center !important;
+
   justify-content: center !important;
+
   min-height: 20px !important;
+
   padding: 3px 8px !important;
+
   border: 0 !important;
+
   border-radius: 999px !important;
+
   font-size: 9px !important;
+
   line-height: 1.2 !important;
+
   font-weight: 700 !important;
+
   white-space: nowrap !important;
+
 }
 
 .gd-page-content .md-classificacao-cell .md-priority.md-criticidade-critica {
+
   background: #FDECEC !important;
+
   color: #B42318 !important;
+
 }
 
 .gd-page-content .md-classificacao-cell .md-priority.md-criticidade-alta {
+
   background: #FFF1E6 !important;
+
   color: #C2410C !important;
+
 }
 
 .gd-page-content .md-classificacao-cell .md-priority.md-criticidade-media {
+
   background: #FEF3C7 !important;
+
   color: #A16207 !important;
+
 }
 
 .gd-page-content .md-classificacao-cell .md-priority.md-criticidade-baixa {
+
   background: #DCFCE7 !important;
+
   color: #15803D !important;
+
 }
 
 .gd-page-content .md-classificacao-cell .md-priority.md-criticidade-indefinida {
+
   background: #F1F5F9 !important;
+
   color: #475569 !important;
+
 }
 
 /* Prioridade de Atendimento: cores consistentes, sem peso extra ou cápsula. */
+
 .gd-page-content .md-classificacao-cell small.md-prioridade-atendimento {
+
   font-weight: 400 !important;
+
 }
