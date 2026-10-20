@@ -3,9 +3,10 @@
 // V2.8 — CLIENTES
 // ============================================================
 
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 
 import type { Cliente } from '../types'
+import { apiRequest } from '../services/api'
 
 import {
   carregarClientes,
@@ -36,16 +37,6 @@ interface Props {
 
 function agoraISO() {
   return new Date().toISOString()
-}
-
-function proximoId(lista: Cliente[]) {
-  return (
-    lista.reduce(
-      (maior, item) =>
-        Math.max(maior, item.id),
-      0
-    ) + 1
-  )
 }
 
 export default function Clientes({
@@ -79,6 +70,32 @@ export default function Clientes({
 
   const [sigla, setSigla] =
     useState('')
+
+  // Carrega os clientes do PostgreSQL. O localStorage é mantido como
+  // alternativa caso a API esteja indisponível.
+  useEffect(() => {
+    let ativo = true
+
+    apiRequest<Cliente[]>('/clientes')
+      .then((dados) => {
+        if (ativo) {
+          setClientes(dados)
+        }
+      })
+      .catch((erro: unknown) => {
+        console.error('Erro ao carregar clientes da API:', erro)
+
+        if (ativo) {
+          toastAviso(
+            'Não foi possível consultar os clientes do banco. Os dados locais foram mantidos.'
+          )
+        }
+      })
+
+    return () => {
+      ativo = false
+    }
+  }, [])
 
   const filtrados = useMemo(() => {
     const termo =
@@ -118,152 +135,149 @@ export default function Clientes({
     setSigla('')
   }
 
-  function salvar() {
-    const nomeLimpo =
-      nome.trim()
-
-    const siglaLimpa =
-      sigla.trim().toUpperCase()
+  async function salvar() {
+    const nomeLimpo = nome.trim()
+    const siglaLimpa = sigla.trim().toUpperCase()
 
     if (!nomeLimpo) {
-      toastAviso(
-        'Informe o Nome do Cliente.'
-      )
+      toastAviso('Informe o Nome do Cliente.')
       return
     }
 
-    const duplicado =
-      clientes.some(
-        (cliente) =>
-          cliente.id !== editando?.id &&
-          cliente.nome
-            .trim()
-            .toLowerCase() ===
-            nomeLimpo.toLowerCase()
-      )
+    const duplicado = clientes.some(
+      (cliente) =>
+        cliente.id !== editando?.id &&
+        cliente.nome.trim().toLowerCase() === nomeLimpo.toLowerCase()
+    )
 
     if (duplicado) {
-      toastAviso(
-        'Já Existe um Cliente com Esse Nome.'
-      )
+      toastAviso('Já Existe um Cliente com Esse Nome.')
       return
     }
 
-    const agora =
-      agoraISO()
+    try {
+      if (editando) {
+        const clienteAnterior = clientes.find(
+          (cliente) => cliente.id === editando.id
+        )
 
-    let atualizados: Cliente[]
+        const salvo = await apiRequest<Cliente>(`/clientes/${editando.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            nome: nomeLimpo,
+            sigla: siglaLimpa,
+          }),
+        })
 
-    if (editando) {
-      const clienteAnterior = clientes.find(
-        (cliente) => cliente.id === editando.id
-      )
+        const atualizados = clientes
+          .map((cliente) => cliente.id === salvo.id ? salvo : cliente)
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
 
-      atualizados = clientes.map(
-        (cliente) =>
-          cliente.id === editando.id
-            ? {
-                ...cliente,
-                nome: nomeLimpo,
-                sigla: siglaLimpa,
-                atualizadoEm: agora,
-              }
-            : cliente
-      )
+        setClientes(atualizados)
+        salvarClientes(atualizados)
 
-      const anterior = clienteAnterior
-        ? `Nome: ${clienteAnterior.nome} | Sigla: ${clienteAnterior.sigla || '—'}`
-        : '—'
+        const anterior = clienteAnterior
+          ? `Nome: ${clienteAnterior.nome} | Sigla: ${clienteAnterior.sigla || '—'}`
+          : '—'
+        const novo = `Nome: ${salvo.nome} | Sigla: ${salvo.sigla || '—'}`
 
-      const novo =
-        `Nome: ${nomeLimpo} | Sigla: ${siglaLimpa || '—'}`
+        registrarAlteracao(
+          'cliente',
+          salvo.id,
+          'edicao',
+          `Órgão/Cliente ${salvo.nome} foi atualizado.`,
+          nomeUsuario,
+          {
+            valorAnterior: anterior,
+            valorNovo: novo,
+          }
+        )
+      } else {
+        const salvo = await apiRequest<Cliente>('/clientes', {
+          method: 'POST',
+          body: JSON.stringify({
+            nome: nomeLimpo,
+            sigla: siglaLimpa,
+          }),
+        })
 
-      registrarAlteracao(
-        'cliente',
-        editando.id,
-        'edicao',
-        `Órgão/Cliente ${nomeLimpo} foi atualizado.`,
-        nomeUsuario,
-        {
-          valorAnterior: anterior,
-          valorNovo: novo,
-        }
-      )
-    } else {
-      const novo: Cliente = {
-        id: proximoId(clientes),
-        nome: nomeLimpo,
-        sigla: siglaLimpa,
-        ativo: true,
-        criadoEm: agora,
+        const atualizados = [...clientes, salvo]
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+
+        setClientes(atualizados)
+        salvarClientes(atualizados)
+
+        registrarAlteracao(
+          'cliente',
+          salvo.id,
+          'criacao',
+          `Órgão/Cliente ${salvo.nome} foi cadastrado.`,
+          nomeUsuario
+        )
       }
 
-      atualizados = [
-        ...clientes,
-        novo,
-      ]
+      setMostrarFormulario(false)
+      setEditando(null)
+      setNome('')
+      setSigla('')
 
-      registrarAlteracao(
-        'cliente',
-        novo.id,
-        'criacao',
-        `Órgão/Cliente ${novo.nome} foi cadastrado.`,
-        nomeUsuario
+      toastSucesso(
+        editando
+          ? 'Cliente Atualizado com Sucesso.'
+          : 'Cliente Cadastrado com Sucesso.'
+      )
+    } catch (erro: unknown) {
+      console.error('Erro ao salvar cliente na API:', erro)
+      toastAviso(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível salvar o cliente no banco de dados.'
       )
     }
-
-    setClientes(atualizados)
-
-    salvarClientes(atualizados)
-
-    setMostrarFormulario(false)
-    setEditando(null)
-    setNome('')
-    setSigla('')
-
-    toastSucesso(
-      editando
-        ? 'Cliente Atualizado com Sucesso.'
-        : 'Cliente Cadastrado com Sucesso.'
-    )
   }
 
-  function alternarStatus(
-    cliente: Cliente
-  ) {
+  async function alternarStatus(cliente: Cliente) {
     const novoStatus = !cliente.ativo
 
-    const atualizados =
-      clientes.map(
-        (item) =>
-          item.id === cliente.id
-            ? {
-                ...item,
-                ativo: novoStatus,
-                atualizadoEm: agoraISO(),
-              }
-            : item
+    try {
+      const salvo = await apiRequest<Cliente>(
+        `/clientes/${cliente.id}/status`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ ativo: novoStatus }),
+        }
       )
 
-    setClientes(atualizados)
+      const atualizados = clientes.map(
+        (item) => item.id === salvo.id ? salvo : item
+      )
 
-    salvarClientes(atualizados)
+      setClientes(atualizados)
+      salvarClientes(atualizados)
 
-    registrarAlteracao(
-      'cliente',
-      cliente.id,
-      'status',
-      `${cliente.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      nomeUsuario,
-      {
-        valorAnterior: cliente.ativo ? 'Ativo' : 'Inativo',
-        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
-      }
-    )
+      registrarAlteracao(
+        'cliente',
+        salvo.id,
+        'status',
+        `${salvo.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
+        nomeUsuario,
+        {
+          valorAnterior: cliente.ativo ? 'Ativo' : 'Inativo',
+          valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+        }
+      )
 
-    toastSucesso(
-      `Cliente ${novoStatus ? 'Ativado' : 'Inativado'} com Sucesso.`
-    )
+      toastSucesso(
+        `Cliente ${novoStatus ? 'Ativado' : 'Inativado'} com Sucesso.`
+      )
+    } catch (erro: unknown) {
+      console.error('Erro ao alterar status do cliente na API:', erro)
+      toastAviso(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível atualizar o status do cliente.'
+      )
+    }
   }
 
   const ativos =
