@@ -1,6 +1,6 @@
 // ============================================================
 // GESTÃO DE DEMANDAS DE TI
-// V2.5 — DETALHE DA DEMANDA — PRIORIDADE DE ATENDIMENTO EDITÁVEL
+// V2.6 — DETALHE DA DEMANDA — MODAL VISUAL DE PRAZO MANUAL
 // ============================================================
 // ARQUIVO: src/pages/DetalheDemanda.tsx
 //
@@ -22,6 +22,7 @@
 // ============================================================
 import {
   useEffect,
+  useRef,
   useState,
   type ChangeEvent,
 } from 'react'
@@ -77,12 +78,14 @@ type Props = {
   onAlterarPrioridade?: (
     id: number,
     novaPrioridade: string,
-    motivo?: string
+    motivo?: string,
+    recalcularPrazoManual?: boolean
   ) => boolean | void
   onAlterarPrioridadeAtendimento?: (
     id: number,
     novaPrioridadeAtendimento: string,
-    motivo?: string
+    motivo?: string,
+    recalcularPrazoManual?: boolean
   ) => boolean | void
   onAlterarPrazoManual?: (
     id: number,
@@ -364,6 +367,13 @@ export function DetalheDemandaPage({
     motivoAlteracao,
     setMotivoAlteracao,
   ] = useState('')
+  // Modal visual para a decisão sobre um prazo definido manualmente.
+  const [confirmacaoPrazoManual, setConfirmacaoPrazoManual] = useState<{
+    tipo: 'criticidade' | 'prioridadeAtendimento'
+    valor: string
+    motivo: string
+    decisao: 'preservar' | 'recalcular' | null
+  } | null>(null)
   // ==========================================================
   // MOTIVO REABERTURA
   // ==========================================================
@@ -388,33 +398,33 @@ export function DetalheDemandaPage({
   // ==========================================================
   // SINCRONIZAR COM A DEMANDA
   // ==========================================================
+  // Importante: alterar um único campo da demanda atualiza o objeto
+  // inteiro recebido pelo componente. Isso NÃO deve apagar os outros
+  // valores que o Gestor já selecionou e ainda não salvou (criticidade,
+  // prioridade de atendimento e prazo manual).
+  // Os campos de alteração só são reiniciados ao abrir outra demanda.
+  const demandaSincronizadaIdRef = useRef<number | null>(null)
+
   useEffect(() => {
-    setStatusSelecionado(
-      demanda.status
-    )
-    setPrioridadeSelecionada('')
-    setPrioridadeAtendimentoSelecionada('')
-    setNovoPrazo(
-      demanda.prazo || ''
-    )
-    setMotivoAlteracao('')
+    const mudouDemanda = demandaSincronizadaIdRef.current !== demanda.id
+
+    setStatusSelecionado(demanda.status)
+    setResponsavelSelecionado(demanda.responsavel || '')
+
+    if (mudouDemanda) {
+      demandaSincronizadaIdRef.current = demanda.id
+      setPrioridadeSelecionada('')
+      setPrioridadeAtendimentoSelecionada('')
+      setNovoPrazo(demanda.prazo || '')
+      setMotivoAlteracao('')
+    }
+
     setMotivoReabertura('')
     setMotivoCancelamento('')
-    setMostrarCancelamento(
-      false
-    )
-    setResponsavelSelecionado(
-      demanda.responsavel || ''
-    )
-    setComentariosLocais(
-      demanda.comentarios || []
-    )
-    setArquivosLocais(
-      demanda.arquivos || []
-    )
-    setHistoricoLocal(
-      demanda.historico || []
-    )
+    setMostrarCancelamento(false)
+    setComentariosLocais(demanda.comentarios || [])
+    setArquivosLocais(demanda.arquivos || [])
+    setHistoricoLocal(demanda.historico || [])
     setComentariosPendentes([])
     setArquivosPendentes([])
     setComentario('')
@@ -1128,6 +1138,38 @@ export function DetalheDemandaPage({
       'Alterações Da Demanda Salvas Com Sucesso.'
     )
   }
+  function confirmarAlteracaoComDecisaoPrazo() {
+    if (!confirmacaoPrazoManual || !confirmacaoPrazoManual.decisao) return
+
+    const pendente = confirmacaoPrazoManual
+    const executarAlteracao = pendente.tipo === 'criticidade'
+      ? onAlterarPrioridade
+      : onAlterarPrioridadeAtendimento
+
+    if (!executarAlteracao) return
+
+    // A opção só é aplicada depois que o Gestor seleciona e confirma.
+    const recalcularPrazoManual = pendente.decisao === 'recalcular'
+    const resultado = executarAlteracao(
+      demanda.id,
+      pendente.valor,
+      pendente.motivo,
+      recalcularPrazoManual
+    )
+
+    if (resultado === false) return
+
+    if (pendente.tipo === 'criticidade') {
+      setPrioridadeSelecionada('')
+      mostrarToast('Criticidade da demanda alterada com sucesso.')
+    } else {
+      setPrioridadeAtendimentoSelecionada('')
+      mostrarToast('Prioridade de Atendimento alterada com sucesso.')
+    }
+
+    setConfirmacaoPrazoManual(null)
+  }
+
   // ==========================================================
   // RENDER
   // ==========================================================
@@ -1394,6 +1436,16 @@ export function DetalheDemandaPage({
                     '10px',
                 }}
               />
+              <p
+                style={{
+                  margin: '10px 0 0',
+                  color: '#526780',
+                  fontSize: '12px',
+                  lineHeight: 1.5,
+                }}
+              >
+                Cada botão salva somente o campo correspondente. Para alterar mais de um campo, clique no botão de cada alteração. Os outros valores escolhidos e o motivo ficam preservados; o prazo só é gravado quando você clicar em “Alterar Prazo”.
+              </p>
               {/* BOTÕES */}
               <div
                 style={{
@@ -1428,21 +1480,28 @@ export function DetalheDemandaPage({
                       alert('A alteração da Criticidade não está disponível.')
                       return
                     }
+                    if (demanda.prazoManual) {
+                      setConfirmacaoPrazoManual({
+                        tipo: 'criticidade',
+                        valor: prioridadeSelecionada,
+                        motivo: motivoAlteracao.trim(),
+                        decisao: null,
+                      })
+                      return
+                    }
                     const alteracaoConcluida = onAlterarPrioridade(
                       demanda.id,
                       prioridadeSelecionada,
-                      motivoAlteracao.trim()
+                      motivoAlteracao.trim(),
+                      true
                     )
                     if (alteracaoConcluida === false) {
                       return
                     }
                     mostrarToast(
-                      'Criticidade Da Demanda Alterada Com Sucesso.'
+                      'Criticidade da demanda alterada com sucesso.'
                     )
                     setPrioridadeSelecionada('')
-                    setMotivoAlteracao(
-                      ''
-                    )
                   }}
                 >
                   Alterar Criticidade
@@ -1465,17 +1524,26 @@ export function DetalheDemandaPage({
                       alert('A alteração da Prioridade de Atendimento não está disponível.')
                       return
                     }
+                    if (demanda.prazoManual) {
+                      setConfirmacaoPrazoManual({
+                        tipo: 'prioridadeAtendimento',
+                        valor: prioridadeAtendimentoSelecionada,
+                        motivo: motivoAlteracao.trim(),
+                        decisao: null,
+                      })
+                      return
+                    }
                     const alteracaoConcluida = onAlterarPrioridadeAtendimento(
                       demanda.id,
                       prioridadeAtendimentoSelecionada,
-                      motivoAlteracao.trim()
+                      motivoAlteracao.trim(),
+                      true
                     )
                     if (alteracaoConcluida === false) {
                       return
                     }
                     mostrarToast('Prioridade de Atendimento alterada com sucesso.')
                     setPrioridadeAtendimentoSelecionada('')
-                    setMotivoAlteracao('')
                   }}
                 >
                   Alterar Prioridade
@@ -1507,9 +1575,6 @@ export function DetalheDemandaPage({
                     )
                     mostrarToast(
                       'Prazo Da Demanda Alterado Com Sucesso.'
-                    )
-                    setMotivoAlteracao(
-                      ''
                     )
                   }}
                 >
@@ -2234,6 +2299,193 @@ export function DetalheDemandaPage({
         </section>
         </div>
       </div>
+      {confirmacaoPrazoManual && (
+        <div
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setConfirmacaoPrazoManual(null)
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            background: 'rgba(15, 23, 42, 0.48)',
+            backdropFilter: 'blur(3px)',
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-prazo-manual-titulo"
+            style={{
+              width: 'min(100%, 560px)',
+              background: '#ffffff',
+              border: '1px solid #dbe7f4',
+              borderRadius: '16px',
+              boxShadow: '0 24px 70px rgba(15, 23, 42, 0.25)',
+              overflow: 'hidden',
+              color: '#153454',
+            }}
+          >
+            <div style={{ height: '5px', background: '#2563eb' }} />
+            <div style={{ padding: '24px 26px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                <div style={{
+                  flex: '0 0 44px',
+                  width: '44px',
+                  height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '12px',
+                  background: '#eff6ff',
+                  color: '#2563eb',
+                  fontSize: '23px',
+                  fontWeight: 700,
+                }}>◷</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    marginBottom: '6px',
+                    color: '#2563eb',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    letterSpacing: '0.09em',
+                    textTransform: 'uppercase',
+                  }}>Decisão sobre o prazo</div>
+                  <h2 id="modal-prazo-manual-titulo" style={{
+                    margin: 0,
+                    color: '#123657',
+                    fontSize: '21px',
+                    fontWeight: 750,
+                    lineHeight: 1.3,
+                  }}>Como deseja tratar o prazo?</h2>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Fechar janela"
+                  onClick={() => setConfirmacaoPrazoManual(null)}
+                  style={{
+                    border: 0,
+                    background: 'transparent',
+                    color: '#718096',
+                    fontSize: '24px',
+                    lineHeight: 1,
+                    cursor: 'pointer',
+                    padding: '0 2px',
+                  }}
+                >×</button>
+              </div>
+
+              <p style={{
+                margin: '20px 0 14px',
+                color: '#475569',
+                fontSize: '14px',
+                lineHeight: 1.65,
+              }}>
+                Esta demanda tem um prazo definido manualmente para{' '}
+                <strong style={{ color: '#153454' }}>{formatarData(demanda.prazo || '')}</strong>.
+                {' '}Você alterou {confirmacaoPrazoManual.tipo === 'criticidade' ? 'a criticidade' : 'a prioridade de atendimento'} para{' '}
+                <strong style={{ color: '#153454' }}>{confirmacaoPrazoManual.valor}</strong>.
+              </p>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                border: '1px solid #dbeafe',
+                background: '#f8fbff',
+                borderRadius: '10px',
+                padding: '12px 14px',
+                color: '#475569',
+                fontSize: '12px',
+                lineHeight: 1.55,
+              }}>
+                <span style={{ color: '#2563eb', fontSize: '17px', lineHeight: 1 }}>ⓘ</span>
+                <span>A alteração será aplicada ao confirmar uma das opções abaixo. A escolha define apenas como tratar o prazo.</span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '18px' }}>
+                <button
+                  type="button"
+                  aria-pressed={confirmacaoPrazoManual.decisao === 'preservar'}
+                  onClick={() => setConfirmacaoPrazoManual((atual) => atual ? { ...atual, decisao: 'preservar' as const } : atual)}
+                  style={{
+                    minHeight: '92px',
+                    padding: '14px',
+                    textAlign: 'left',
+                    border: confirmacaoPrazoManual.decisao === 'preservar' ? '2px solid #2563eb' : '1px solid #cbd8e8',
+                    borderRadius: '11px',
+                    background: confirmacaoPrazoManual.decisao === 'preservar' ? '#eff6ff' : '#ffffff',
+                    color: confirmacaoPrazoManual.decisao === 'preservar' ? '#1646a3' : '#153454',
+                    boxShadow: confirmacaoPrazoManual.decisao === 'preservar' ? '0 0 0 2px rgba(37, 99, 235, 0.10)' : 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', fontSize: '13px', fontWeight: 750 }}>
+                    Manter prazo manual
+                    {confirmacaoPrazoManual.decisao === 'preservar' && <span aria-hidden="true" style={{ color: '#2563eb', fontSize: '16px' }}>✓</span>}
+                  </span>
+                  <span style={{ display: 'block', color: '#64748b', fontSize: '11px', lineHeight: 1.45 }}>
+                    Preservar a data {formatarData(demanda.prazo || '')}.
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={confirmacaoPrazoManual.decisao === 'recalcular'}
+                  onClick={() => setConfirmacaoPrazoManual((atual) => atual ? { ...atual, decisao: 'recalcular' as const } : atual)}
+                  style={{
+                    minHeight: '92px',
+                    padding: '14px',
+                    textAlign: 'left',
+                    border: confirmacaoPrazoManual.decisao === 'recalcular' ? '2px solid #2563eb' : '1px solid #cbd8e8',
+                    borderRadius: '11px',
+                    background: confirmacaoPrazoManual.decisao === 'recalcular' ? '#eff6ff' : '#ffffff',
+                    color: confirmacaoPrazoManual.decisao === 'recalcular' ? '#1646a3' : '#153454',
+                    boxShadow: confirmacaoPrazoManual.decisao === 'recalcular' ? '0 0 0 2px rgba(37, 99, 235, 0.10)' : 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', fontSize: '13px', fontWeight: 750 }}>
+                    Recalcular pelo SLA
+                    {confirmacaoPrazoManual.decisao === 'recalcular' && <span aria-hidden="true" style={{ color: '#2563eb', fontSize: '16px' }}>✓</span>}
+                  </span>
+                  <span style={{ display: 'block', color: '#64748b', fontSize: '11px', lineHeight: 1.45 }}>
+                    Calcular uma nova data conforme a criticidade e a prioridade.
+                  </span>
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '18px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#64748b', fontSize: '11px' }}>
+                  {confirmacaoPrazoManual.decisao === 'preservar'
+                    ? 'Opção selecionada: manter a data atual.'
+                    : confirmacaoPrazoManual.decisao === 'recalcular'
+                      ? 'Opção selecionada: recalcular conforme o SLA.'
+                      : 'Selecione uma opção para continuar.'}
+                </span>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="btn-secundario"
+                    onClick={() => setConfirmacaoPrazoManual(null)}
+                  >Voltar sem aplicar</button>
+                  <button
+                    type="button"
+                    className="btn-principal"
+                    disabled={!confirmacaoPrazoManual.decisao}
+                    onClick={confirmarAlteracaoComDecisaoPrazo}
+                    style={{ opacity: confirmacaoPrazoManual.decisao ? 1 : 0.55, cursor: confirmacaoPrazoManual.decisao ? 'pointer' : 'not-allowed' }}
+                  >Confirmar escolha</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </MenuPrincipal>
     </>
   )

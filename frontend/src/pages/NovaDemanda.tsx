@@ -241,7 +241,7 @@ export default function NovaDemanda({
       }
     }
     onSalvar(demanda)
-    mostrarToast('Demanda Cadastrada com Sucesso.')
+    mostrarToast('Demanda enviada. Aguardando confirmação da gravação no PostgreSQL.')
   }
   return (
     <MenuPrincipal

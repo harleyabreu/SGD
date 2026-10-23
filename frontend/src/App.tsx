@@ -1,6 +1,6 @@
 // ============================================================
 // GESTÃO DE DEMANDAS DE TI
-// V2.9 — APLICAÇÃO PRINCIPAL — PRIORIDADE DE ATENDIMENTO EDITÁVEL
+// V2.10 — APLICAÇÃO PRINCIPAL — DECISÃO VISUAL DE PRAZO MANUAL
 // ============================================================
 // ARQUIVO: src/App.tsx
 //
@@ -24,7 +24,7 @@
 // - Controle de SLA
 // ============================================================
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import Dashboard from './pages/Dashboard'
 import TodasDemandas from './pages/TodasDemandas'
@@ -44,9 +44,12 @@ import Configuracoes from './pages/Configuracoes'
 
 import type {
   Arquivo,
+  Cliente,
   Comentario,
   Demanda,
   Historico,
+  Sistema,
+  TipoDemanda,
   Usuario,
 } from './types'
 import { ehPerfilOperacional } from './types'
@@ -55,6 +58,9 @@ import {
   carregarClientes,
   carregarSistemas,
   carregarTipos,
+  salvarClientes,
+  salvarSistemas,
+  salvarTipos,
   carregarUsuarios,
   salvarUsuarios,
   carregarSessao,
@@ -63,6 +69,7 @@ import {
   type SessaoUsuario,
 } from './services/storage'
 
+import { apiRequest } from './services/api'
 import { registrarAlteracao } from './services/auditoria'
 import { criarNotificacao as criarNotificacaoBase } from './services/notificacoes'
 
@@ -563,6 +570,104 @@ function carregarDemandas(): Demanda[] {
 }
 
 // ============================================================
+// NORMALIZAR DEMANDAS RECEBIDAS DO POSTGRESQL
+// O driver PostgreSQL pode devolver BIGINT como texto.
+// ============================================================
+
+function normalizarDemandaDoBanco(valor: Demanda): Demanda {
+  const item = valor as Demanda & {
+    id: number | string
+    comentarios?: Array<Comentario & { id: number | string }>
+    arquivos?: Array<Arquivo & { id: number | string; tamanho: number | string }>
+    historico?: Array<Historico & {
+      id: number | string
+      referenciaId?: number | string | null
+    }>
+  }
+
+  return normalizarDemanda({
+    ...item,
+    id: Number(item.id),
+    comentarios: Array.isArray(item.comentarios)
+      ? item.comentarios.map((comentario) => ({
+          ...comentario,
+          id: Number(comentario.id),
+        }))
+      : [],
+    arquivos: Array.isArray(item.arquivos)
+      ? item.arquivos.map((arquivo) => ({
+          ...arquivo,
+          id: Number(arquivo.id),
+          tamanho: Number(arquivo.tamanho || 0),
+        }))
+      : [],
+    historico: Array.isArray(item.historico)
+      ? item.historico.map((registro) => ({
+          ...registro,
+          id: Number(registro.id),
+          referenciaId:
+            registro.referenciaId === undefined || registro.referenciaId === null
+              ? undefined
+              : Number(registro.referenciaId),
+        }))
+      : [],
+    periodosPendencia: Array.isArray(item.periodosPendencia)
+      ? item.periodosPendencia
+      : [],
+  })
+}
+
+const CHAVE_DEMANDAS_PENDENTES_POSTGRESQL = 'demandas_pendentes_postgresql'
+
+function carregarDemandasPendentesPostgreSQL(): Demanda[] {
+  try {
+    const valor = localStorage.getItem(CHAVE_DEMANDAS_PENDENTES_POSTGRESQL)
+    if (!valor) return []
+    const dados = JSON.parse(valor)
+    return Array.isArray(dados)
+      ? dados as Demanda[]
+      : []
+  } catch {
+    return []
+  }
+}
+
+function gravarDemandaPendentePostgreSQL(demanda: Demanda) {
+  try {
+    const atuais = carregarDemandasPendentesPostgreSQL()
+    const porId = new Map<number, Demanda>(
+      atuais.map((item): [number, Demanda] => [Number(item.id), item])
+    )
+    porId.set(Number(demanda.id), demanda)
+    localStorage.setItem(
+      CHAVE_DEMANDAS_PENDENTES_POSTGRESQL,
+      JSON.stringify([...porId.values()])
+    )
+  } catch {
+    console.warn('Não foi possível guardar a fila de sincronização das demandas.')
+  }
+}
+
+function removerDemandaPendentePostgreSQL(id: number, corpoConfirmado: string) {
+  try {
+    const atuais = carregarDemandasPendentesPostgreSQL()
+    const pendenteAtual = atuais.find((item) => Number(item.id) === Number(id))
+
+    // Só remove se a versão que foi gravada ainda for a versão pendente atual.
+    // Isso evita apagar uma alteração mais nova que tenha ocorrido durante a requisição.
+    if (!pendenteAtual || JSON.stringify(pendenteAtual) !== corpoConfirmado) return
+
+    const restantes = atuais.filter((item) => Number(item.id) !== Number(id))
+    localStorage.setItem(
+      CHAVE_DEMANDAS_PENDENTES_POSTGRESQL,
+      JSON.stringify(restantes)
+    )
+  } catch {
+    console.warn('Não foi possível atualizar a fila de sincronização das demandas.')
+  }
+}
+
+// ============================================================
 // DIAS ÚTEIS CONSUMIDOS
 //
 // Não conta o dia de abertura.
@@ -758,6 +863,274 @@ function App() {
   ] = useState<Demanda[]>(
     carregarDemandas
   )
+
+  // PostgreSQL é a fonte principal das demandas. O cache local é usado
+  // para migração inicial e contingência, sem interromper a abertura da tela.
+  const [demandasBackendProntas, setDemandasBackendProntas] = useState(false)
+  const demandasAnterioresBackendRef = useRef<Demanda[] | null>(null)
+  const filaPersistenciaDemandasRef = useRef<Promise<void>>(Promise.resolve())
+  const alertaPersistenciaDemandasRef = useRef(false)
+
+  // Os formulários legados consomem os cadastros pelo serviço storage.
+  // Ao iniciar o app, sincronizamos esse cache com o PostgreSQL para que
+  // Nova Demanda, filtros e demais telas usem IDs e registros reais do banco.
+  const [, setCatalogosBancoAtualizados] = useState(0)
+
+  useEffect(() => {
+    let montado = true
+
+    async function sincronizarCadastros() {
+      try {
+        const [clientesApi, sistemasApi, tiposApi] = await Promise.all([
+          apiRequest<Cliente[]>('/clientes'),
+          apiRequest<Sistema[]>('/sistemas'),
+          apiRequest<TipoDemanda[]>('/tipos'),
+        ])
+
+        if (!montado) return
+
+        const clientesNormalizados = clientesApi.map((item) => ({
+          ...item,
+          id: Number(item.id),
+        }))
+
+        const sistemasNormalizados = sistemasApi.map((item) => ({
+          ...item,
+          id: Number(item.id),
+          clienteId:
+            item.clienteId === undefined || item.clienteId === null
+              ? undefined
+              : Number(item.clienteId),
+        }))
+
+        const tiposNormalizados = tiposApi.map((item) => ({
+          ...item,
+          id: Number(item.id),
+        }))
+
+        salvarClientes(clientesNormalizados)
+        salvarSistemas(sistemasNormalizados)
+        salvarTipos(tiposNormalizados)
+        setCatalogosBancoAtualizados((atual) => atual + 1)
+      } catch (erro) {
+        // O aplicativo continua abrindo com o cache já disponível se o backend
+        // estiver desligado. As gravações dos cadastros exigem a API ativa.
+        console.error('Não foi possível sincronizar os cadastros com o PostgreSQL:', erro)
+      }
+    }
+
+    void sincronizarCadastros()
+
+    return () => {
+      montado = false
+    }
+  }, [])
+
+  // ==========================================================
+  // CARREGAR DEMANDAS DO POSTGRESQL / MIGRAR DADOS LOCAIS ANTIGOS
+  // ==========================================================
+
+  useEffect(() => {
+    let montado = true
+
+    async function carregarDemandasDoBanco() {
+      try {
+        // Verifica a API antes de qualquer tentativa de sincronização.
+        await apiRequest<Demanda[]>('/demandas')
+
+        const falhasSincronizacao = new Map<number, Demanda>()
+
+        // Retenta primeiro alterações que ficaram pendentes numa sessão anterior.
+        for (const demandaPendente of carregarDemandasPendentesPostgreSQL()) {
+          const corpo = JSON.stringify(demandaPendente)
+          try {
+            await apiRequest(`/demandas/${encodeURIComponent(String(demandaPendente.id))}`, {
+              method: 'PUT',
+              body: corpo,
+            })
+            removerDemandaPendentePostgreSQL(Number(demandaPendente.id), corpo)
+          } catch (erro) {
+            console.error(
+              `Não foi possível reenviar a demanda pendente ${demandaPendente.id}:`,
+              erro
+            )
+            falhasSincronizacao.set(Number(demandaPendente.id), demandaPendente)
+          }
+        }
+
+        const demandasBancoInicial = await apiRequest<Demanda[]>('/demandas')
+        const demandasBancoNormalizadas = Array.isArray(demandasBancoInicial)
+          ? demandasBancoInicial.map(normalizarDemandaDoBanco)
+          : []
+
+        const idsExistentesNoBanco = new Set(
+          demandasBancoNormalizadas.map((item) => Number(item.id))
+        )
+
+        // Migra somente demandas locais ausentes do banco. A fila pendente tem
+        // prioridade sobre o banco, porque representa alterações não confirmadas.
+        const demandasLocais = carregarDemandas()
+          .map(normalizarDemanda)
+          .filter(
+            (item) =>
+              !idsExistentesNoBanco.has(Number(item.id)) &&
+              !falhasSincronizacao.has(Number(item.id))
+          )
+
+        for (const demandaLocal of demandasLocais) {
+          const corpo = JSON.stringify(demandaLocal)
+          gravarDemandaPendentePostgreSQL(demandaLocal)
+          try {
+            await apiRequest(`/demandas/${encodeURIComponent(String(demandaLocal.id))}`, {
+              method: 'PUT',
+              body: corpo,
+            })
+            removerDemandaPendentePostgreSQL(Number(demandaLocal.id), corpo)
+          } catch (erro) {
+            console.error(
+              `Não foi possível migrar a demanda ${demandaLocal.id} para o PostgreSQL:`,
+              erro
+            )
+            falhasSincronizacao.set(Number(demandaLocal.id), demandaLocal)
+          }
+        }
+
+        const demandasBancoFinais = await apiRequest<Demanda[]>('/demandas')
+        const normalizadasBanco = Array.isArray(demandasBancoFinais)
+          ? demandasBancoFinais.map(normalizarDemandaDoBanco)
+          : []
+
+        if (!montado) return
+
+        const idsFinalBanco = new Set(
+          normalizadasBanco.map((item) => Number(item.id))
+        )
+        const demandasLocaisPendentes = [...falhasSincronizacao.values()].filter(
+          (item) => !idsFinalBanco.has(Number(item.id))
+        )
+
+        demandasAnterioresBackendRef.current = normalizadasBanco
+
+        // Mantém temporariamente na tela os registros cuja sincronização falhou,
+        // para não escondê-los nem descartá-los do navegador.
+        const combinadas = [
+          ...normalizadasBanco,
+          ...demandasLocaisPendentes,
+        ]
+
+        setDemandas(combinadas)
+
+        try {
+          localStorage.setItem('demandas', JSON.stringify(combinadas))
+        } catch {
+          // A cópia local é auxiliar; a persistência principal é PostgreSQL.
+        }
+
+        setDemandasBackendProntas(true)
+      } catch (erro) {
+        // Sem API disponível, o sistema continua usando a cópia local.
+        // Não marcamos a sincronização como pronta para evitar sobrescrever o banco
+        // com uma lista local não verificada.
+        console.error(
+          'Não foi possível carregar as demandas do PostgreSQL. A cópia local foi preservada:',
+          erro
+        )
+      }
+    }
+
+    void carregarDemandasDoBanco()
+
+    return () => {
+      montado = false
+    }
+  }, [])
+
+  // ==========================================================
+  // PERSISTIR ALTERAÇÕES DE DEMANDAS NO POSTGRESQL
+  // Cada demanda alterada é enviada individualmente. Isso evita
+  // regravar a lista inteira e reenviar anexos de outras demandas.
+  // ==========================================================
+
+  useEffect(() => {
+    if (!demandasBackendProntas) return
+
+    const anteriores = demandasAnterioresBackendRef.current
+    if (anteriores === null) {
+      demandasAnterioresBackendRef.current = demandas
+      return
+    }
+
+    const anterioresPorId = new Map<number, string>(
+      anteriores.map((item): [number, string] => [
+        Number(item.id),
+        JSON.stringify(item),
+      ])
+    )
+    const idsAtuais = new Set(demandas.map((item) => Number(item.id)))
+
+    const alteradas = demandas.filter(
+      (item) => anterioresPorId.get(Number(item.id)) !== JSON.stringify(item)
+    )
+    const removidas = anteriores.filter(
+      (item) => !idsAtuais.has(Number(item.id))
+    )
+
+    // Atualiza a referência antes de enfileirar para não duplicar a mesma alteração.
+    demandasAnterioresBackendRef.current = demandas
+
+    for (const demanda of alteradas) {
+      const id = Number(demanda.id)
+      const corpo = JSON.stringify(demanda)
+
+      gravarDemandaPendentePostgreSQL(demanda)
+
+      filaPersistenciaDemandasRef.current =
+        filaPersistenciaDemandasRef.current
+          .catch(() => undefined)
+          .then(async () => {
+            await apiRequest(`/demandas/${encodeURIComponent(String(id))}`, {
+              method: 'PUT',
+              body: corpo,
+            })
+            removerDemandaPendentePostgreSQL(id, corpo)
+            alertaPersistenciaDemandasRef.current = false
+          })
+          .catch((erro) => {
+            console.error(`Falha ao salvar a demanda ${id} no PostgreSQL:`, erro)
+
+            if (!alertaPersistenciaDemandasRef.current) {
+              alertaPersistenciaDemandasRef.current = true
+              window.alert(
+                `A demanda continua preservada no navegador, mas o PostgreSQL recusou a gravação. Motivo retornado pela API: ${erro instanceof Error ? erro.message : String(erro)}`
+              )
+            }
+          })
+    }
+
+    for (const demanda of removidas) {
+      const id = Number(demanda.id)
+
+      filaPersistenciaDemandasRef.current =
+        filaPersistenciaDemandasRef.current
+          .catch(() => undefined)
+          .then(async () => {
+            await apiRequest(`/demandas/${encodeURIComponent(String(id))}`, {
+              method: 'DELETE',
+            })
+            alertaPersistenciaDemandasRef.current = false
+          })
+          .catch((erro) => {
+            console.error(`Falha ao excluir a demanda ${id} do PostgreSQL:`, erro)
+
+            if (!alertaPersistenciaDemandasRef.current) {
+              alertaPersistenciaDemandasRef.current = true
+              window.alert(
+                'Não foi possível concluir a exclusão da demanda no PostgreSQL. Confira o terminal do backend.'
+              )
+            }
+          })
+    }
+  }, [demandas, demandasBackendProntas])
 
   // ==========================================================
   // SESSÃO
@@ -1285,7 +1658,8 @@ function App() {
   function alterarPrioridade(
     id: number,
     novaPrioridade: string,
-    motivo?: string
+    motivo?: string,
+    recalcularPrazoManual = true
   ): boolean {
     if (!ehGestor(sessao)) return false
     if (!PRIORIDADES.includes(novaPrioridade)) return false
@@ -1303,17 +1677,11 @@ function App() {
     const criticidadeAtualAlvo = demandaAlvo.criticidade || demandaAlvo.prioridade
     if (criticidadeAtualAlvo === novaPrioridade) return false
 
-    // Em prazo manual, OK recalcula com o SLA combinado; Cancelar preserva a data manual.
-    let recalcularPrazo = true
-    if (demandaAlvo.prazoManual) {
-      recalcularPrazo = window.confirm(
-        `Esta demanda possui prazo definido manualmente (${demandaAlvo.prazo || 'sem data'}).\n\n` +
-        'Deseja recalcular o prazo conforme o SLA combinado de Criticidade e Prioridade de Atendimento?\n\n' +
-        'OK = Recalcular o prazo conforme o SLA.\n' +
-        'Cancelar = Preservar o prazo manual atual.\n\n' +
-        'A alteração da Criticidade será aplicada em qualquer uma das opções.'
-      )
-    }
+    // A decisão entre preservar e recalcular é apresentada em um modal visual
+    // da tela de detalhes. Este parâmetro recebe a escolha feita pelo Gestor.
+    const recalcularPrazo = demandaAlvo.prazoManual
+      ? recalcularPrazoManual
+      : true
 
     const motivoFinal = motivo?.trim() || 'Alteração de criticidade realizada pelo Gestor.'
 
@@ -1384,7 +1752,8 @@ function App() {
   function alterarPrioridadeAtendimento(
     id: number,
     novaPrioridadeAtendimento: string,
-    motivo?: string
+    motivo?: string,
+    recalcularPrazoManual = true
   ): boolean {
     if (!ehGestor(sessao)) return false
     if (!PRIORIDADES_ATENDIMENTO.includes(novaPrioridadeAtendimento as typeof PRIORIDADES_ATENDIMENTO[number])) return false
@@ -1400,16 +1769,11 @@ function App() {
     const prioridadeAlvoAtual = demandaAlvo.prioridadeAtendimento || ''
     if (prioridadeAlvoAtual === novaPrioridadeAtendimento) return false
 
-    let recalcularPrazo = true
-    if (demandaAlvo.prazoManual) {
-      recalcularPrazo = window.confirm(
-        `Esta demanda possui prazo definido manualmente (${demandaAlvo.prazo || 'sem data'}).\n\n` +
-        'Deseja recalcular o prazo conforme o SLA combinado de Criticidade e Prioridade de Atendimento?\n\n' +
-        'OK = Recalcular o prazo conforme o SLA.\n' +
-        'Cancelar = Preservar o prazo manual atual.\n\n' +
-        'A alteração da Prioridade de Atendimento será aplicada em qualquer uma das opções.'
-      )
-    }
+    // A decisão entre preservar e recalcular é apresentada em um modal visual
+    // da tela de detalhes. Este parâmetro recebe a escolha feita pelo Gestor.
+    const recalcularPrazo = demandaAlvo.prazoManual
+      ? recalcularPrazoManual
+      : true
 
     const motivoFinal = motivo?.trim() || 'Alteração de Prioridade de Atendimento realizada pelo Gestor.'
 

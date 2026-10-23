@@ -79,7 +79,13 @@ export default function Clientes({
     apiRequest<Cliente[]>('/clientes')
       .then((dados) => {
         if (ativo) {
-          setClientes(dados)
+          const normalizados = dados.map((cliente) => ({
+            ...cliente,
+            id: Number(cliente.id),
+          }))
+          setClientes(normalizados)
+          // Mantém outras telas sincronizadas com a lista oficial do PostgreSQL.
+          salvarClientes(normalizados)
         }
       })
       .catch((erro: unknown) => {
@@ -518,6 +524,10 @@ export default function Clientes({
                     Cadastro
                   </th>
 
+                  <th style={thStyle}>
+                    Última atualização
+                  </th>
+
                   <th
                     style={{
                       ...thStyle,
@@ -567,6 +577,22 @@ export default function Clientes({
                           : '-'}
                       </td>
 
+                      <td style={tdStyle}>
+                        {cliente.atualizadoEm
+                          ? new Date(
+                              cliente.atualizadoEm
+                            ).toLocaleString(
+                              'pt-BR'
+                            )
+                          : cliente.criadoEm
+                            ? new Date(
+                                cliente.criadoEm
+                              ).toLocaleString(
+                                'pt-BR'
+                              )
+                            : '-'}
+                      </td>
+
                       <td
                         style={{
                           ...tdStyle,
@@ -608,7 +634,7 @@ export default function Clientes({
                 {filtrados.length === 0 && (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       style={{
                         padding: 28,
                         textAlign: 'center',

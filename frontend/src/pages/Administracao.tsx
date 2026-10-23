@@ -17,7 +17,7 @@
 // - Funcionalidades administrativas preservadas
 // ============================================================
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ESTRUTURA_ORGANIZACIONAL } from '../types'
 import type {
   Cliente,
@@ -30,16 +30,16 @@ import type {
 } from '../types'
 
 import {
-  carregarClientes,
-  carregarSistemas,
-  carregarTipos,
   carregarUsuarios,
-  salvarClientes,
-  salvarSistemas,
-  salvarTipos,
   salvarUsuarios,
   carregarDemandas,
   carregarAuditoria,
+  carregarClientes,
+  carregarSistemas,
+  carregarTipos,
+  salvarClientes,
+  salvarSistemas,
+  salvarTipos,
 } from '../services/storage'
 
 import { registrarAlteracao } from '../services/auditoria'
@@ -79,6 +79,84 @@ type UsuarioSeguranca = Usuario & {
 }
 
 const MINIMO_SENHA = 6
+
+// URL base da API. Em produção, defina VITE_API_URL no ambiente do frontend.
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+).replace(/\/+$/, '')
+
+async function requisicaoCadastros<T>(
+  caminho: string,
+  opcoes: RequestInit = {},
+): Promise<T> {
+  const resposta = await fetch(`${API_BASE_URL}${caminho}`, {
+    ...opcoes,
+    headers: {
+      'Content-Type': 'application/json',
+      ...((opcoes.headers || {}) as Record<string, string>),
+    },
+  })
+
+  const texto = await resposta.text()
+  let dados: unknown = null
+
+  if (texto) {
+    try {
+      dados = JSON.parse(texto)
+    } catch {
+      dados = texto
+    }
+  }
+
+  if (!resposta.ok) {
+    const mensagem =
+      dados && typeof dados === 'object' && 'message' in dados &&
+      typeof (dados as { message?: unknown }).message === 'string'
+        ? (dados as { message: string }).message
+        : `A API respondeu com o erro HTTP ${resposta.status}.`
+
+    throw new Error(mensagem)
+  }
+
+  return dados as T
+}
+
+function normalizarClienteApi(item: Cliente): Cliente {
+  return { ...item, id: Number(item.id) }
+}
+
+function normalizarSistemaApi(item: Sistema): Sistema {
+  return {
+    ...item,
+    id: Number(item.id),
+    clienteId:
+      item.clienteId === undefined || item.clienteId === null
+        ? undefined
+        : Number(item.clienteId),
+  }
+}
+
+function normalizarTipoApi(item: TipoDemanda): TipoDemanda {
+  return { ...item, id: Number(item.id) }
+}
+
+async function carregarCadastrosBanco(): Promise<{
+  clientes: Cliente[]
+  sistemas: Sistema[]
+  tipos: TipoDemanda[]
+}> {
+  const [clientes, sistemas, tipos] = await Promise.all([
+    requisicaoCadastros<Cliente[]>('/clientes'),
+    requisicaoCadastros<Sistema[]>('/sistemas'),
+    requisicaoCadastros<TipoDemanda[]>('/tipos'),
+  ])
+
+  return {
+    clientes: clientes.map(normalizarClienteApi),
+    sistemas: sistemas.map(normalizarSistemaApi),
+    tipos: tipos.map(normalizarTipoApi),
+  }
+}
 
 async function hashSenha(senha: string): Promise<string> {
   const dados = new TextEncoder().encode(senha)
@@ -263,6 +341,8 @@ function Administracao({
   const [usuarios, setUsuarios] =
     useState<Usuario[]>(carregarUsuariosPadronizados)
 
+  // O cache local evita telas vazias durante a consulta inicial.
+  // Após carregar, o PostgreSQL passa a ser a fonte oficial dos cadastros.
   const [clientes, setClientes] =
     useState<Cliente[]>(carregarClientes)
 
@@ -271,6 +351,9 @@ function Administracao({
 
   const [tipos, setTipos] =
     useState<TipoDemanda[]>(carregarTipos)
+
+  const [cadastrosBancoCarregados, setCadastrosBancoCarregados] =
+    useState(false)
 
   const [pesquisa, setPesquisa] = useState('')
 
@@ -355,6 +438,45 @@ function Administracao({
 
   const [nomeTipo, setNomeTipo] =
     useState('')
+
+  // Carrega Clientes, Sistemas e Tipos diretamente do PostgreSQL pela API.
+  useEffect(() => {
+    let montado = true
+
+    void carregarCadastrosBanco()
+      .then((dados) => {
+        if (!montado) return
+        setClientes(dados.clientes)
+        setSistemas(dados.sistemas)
+        setTipos(dados.tipos)
+
+        // Sincroniza o cache consumido por telas legadas e formulários.
+        salvarClientes(dados.clientes)
+        salvarSistemas(dados.sistemas)
+        salvarTipos(dados.tipos)
+        setCadastrosBancoCarregados(true)
+      })
+      .catch((erro: unknown) => {
+        console.error('Falha ao carregar cadastros do PostgreSQL:', erro)
+        if (montado) {
+          mostrarToast(
+            'Não foi possível carregar Clientes, Sistemas e Tipos do banco. Verifique se o backend está ativo.',
+          )
+        }
+      })
+
+    return () => {
+      montado = false
+    }
+  }, [])
+
+  // Mantém sincronizadas as telas que ainda consomem os cadastros pelo storage.
+  useEffect(() => {
+    if (!cadastrosBancoCarregados) return
+    salvarClientes(clientes)
+    salvarSistemas(sistemas)
+    salvarTipos(tipos)
+  }, [cadastrosBancoCarregados, clientes, sistemas, tipos])
 
   // ==========================================================
   // PESQUISA
@@ -815,131 +937,134 @@ function Administracao({
     setSiglaCliente(item.sigla || '')
   }
 
-  function salvarCliente() {
-    if (!nomeCliente.trim()) {
-      window.alert(
-        'Informe o nome do órgão/cliente.'
-      )
+  async function salvarCliente() {
+    const nome = nomeCliente.trim()
+    const sigla = siglaCliente.trim().toUpperCase()
+
+    if (!nome) {
+      window.alert('Informe o nome do órgão/cliente.')
+      return
+    }
+
+    if (!sigla) {
+      window.alert('Informe a sigla do órgão/cliente.')
       return
     }
 
     const duplicado = clientes.find(
       (item) =>
         item.id !== editCliente?.id &&
-        item.nome.toLowerCase() ===
-          nomeCliente.trim().toLowerCase()
+        (item.nome.trim().toLowerCase() === nome.toLowerCase() ||
+          (item.sigla || '').trim().toUpperCase() === sigla),
     )
 
     if (duplicado) {
-      window.alert(
-        'Este órgão já está cadastrado.'
-      )
+      window.alert('Já existe um órgão cadastrado com esse nome ou sigla.')
       return
     }
 
-    const agora = dataAtualISO()
+    try {
+      if (editCliente) {
+        const salvo = normalizarClienteApi(
+          await requisicaoCadastros<Cliente>(`/clientes/${editCliente.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ nome, sigla }),
+          }),
+        )
 
-    let atualizados: Cliente[]
+        setClientes((atuais) =>
+          atuais
+            .map((item) => (item.id === salvo.id ? salvo : item))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+        )
 
-    if (editCliente) {
-      atualizados = clientes.map(
-        (item) =>
-          item.id === editCliente.id
-            ? {
-                ...item,
-                nome: nomeCliente.trim(),
-                sigla: siglaCliente.trim(),
-                atualizadoEm: agora,
-              }
-            : item
-      )
+        registrarAlteracao(
+          'cliente',
+          salvo.id,
+          'edicao',
+          `Órgão ${nome} foi atualizado.`,
+          usuarioAtual.nome,
+          {
+            valorAnterior: `Nome: ${editCliente.nome} | Sigla: ${editCliente.sigla || '—'}`,
+            valorNovo: `Nome: ${salvo.nome} | Sigla: ${salvo.sigla || '—'}`,
+          },
+        )
 
-      registrarAlteracao(
-        'cliente',
-        editCliente.id,
-        'edicao',
-        `Órgão ${nomeCliente.trim()} foi atualizado.`,
-        usuarioAtual.nome,
-        {
-          valorAnterior: `Nome: ${editCliente.nome} | Sigla: ${editCliente.sigla || '—'}`,
-          valorNovo: `Nome: ${nomeCliente.trim()} | Sigla: ${siglaCliente.trim() || '—'}`,
-        }
-      )
+        mostrarToast('Órgão atualizado com sucesso.')
+      } else {
+        const novo = normalizarClienteApi(
+          await requisicaoCadastros<Cliente>('/clientes', {
+            method: 'POST',
+            body: JSON.stringify({ nome, sigla, ativo: true }),
+          }),
+        )
 
-      atualizarAuditoriaLocal()
+        setClientes((atuais) =>
+          [...atuais, novo].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+        )
 
-      mostrarToast(
-        'Órgão atualizado com sucesso.'
-      )
-    } else {
-      const novo: Cliente = {
-        id: proximoId(clientes),
-        nome: nomeCliente.trim(),
-        sigla: siglaCliente.trim(),
-        ativo: true,
-        criadoEm: agora,
+        registrarAlteracao(
+          'cliente',
+          novo.id,
+          'criacao',
+          `Órgão ${novo.nome} foi cadastrado.`,
+          usuarioAtual.nome,
+        )
+
+        mostrarToast('Órgão cadastrado com sucesso.')
       }
 
-      atualizados = [
-        ...clientes,
-        novo,
-      ]
-
-      registrarAlteracao(
-        'cliente',
-        novo.id,
-        'criacao',
-        `Órgão ${novo.nome} foi cadastrado.`,
-        usuarioAtual.nome
-      )
-
       atualizarAuditoriaLocal()
-
-      mostrarToast(
-        'Órgão cadastrado com sucesso.'
+      limparCliente()
+    } catch (erro) {
+      console.error('Falha ao salvar órgão no PostgreSQL:', erro)
+      window.alert(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível salvar o órgão no banco de dados.',
       )
     }
-
-    setClientes(atualizados)
-    salvarClientes(atualizados)
-    limparCliente()
   }
 
-  function alternarCliente(item: Cliente) {
+  async function alternarCliente(item: Cliente) {
     const novoStatus = !item.ativo
 
-    const atualizados =
-      clientes.map(
-        (registro) =>
-          registro.id === item.id
-            ? {
-                ...registro,
-                ativo: novoStatus,
-                atualizadoEm: dataAtualISO(),
-              }
-            : registro
+    try {
+      const salvo = normalizarClienteApi(
+        await requisicaoCadastros<Cliente>(`/clientes/${item.id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ ativo: novoStatus }),
+        }),
       )
 
-    setClientes(atualizados)
-    salvarClientes(atualizados)
+      setClientes((atuais) =>
+        atuais
+          .map((registro) => (registro.id === salvo.id ? salvo : registro))
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+      )
 
-    registrarAlteracao(
-      'cliente',
-      item.id,
-      'status',
-      `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      usuarioAtual.nome,
-      {
-        valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
-        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
-      }
-    )
+      registrarAlteracao(
+        'cliente',
+        item.id,
+        'status',
+        `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
+        usuarioAtual.nome,
+        {
+          valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
+          valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+        },
+      )
 
-    atualizarAuditoriaLocal()
-
-    mostrarToast(
-      `Órgão ${novoStatus ? 'ativado' : 'inativado'}.`
-    )
+      atualizarAuditoriaLocal()
+      mostrarToast(`Órgão ${novoStatus ? 'ativado' : 'inativado'}.`)
+    } catch (erro) {
+      console.error('Falha ao atualizar status do órgão:', erro)
+      window.alert(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível atualizar o status do órgão.',
+      )
+    }
   }
 
   // ==========================================================
@@ -962,144 +1087,135 @@ function Administracao({
     )
   }
 
-  function salvarSistema() {
+  async function salvarSistema() {
     if (!nomeSistema.trim()) {
-      window.alert(
-        'Informe o nome do sistema/serviço.'
-      )
+      window.alert('Informe o nome do sistema/serviço.')
       return
     }
+
+    const nome = nomeSistema.trim()
+    const clienteId = clienteSistema ? Number(clienteSistema) : null
 
     const duplicado = sistemas.find(
       (item) =>
         item.id !== editSistema?.id &&
-        item.nome.toLowerCase() ===
-          nomeSistema.trim().toLowerCase()
+        item.nome.trim().toLowerCase() === nome.toLowerCase(),
     )
 
     if (duplicado) {
-      window.alert(
-        'Este sistema já está cadastrado.'
-      )
+      window.alert('Este sistema já está cadastrado.')
       return
     }
 
-    const agora = dataAtualISO()
+    try {
+      if (editSistema) {
+        const salvo = normalizarSistemaApi(
+          await requisicaoCadastros<Sistema>(`/sistemas/${editSistema.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ nome, clienteId }),
+          }),
+        )
 
-    const clienteId =
-      clienteSistema
-        ? Number(clienteSistema)
-        : undefined
+        setSistemas((atuais) =>
+          atuais
+            .map((item) => (item.id === salvo.id ? salvo : item))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+        )
 
-    let atualizados: Sistema[]
+        const clienteAnterior = clientes.find(
+          (cliente) => cliente.id === editSistema.clienteId,
+        )
+        const clienteNovo = clientes.find(
+          (cliente) => cliente.id === salvo.clienteId,
+        )
 
-    if (editSistema) {
-      atualizados = sistemas.map(
-        (item) =>
-          item.id === editSistema.id
-            ? {
-                ...item,
-                nome: nomeSistema.trim(),
-                clienteId,
-                atualizadoEm: agora,
-              }
-            : item
-      )
+        registrarAlteracao(
+          'sistema',
+          salvo.id,
+          'edicao',
+          `Sistema ${salvo.nome} foi atualizado.`,
+          usuarioAtual.nome,
+          {
+            valorAnterior: `Nome: ${editSistema.nome} | Órgão: ${clienteAnterior?.sigla || clienteAnterior?.nome || '—'}`,
+            valorNovo: `Nome: ${salvo.nome} | Órgão: ${clienteNovo?.sigla || clienteNovo?.nome || '—'}`,
+          },
+        )
 
-      const clienteAnterior = clientes.find(
-        (cliente) => cliente.id === editSistema.clienteId
-      )
+        mostrarToast('Sistema atualizado com sucesso.')
+      } else {
+        const novo = normalizarSistemaApi(
+          await requisicaoCadastros<Sistema>('/sistemas', {
+            method: 'POST',
+            body: JSON.stringify({ nome, clienteId, ativo: true }),
+          }),
+        )
 
-      const clienteNovo = clientes.find(
-        (cliente) => cliente.id === clienteId
-      )
+        setSistemas((atuais) =>
+          [...atuais, novo].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+        )
 
-      registrarAlteracao(
-        'sistema',
-        editSistema.id,
-        'edicao',
-        `Sistema ${nomeSistema.trim()} foi atualizado.`,
-        usuarioAtual.nome,
-        {
-          valorAnterior: `Nome: ${editSistema.nome} | Órgão: ${clienteAnterior?.sigla || clienteAnterior?.nome || '—'}`,
-          valorNovo: `Nome: ${nomeSistema.trim()} | Órgão: ${clienteNovo?.sigla || clienteNovo?.nome || '—'}`,
-        }
-      )
+        registrarAlteracao(
+          'sistema',
+          novo.id,
+          'criacao',
+          `Sistema ${novo.nome} foi cadastrado.`,
+          usuarioAtual.nome,
+        )
 
-      atualizarAuditoriaLocal()
-
-      mostrarToast(
-        'Sistema atualizado com sucesso.'
-      )
-    } else {
-      const novo: Sistema = {
-        id: proximoId(sistemas),
-        nome: nomeSistema.trim(),
-        clienteId,
-        ativo: true,
-        criadoEm: agora,
+        mostrarToast('Sistema cadastrado com sucesso.')
       }
 
-      atualizados = [
-        ...sistemas,
-        novo,
-      ]
-
-      registrarAlteracao(
-        'sistema',
-        novo.id,
-        'criacao',
-        `Sistema ${novo.nome} foi cadastrado.`,
-        usuarioAtual.nome
-      )
-
       atualizarAuditoriaLocal()
-
-      mostrarToast(
-        'Sistema cadastrado com sucesso.'
+      limparSistema()
+    } catch (erro) {
+      console.error('Falha ao salvar sistema no PostgreSQL:', erro)
+      window.alert(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível salvar o sistema no banco de dados.',
       )
     }
-
-    setSistemas(atualizados)
-    salvarSistemas(atualizados)
-    limparSistema()
   }
 
-  function alternarSistema(item: Sistema) {
+  async function alternarSistema(item: Sistema) {
     const novoStatus = !item.ativo
 
-    const atualizados =
-      sistemas.map(
-        (registro) =>
-          registro.id === item.id
-            ? {
-                ...registro,
-                ativo: novoStatus,
-                atualizadoEm: dataAtualISO(),
-              }
-            : registro
+    try {
+      const salvo = normalizarSistemaApi(
+        await requisicaoCadastros<Sistema>(`/sistemas/${item.id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ ativo: novoStatus }),
+        }),
       )
 
-    setSistemas(atualizados)
-    salvarSistemas(atualizados)
+      setSistemas((atuais) =>
+        atuais
+          .map((registro) => (registro.id === salvo.id ? salvo : registro))
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+      )
 
-    registrarAlteracao(
-      'sistema',
-      item.id,
-      'status',
-      `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      usuarioAtual.nome,
-      {
-        valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
-        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
-      }
-    )
+      registrarAlteracao(
+        'sistema',
+        item.id,
+        'status',
+        `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
+        usuarioAtual.nome,
+        {
+          valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
+          valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+        },
+      )
 
-    atualizarAuditoriaLocal()
-
-    mostrarToast(
-      `Sistema ${novoStatus ? 'ativado' : 'inativado'}.`
-    )
+      atualizarAuditoriaLocal()
+      mostrarToast(`Sistema ${novoStatus ? 'ativado' : 'inativado'}.`)
+    } catch (erro) {
+      console.error('Falha ao atualizar status do sistema:', erro)
+      window.alert(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível atualizar o status do sistema.',
+      )
+    }
   }
 
   // ==========================================================
@@ -1116,129 +1232,127 @@ function Administracao({
     setNomeTipo(item.nome)
   }
 
-  function salvarTipo() {
-    if (!nomeTipo.trim()) {
-      window.alert(
-        'Informe o nome do tipo de demanda.'
-      )
+  async function salvarTipo() {
+    const nome = nomeTipo.trim()
+
+    if (!nome) {
+      window.alert('Informe o nome do tipo de demanda.')
       return
     }
 
     const duplicado = tipos.find(
       (item) =>
         item.id !== editTipo?.id &&
-        item.nome.toLowerCase() ===
-          nomeTipo.trim().toLowerCase()
+        item.nome.trim().toLowerCase() === nome.toLowerCase(),
     )
 
     if (duplicado) {
-      window.alert(
-        'Este tipo já está cadastrado.'
-      )
+      window.alert('Este tipo já está cadastrado.')
       return
     }
 
-    const agora = dataAtualISO()
+    try {
+      if (editTipo) {
+        const salvo = normalizarTipoApi(
+          await requisicaoCadastros<TipoDemanda>(`/tipos/${editTipo.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ nome }),
+          }),
+        )
 
-    let atualizados: TipoDemanda[]
+        setTipos((atuais) =>
+          atuais
+            .map((item) => (item.id === salvo.id ? salvo : item))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+        )
 
-    if (editTipo) {
-      atualizados = tipos.map(
-        (item) =>
-          item.id === editTipo.id
-            ? {
-                ...item,
-                nome: nomeTipo.trim(),
-                atualizadoEm: agora,
-              }
-            : item
-      )
+        registrarAlteracao(
+          'tipo',
+          salvo.id,
+          'edicao',
+          `Tipo ${salvo.nome} foi atualizado.`,
+          usuarioAtual.nome,
+          {
+            valorAnterior: editTipo.nome,
+            valorNovo: salvo.nome,
+          },
+        )
 
-      registrarAlteracao(
-        'tipo',
-        editTipo.id,
-        'edicao',
-        `Tipo ${nomeTipo.trim()} foi atualizado.`,
-        usuarioAtual.nome,
-        {
-          valorAnterior: editTipo.nome,
-          valorNovo: nomeTipo.trim(),
-        }
-      )
+        mostrarToast('Tipo atualizado com sucesso.')
+      } else {
+        const novo = normalizarTipoApi(
+          await requisicaoCadastros<TipoDemanda>('/tipos', {
+            method: 'POST',
+            body: JSON.stringify({ nome, ativo: true }),
+          }),
+        )
 
-      atualizarAuditoriaLocal()
+        setTipos((atuais) =>
+          [...atuais, novo].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+        )
 
-      mostrarToast(
-        'Tipo atualizado com sucesso.'
-      )
-    } else {
-      const novo: TipoDemanda = {
-        id: proximoId(tipos),
-        nome: nomeTipo.trim(),
-        ativo: true,
-        criadoEm: agora,
+        registrarAlteracao(
+          'tipo',
+          novo.id,
+          'criacao',
+          `Tipo ${novo.nome} foi cadastrado.`,
+          usuarioAtual.nome,
+        )
+
+        mostrarToast('Tipo cadastrado com sucesso.')
       }
 
-      atualizados = [
-        ...tipos,
-        novo,
-      ]
-
-      registrarAlteracao(
-        'tipo',
-        novo.id,
-        'criacao',
-        `Tipo ${novo.nome} foi cadastrado.`,
-        usuarioAtual.nome
-      )
-
       atualizarAuditoriaLocal()
-
-      mostrarToast(
-        'Tipo cadastrado com sucesso.'
+      limparTipo()
+    } catch (erro) {
+      console.error('Falha ao salvar tipo no PostgreSQL:', erro)
+      window.alert(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível salvar o tipo no banco de dados.',
       )
     }
-
-    setTipos(atualizados)
-    salvarTipos(atualizados)
-    limparTipo()
   }
 
-  function alternarTipo(item: TipoDemanda) {
+  async function alternarTipo(item: TipoDemanda) {
     const novoStatus = !item.ativo
 
-    const atualizados =
-      tipos.map(
-        (registro) =>
-          registro.id === item.id
-            ? {
-                ...registro,
-                ativo: novoStatus,
-                atualizadoEm: dataAtualISO(),
-              }
-            : registro
+    try {
+      const salvo = normalizarTipoApi(
+        await requisicaoCadastros<TipoDemanda>(`/tipos/${item.id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ ativo: novoStatus }),
+        }),
       )
 
-    setTipos(atualizados)
-    salvarTipos(atualizados)
+      setTipos((atuais) =>
+        atuais
+          .map((registro) => (registro.id === salvo.id ? salvo : registro))
+          .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+      )
 
-    registrarAlteracao(
-      'tipo',
-      item.id,
-      'status',
-      `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
-      usuarioAtual.nome,
-      {
-        valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
-        valorNovo: novoStatus ? 'Ativo' : 'Inativo',
-      }
-    )
+      registrarAlteracao(
+        'tipo',
+        item.id,
+        'status',
+        `${item.nome} foi ${novoStatus ? 'ativado' : 'inativado'}.`,
+        usuarioAtual.nome,
+        {
+          valorAnterior: item.ativo ? 'Ativo' : 'Inativo',
+          valorNovo: novoStatus ? 'Ativo' : 'Inativo',
+        },
+      )
 
-    atualizarAuditoriaLocal()
-
-    mostrarToast(
-      `Tipo ${novoStatus ? 'ativado' : 'inativado'}.`
-    )
+      atualizarAuditoriaLocal()
+      mostrarToast(`Tipo ${novoStatus ? 'ativado' : 'inativado'}.`)
+    } catch (erro) {
+      console.error('Falha ao atualizar status do tipo:', erro)
+      window.alert(
+        erro instanceof Error
+          ? erro.message
+          : 'Não foi possível atualizar o status do tipo.',
+      )
+    }
   }
 
   const quantidadeRegistros =
