@@ -835,6 +835,13 @@ function diasUteisConsumidosSemPendencia(
 function App() {
 
   const [
+    sessao,
+    setSessao,
+  ] = useState<SessaoUsuario | null>(
+    carregarSessao
+  )
+
+  const [
     pagina,
     setPagina,
   ] = useState(() => {
@@ -871,6 +878,28 @@ function App() {
   const filaPersistenciaDemandasRef = useRef<Promise<void>>(Promise.resolve())
   const alertaPersistenciaDemandasRef = useRef(false)
 
+  // Valida a sessão no servidor. Se o cookie expirou ou o backend reiniciou,
+  // limpa a sessão local e retorna ao login sem mostrar dados antigos como atuais.
+  useEffect(() => {
+    let montado = true
+    if (!sessao) {
+      setDemandasBackendProntas(false)
+      demandasAnterioresBackendRef.current = null
+      return () => { montado = false }
+    }
+
+    apiRequest<{ csrfToken: string }>('/auth/csrf').catch((erro) => {
+      if (!montado) return
+      console.warn('A sessão do SGD não pôde ser validada:', erro)
+      limparSessao()
+      setSessao(null)
+      setUsuarioTrocaSenha(null)
+      setPagina('login')
+    })
+
+    return () => { montado = false }
+  }, [sessao?.usuarioId, sessao?.login])
+
   // Os formulários legados consomem os cadastros pelo serviço storage.
   // Ao iniciar o app, sincronizamos esse cache com o PostgreSQL para que
   // Nova Demanda, filtros e demais telas usem IDs e registros reais do banco.
@@ -880,7 +909,9 @@ function App() {
     let montado = true
 
     async function sincronizarCadastros() {
+      if (!sessao) return
       try {
+        await apiRequest<{ csrfToken: string }>('/auth/csrf')
         const [clientesApi, sistemasApi, tiposApi] = await Promise.all([
           apiRequest<Cliente[]>('/clientes'),
           apiRequest<Sistema[]>('/sistemas'),
@@ -924,7 +955,7 @@ function App() {
     return () => {
       montado = false
     }
-  }, [])
+  }, [sessao?.usuarioId, sessao?.login])
 
   // ==========================================================
   // CARREGAR DEMANDAS DO POSTGRESQL / MIGRAR DADOS LOCAIS ANTIGOS
@@ -934,8 +965,53 @@ function App() {
     let montado = true
 
     async function carregarDemandasDoBanco() {
+      if (!sessao) {
+        setDemandasBackendProntas(false)
+        demandasAnterioresBackendRef.current = null
+        return
+      }
       try {
-        // Verifica a API antes de qualquer tentativa de sincronização.
+        // Confirma a sessão e recupera o CSRF antes de acessar dados compartilhados.
+        await apiRequest<{ csrfToken: string }>('/auth/csrf')
+
+        // O PostgreSQL é a fonte oficial dos feriados. Atualizamos o cache
+        // antes de carregar/normalizar demandas, pois os cálculos de SLA
+        // consultam feriadosCadastrados(), que lê a chave localStorage.
+        // Quando o banco ainda está vazio, preservamos os registros locais
+        // para que a tela Feriados possa executar a migração inicial.
+        try {
+          const feriadosBanco = await apiRequest<Array<{
+            id: number | string
+            data: string
+            descricao: string
+            ativo: boolean
+            criadoEm?: string
+            atualizadoEm?: string
+          }>>('/feriados')
+
+          if (Array.isArray(feriadosBanco) && feriadosBanco.length > 0) {
+            const feriadosNormalizados = feriadosBanco.map((feriado) => ({
+              ...feriado,
+              id: Number(feriado.id),
+              data: String(feriado.data).slice(0, 10),
+              ativo: feriado.ativo !== false,
+            }))
+
+            localStorage.setItem(
+              'feriados',
+              JSON.stringify(feriadosNormalizados)
+            )
+          }
+        } catch (erro) {
+          // A leitura dos feriados não deve impedir a abertura das demandas.
+          // O cache local continua disponível como contingência.
+          console.warn(
+            'Não foi possível sincronizar os feriados com o PostgreSQL:',
+            erro
+          )
+        }
+
+        // Os prazos são normalizados somente depois da sincronização dos feriados.
         await apiRequest<Demanda[]>('/demandas')
 
         const falhasSincronizacao = new Map<number, Demanda>()
@@ -1043,7 +1119,7 @@ function App() {
     return () => {
       montado = false
     }
-  }, [])
+  }, [sessao?.usuarioId, sessao?.login])
 
   // ==========================================================
   // PERSISTIR ALTERAÇÕES DE DEMANDAS NO POSTGRESQL
@@ -1136,13 +1212,6 @@ function App() {
   // SESSÃO
   // ==========================================================
 
-  const [
-    sessao,
-    setSessao,
-  ] = useState<SessaoUsuario | null>(
-    carregarSessao
-  )
-
   const nomeUsuarioAtual =
     sessao?.nome ||
     USUARIO_ATUAL
@@ -1154,22 +1223,16 @@ function App() {
     sessao
       ? carregarUsuarios().find(
           (usuario) =>
-            usuario.id ===
-            sessao.usuarioId
+            usuario.login.trim().toLowerCase() === sessao.login.trim().toLowerCase()
         ) || {
+          // IDs do PostgreSQL e do localStorage podem coincidir durante a migração.
+          // O login é a identidade de comparação segura; não reutilizar outro usuário só pelo ID.
           id: sessao.usuarioId,
-
           nome: sessao.nome,
-
           login: sessao.login,
-
           email: '',
-
           perfil: sessao.perfil,
-
-          status:
-            'Ativo' as const,
-
+          status: 'Ativo' as const,
           criadoEm: '',
         }
       : null
@@ -1202,80 +1265,53 @@ function App() {
     usuario: Usuario,
     exigirTrocaSenha = false
   ) {
-    // ========================================================
-    // REGISTRA O ÚLTIMO ACESSO DO USUÁRIO
-    //
-    // O registro acontece imediatamente após a autenticação,
-    // inclusive quando o usuário precisa trocar a senha no
-    // primeiro acesso.
-    // ========================================================
-
     const dataUltimoAcesso = agoraISO()
+    const usuarioAtualizado: Usuario = {
+      ...usuario,
+      ultimoAcesso: dataUltimoAcesso,
+    }
 
+    // Sincroniza o usuário autenticado recebido da API no cache legado,
+    // usando o login como chave. Não correlacionar por ID: IDs do PostgreSQL
+    // podem coincidir com IDs antigos do localStorage.
+    // Isso preserva também email, telefone e estruturaOrganizacional retornados
+    // pelo backend, para as telas que ainda leem o usuário pelo storage.
     const usuarios = carregarUsuarios()
-
-    const usuariosAtualizados = usuarios.map((item) =>
-      item.id === usuario.id
-        ? {
-            ...item,
-            ultimoAcesso: dataUltimoAcesso,
-          }
-        : item
+    const loginNormalizado = usuario.login.trim().toLowerCase()
+    const usuarioParaCache: Usuario = {
+      ...usuarioAtualizado,
+      ultimoAcesso: dataUltimoAcesso,
+    }
+    const existeNoCache = usuarios.some(
+      (item) => item.login.trim().toLowerCase() === loginNormalizado
     )
+
+    const usuariosAtualizados = existeNoCache
+      ? usuarios.map((item) =>
+          item.login.trim().toLowerCase() === loginNormalizado
+            ? { ...item, ...usuarioParaCache }
+            : item
+        )
+      : [...usuarios, usuarioParaCache]
 
     salvarUsuarios(usuariosAtualizados)
 
-    const usuarioAtualizado =
-      usuariosAtualizados.find(
-        (item) => item.id === usuario.id
-      ) || {
-        ...usuario,
-        ultimoAcesso: dataUltimoAcesso,
-      }
-
-    // ========================================================
-    // PRIMEIRO ACESSO / TROCA OBRIGATÓRIA DE SENHA
-    // ========================================================
-
     if (exigirTrocaSenha) {
-      setUsuarioTrocaSenha(
-        usuarioAtualizado
-      )
-
+      setUsuarioTrocaSenha(usuarioAtualizado)
       return
     }
 
-    // ========================================================
-    // CRIA A SESSÃO
-    // ========================================================
-
-    const novaSessao:
-      SessaoUsuario = {
-      usuarioId:
-        usuarioAtualizado.id,
-
-      nome:
-        usuarioAtualizado.nome,
-
-      perfil:
-        usuarioAtualizado.perfil,
-
-      login:
-        usuarioAtualizado.login,
+    const novaSessao: SessaoUsuario = {
+      usuarioId: usuarioAtualizado.id,
+      nome: usuarioAtualizado.nome,
+      perfil: usuarioAtualizado.perfil,
+      login: usuarioAtualizado.login,
     }
 
-    salvarSessao(
-      novaSessao
-    )
-
-    setSessao(
-      novaSessao
-    )
-
+    salvarSessao(novaSessao)
+    setSessao(novaSessao)
     setPagina(
-      ehPerfilOperacional(
-        usuarioAtualizado.perfil
-      )
+      ehPerfilOperacional(usuarioAtualizado.perfil)
         ? 'dashboard-analista'
         : 'dashboard'
     )
@@ -1284,54 +1320,46 @@ function App() {
   async function salvarNovaSenha(
     novaSenha: string
   ) {
-    if (!usuarioTrocaSenha) {
-      return
+    if (!usuarioTrocaSenha) return
+
+    if (novaSenha.length < 8) {
+      throw new Error('A senha deve possuir no mínimo 8 caracteres.')
     }
 
-    const bytes = new TextEncoder().encode(novaSenha)
-    const digest = await window.crypto.subtle.digest(
-      'SHA-256',
-      bytes
-    )
+    // A senha é enviada ao backend e recebe hash Argon2id no servidor.
+    await apiRequest<{ ok: boolean }>(`/usuarios/${usuarioTrocaSenha.id}/senha`, {
+      method: 'POST',
+      body: JSON.stringify({ senha: novaSenha }),
+    })
 
-    const senhaHash = Array.from(new Uint8Array(digest))
-      .map((byte) => byte.toString(16).padStart(2, '0'))
-      .join('')
+    const agora = agoraISO()
+    const usuarioAtualizado: Usuario = {
+      ...usuarioTrocaSenha,
+      atualizadoEm: agora,
+    }
 
-    const usuarios = carregarUsuarios() as Array<
-      Usuario & {
-        senhaHash?: string
-        exigirTrocaSenha?: boolean
-      }
-    >
-
-    const atualizados = usuarios.map((item) =>
-      item.id === usuarioTrocaSenha.id
-        ? {
-            ...item,
-            senhaHash,
-            exigirTrocaSenha: false,
-            atualizadoEm: agoraISO(),
-          }
-        : item
-    )
-
-    salvarUsuarios(atualizados)
+    // Mantém o cache local apenas quando existe o mesmo login; não cruza IDs.
+    const usuarios = carregarUsuarios()
+    const loginNormalizado = usuarioTrocaSenha.login.trim().toLowerCase()
+    if (usuarios.some((item) => item.login.trim().toLowerCase() === loginNormalizado)) {
+      salvarUsuarios(
+        usuarios.map((item) =>
+          item.login.trim().toLowerCase() === loginNormalizado
+            ? { ...item, atualizadoEm: agora }
+            : item
+        )
+      )
+    }
 
     registrarAlteracao(
       'usuario',
-      usuarioTrocaSenha.id,
+      usuarioAtualizado.id,
       'troca_senha_primeiro_acesso',
-      `O usuário ${usuarioTrocaSenha.nome} concluiu a troca da senha no primeiro acesso.`,
-      usuarioTrocaSenha.nome
+      `O usuário ${usuarioAtualizado.nome} concluiu a troca da senha no primeiro acesso.`,
+      usuarioAtualizado.nome
     )
 
-    const usuarioAtualizado = atualizados.find(
-      (item) => item.id === usuarioTrocaSenha.id
-    ) || usuarioTrocaSenha
-
     setUsuarioTrocaSenha(null)
-
     const novaSessao: SessaoUsuario = {
       usuarioId: usuarioAtualizado.id,
       nome: usuarioAtualizado.nome,
@@ -1352,22 +1380,21 @@ function App() {
   // LOGOUT
   // ==========================================================
 
-  function realizarLogout() {
-    limparSessao()
-
-    setSessao(
-      null
-    )
-
-    setDemandaSelecionada(
-      null
-    )
-
-    setUsuarioTrocaSenha(null)
-
-    setPagina(
-      'login'
-    )
+  async function realizarLogout() {
+    try {
+      await apiRequest<{ ok: boolean }>('/auth/logout', { method: 'POST' })
+    } catch (erro) {
+      // A sessão local deve ser encerrada mesmo se a API já estiver indisponível.
+      console.warn('Não foi possível confirmar o encerramento da sessão no backend:', erro)
+    } finally {
+      limparSessao()
+      setSessao(null)
+      setDemandaSelecionada(null)
+      setUsuarioTrocaSenha(null)
+      setDemandasBackendProntas(false)
+      demandasAnterioresBackendRef.current = null
+      setPagina('login')
+    }
   }
 
   // ==========================================================

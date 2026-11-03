@@ -15,6 +15,8 @@ import type {
   Usuario,
 } from '../types'
 
+import { apiRequest } from './api'
+
 export const STORAGE_KEYS = {
   demandas: 'demandas',
   usuarios: 'usuarios',
@@ -265,6 +267,18 @@ export function carregarNotificacoes(): Notificacao[] {
 
 export function salvarNotificacoes(notificacoes: Notificacao[]) {
   salvar(STORAGE_KEYS.notificacoes, notificacoes)
+
+  // O cache local mantém compatibilidade com as telas atuais.
+  // O PostgreSQL mantém a lista compartilhada por usuário.
+  void apiRequest<Notificacao[]>('/notificacoes', {
+    method: 'PUT',
+    body: JSON.stringify(notificacoes),
+  }).catch((erro) => {
+    console.error(
+      'Não foi possível sincronizar as notificações com o PostgreSQL:',
+      erro
+    )
+  })
 }
 
 export function carregarAuditoria(): RegistroAuditoria[] {

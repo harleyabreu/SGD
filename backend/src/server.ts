@@ -1,7 +1,10 @@
 ﻿import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import argon2 from "argon2";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
+import { criarRotasFeriados } from "./feriadosRoutes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -15,13 +18,668 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
+const FRONTEND_ORIGIN = (process.env.FRONTEND_URL ?? "http://localhost:5173").replace(/\/+$/, "");
+const COOKIE_SESSAO = "sgd_session";
+const COOKIE_CSRF = "sgd_csrf";
+const DURACAO_SESSAO_MS = 8 * 60 * 60 * 1000;
+const DURACAO_SESSAO_SEGUNDOS = Math.floor(DURACAO_SESSAO_MS / 1000);
+const limiteTentativasLogin = new Map<string, { tentativas: number; inicio: number; bloqueadoAte: number }>();
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ?? "http://localhost:5173",
+    origin: FRONTEND_ORIGIN,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Accept", "X-CSRF-Token"],
   }),
 );
 
 app.use(express.json({ limit: "100mb" }));
+
+function cookiesDaRequisicao(cookieHeader: string | undefined): Record<string, string> {
+  const resultado: Record<string, string> = {};
+  if (!cookieHeader) return resultado;
+  for (const parte of cookieHeader.split(";")) {
+    const indice = parte.indexOf("=");
+    if (indice < 1) continue;
+    const nome = parte.slice(0, indice).trim();
+    const valor = parte.slice(indice + 1).trim();
+    try {
+      resultado[nome] = decodeURIComponent(valor);
+    } catch {
+      resultado[nome] = valor;
+    }
+  }
+  return resultado;
+}
+
+function cookieBase(seguro: boolean): string {
+  return `Path=/; SameSite=Lax${seguro ? "; Secure" : ""}`;
+}
+
+function gravarCookiesSessao(res: express.Response, idSessao: string, csrfToken: string): void {
+  const seguro = process.env.NODE_ENV === "production";
+  const base = cookieBase(seguro);
+  res.append("Set-Cookie", `${COOKIE_SESSAO}=${encodeURIComponent(idSessao)}; HttpOnly; ${base}; Max-Age=${DURACAO_SESSAO_SEGUNDOS}`);
+  // O CSRF token é propositalmente legível pelo frontend para ser enviado em um header.
+  res.append("Set-Cookie", `${COOKIE_CSRF}=${encodeURIComponent(csrfToken)}; ${base}; Max-Age=${DURACAO_SESSAO_SEGUNDOS}`);
+}
+
+function limparCookiesSessao(res: express.Response): void {
+  const seguro = process.env.NODE_ENV === "production";
+  const base = cookieBase(seguro);
+  res.append("Set-Cookie", `${COOKIE_SESSAO}=; HttpOnly; ${base}; Max-Age=0`);
+  res.append("Set-Cookie", `${COOKIE_CSRF}=; ${base}; Max-Age=0`);
+}
+
+function hashesIguais(a: string, b: string): boolean {
+  const bufferA = Buffer.from(a, "utf8");
+  const bufferB = Buffer.from(b, "utf8");
+  return bufferA.length === bufferB.length && timingSafeEqual(bufferA, bufferB);
+}
+
+function origemPermitida(req: express.Request): boolean {
+  const origem = req.get("origin");
+  // Requisições sem Origin só podem prosseguir se também tiverem sessão válida.
+  return !origem || origem.replace(/\/+$/, "") === FRONTEND_ORIGIN;
+}
+
+function registrarFalhaLogin(chave: string): number {
+  const agora = Date.now();
+  const atual = limiteTentativasLogin.get(chave);
+  if (!atual || agora - atual.inicio > 10 * 60 * 1000) {
+    limiteTentativasLogin.set(chave, { tentativas: 1, inicio: agora, bloqueadoAte: 0 });
+    return 1;
+  }
+  atual.tentativas += 1;
+  if (atual.tentativas >= 5) atual.bloqueadoAte = agora + 15 * 60 * 1000;
+  limiteTentativasLogin.set(chave, atual);
+  return atual.tentativas;
+}
+
+// ============================================================
+// AUTENTICAÇÃO
+// ============================================================
+// Aceita hashes Argon2 e migra hashes SHA-256 legados para Argon2
+// após uma autenticação válida. Não aceita senhas em texto puro.
+app.post("/api/auth/login", async (req, res) => {
+  if (!origemPermitida(req)) {
+    return res.status(403).json({ message: "Origem da requisição não autorizada." });
+  }
+
+  const login = typeof req.body?.login === "string" ? req.body.login.trim() : "";
+  const senha = typeof req.body?.senha === "string" ? req.body.senha : "";
+  const chaveTentativa = `${req.ip || req.socket.remoteAddress || "desconhecido"}:${login.toLowerCase()}`;
+  const tentativaAtual = limiteTentativasLogin.get(chaveTentativa);
+  if (tentativaAtual && tentativaAtual.bloqueadoAte > Date.now()) {
+    return res.status(429).json({ message: "Muitas tentativas de login. Aguarde 15 minutos e tente novamente." });
+  }
+
+  if (!login || !senha) {
+    return res.status(400).json({ message: "Informe usuário e senha." });
+  }
+
+  if (senha.length < 8) {
+    return res.status(400).json({
+      message: "A senha deve possuir no mínimo 8 caracteres.",
+    });
+  }
+
+  try {
+    const resultado = await pool.query(
+      `SELECT id, nome, login, email, telefone, senha_hash, perfil, status,
+              diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+              divisao_nome, criado_em, atualizado_em, ultimo_acesso, exigir_troca_senha
+         FROM usuarios
+        WHERE LOWER(BTRIM(login)) = LOWER(BTRIM($1))
+        LIMIT 1`,
+      [login],
+    );
+
+    if (resultado.rows.length === 0) {
+      registrarFalhaLogin(chaveTentativa);
+      return res.status(401).json({ message: "Usuário ou senha inválidos." });
+    }
+
+    const usuario = resultado.rows[0];
+    const statusUsuario = String(usuario.status ?? "").trim().toLowerCase();
+    if (statusUsuario !== "ativo") {
+      registrarFalhaLogin(chaveTentativa);
+      return res.status(401).json({ message: "Usuário ou senha inválidos." });
+    }
+
+    const hashArmazenado = String(usuario.senha_hash ?? "");
+    let senhaValida = false;
+    let hashAtualizado: string | null = null;
+
+    if (hashArmazenado.startsWith("$argon2")) {
+      try {
+        senhaValida = await argon2.verify(hashArmazenado, senha);
+      } catch {
+        senhaValida = false;
+      }
+    } else if (/^[a-f0-9]{64}$/i.test(hashArmazenado)) {
+      // O login anterior calculava SHA-256 no navegador.
+      const hashCalculado = createHash("sha256").update(senha, "utf8").digest();
+      const hashLegado = Buffer.from(hashArmazenado, "hex");
+      senhaValida =
+        hashLegado.length === hashCalculado.length &&
+        timingSafeEqual(hashLegado, hashCalculado);
+
+      if (senhaValida) {
+        hashAtualizado = await argon2.hash(senha);
+      }
+    }
+
+    if (!senhaValida) {
+      registrarFalhaLogin(chaveTentativa);
+      return res.status(401).json({ message: "Usuário ou senha inválidos." });
+    }
+
+    limiteTentativasLogin.delete(chaveTentativa);
+
+    const atualizacao = await pool.query(
+      `UPDATE usuarios
+          SET ultimo_acesso = CURRENT_TIMESTAMP,
+              atualizado_em = CASE WHEN $2::text IS NOT NULL
+                                    THEN CURRENT_TIMESTAMP
+                                    ELSE atualizado_em END,
+              senha_hash = COALESCE($2, senha_hash)
+        WHERE id = $1
+        RETURNING ultimo_acesso, atualizado_em`,
+      [usuario.id, hashAtualizado],
+    );
+
+    const atualizado = atualizacao.rows[0];
+    const estruturaCompleta = Boolean(
+      usuario.diretoria_sigla &&
+      usuario.diretoria_nome &&
+      usuario.gerencia_sigla &&
+      usuario.gerencia_nome &&
+      usuario.divisao_nome,
+    );
+
+    // Cria uma sessão opaca no PostgreSQL. O navegador recebe apenas um cookie HttpOnly.
+    const idSessao = randomBytes(32).toString("base64url");
+    const csrfToken = randomBytes(32).toString("base64url");
+    const idSessaoHash = createHash("sha256").update(idSessao).digest("hex");
+    const csrfHash = createHash("sha256").update(csrfToken).digest("hex");
+    await pool.query(
+      `INSERT INTO sessoes_autenticacao (id_hash, usuario_id, csrf_hash, expira_em)
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP + INTERVAL '8 hours')`,
+      [idSessaoHash, usuario.id, csrfHash],
+    );
+    gravarCookiesSessao(res, idSessao, csrfToken);
+
+    return res.json({
+      csrfToken,
+      usuario: {
+        id: Number(usuario.id),
+        nome: usuario.nome,
+        login: usuario.login,
+        email: usuario.email,
+        ...(usuario.telefone ? { telefone: usuario.telefone } : {}),
+        perfil: usuario.perfil,
+        status: usuario.status,
+        criadoEm: usuario.criado_em,
+        atualizadoEm: atualizado?.atualizado_em ?? usuario.atualizado_em,
+        ultimoAcesso: atualizado?.ultimo_acesso ?? null,
+        ...(estruturaCompleta
+          ? {
+              estruturaOrganizacional: {
+                diretoriaSigla: usuario.diretoria_sigla,
+                diretoriaNome: usuario.diretoria_nome,
+                gerenciaSigla: usuario.gerencia_sigla,
+                gerenciaNome: usuario.gerencia_nome,
+                divisaoNome: usuario.divisao_nome,
+              },
+            }
+          : {}),
+      },
+      exigirTrocaSenha: Boolean(usuario.exigir_troca_senha),
+    });
+  } catch (error) {
+    console.error("Falha na autenticação:", error);
+    return res.status(500).json({
+      message: "Não foi possível realizar o login neste momento.",
+    });
+  }
+});
+
+// ============================================================
+// SESSÃO, CSRF E AUTORIZAÇÃO POR PERFIL
+// ============================================================
+// Todas as rotas /api ficam protegidas, exceto health e login.
+// A sessão é armazenada no PostgreSQL; o cookie do navegador é HttpOnly.
+app.use("/api", async (req, res, next) => {
+  const caminho = req.originalUrl.split("?")[0].replace(/^\/api(?=\/|$)/, "") || "/";
+  if (req.method === "OPTIONS" || (req.method === "GET" && caminho === "/health") || (req.method === "POST" && caminho === "/auth/login")) {
+    return next();
+  }
+
+  const cookies = cookiesDaRequisicao(req.headers.cookie);
+  const idSessao = cookies[COOKIE_SESSAO];
+  if (!idSessao) {
+    limparCookiesSessao(res);
+    return res.status(401).json({ message: "Sessão não autenticada. Entre novamente no SGD." });
+  }
+
+  const idSessaoHash = createHash("sha256").update(idSessao).digest("hex");
+
+  try {
+    const resultado = await pool.query(
+      `SELECT s.id_hash, s.csrf_hash, s.usuario_id,
+              u.nome, u.login, u.perfil, u.status, u.exigir_troca_senha
+         FROM sessoes_autenticacao s
+         JOIN usuarios u ON u.id = s.usuario_id
+        WHERE s.id_hash = $1 AND s.expira_em > CURRENT_TIMESTAMP`,
+      [idSessaoHash],
+    );
+
+    if (resultado.rows.length === 0 || String(resultado.rows[0].status ?? "").trim().toLowerCase() !== "ativo") {
+      await pool.query("DELETE FROM sessoes_autenticacao WHERE id_hash = $1", [idSessaoHash]);
+      limparCookiesSessao(res);
+      return res.status(401).json({ message: "Sessão expirada ou usuário inativo. Entre novamente." });
+    }
+
+    const usuario = resultado.rows[0];
+    const metodoEscrita = !["GET", "HEAD", "OPTIONS"].includes(req.method.toUpperCase());
+    if (metodoEscrita) {
+      if (!origemPermitida(req)) {
+        return res.status(403).json({ message: "Origem da requisição não autorizada." });
+      }
+      const csrfCookie = cookies[COOKIE_CSRF] ?? "";
+      const csrfHeader = typeof req.get("X-CSRF-Token") === "string" ? req.get("X-CSRF-Token")! : "";
+      const csrfHashCookie = createHash("sha256").update(csrfCookie).digest("hex");
+      const csrfHashHeader = createHash("sha256").update(csrfHeader).digest("hex");
+      if (!csrfCookie || !csrfHeader || !hashesIguais(csrfCookie, csrfHeader) ||
+          !hashesIguais(csrfHashCookie, String(usuario.csrf_hash)) ||
+          !hashesIguais(csrfHashHeader, String(usuario.csrf_hash))) {
+        return res.status(403).json({ message: "Token de segurança inválido ou expirado. Atualize a página e tente novamente." });
+      }
+    }
+
+    const perfilGestor = String(usuario.perfil ?? "").trim().toLowerCase() === "gestor/administrador";
+    const rotaUsuarios = /^\/usuarios(?:\/|$)/.test(caminho);
+    const rotaSenhaPropria = req.method === "POST" && Boolean(usuario.exigir_troca_senha) &&
+      /^\/usuarios\/(\d+)\/senha$/.test(caminho) &&
+      Number(caminho.match(/^\/usuarios\/(\d+)\/senha$/)?.[1]) === Number(usuario.usuario_id);
+    const rotaCatalogo = /^\/(clientes|sistemas|tipos)(?:\/|$)/.test(caminho);
+    const escritaCatalogo = rotaCatalogo && metodoEscrita;
+    const exclusaoDemanda = /^\/demandas\/\d+$/.test(caminho) && req.method === "DELETE";
+
+    if (Boolean(usuario.exigir_troca_senha) &&
+        caminho !== "/auth/csrf" && caminho !== "/auth/me" && caminho !== "/auth/logout" && !rotaSenhaPropria) {
+      return res.status(403).json({ message: "Troque a senha inicial antes de usar as demais funções do SGD." });
+    }
+
+    if ((rotaUsuarios && !rotaSenhaPropria && !perfilGestor) ||
+        (escritaCatalogo && !perfilGestor) ||
+        (exclusaoDemanda && !perfilGestor)) {
+      return res.status(403).json({ message: "Seu perfil não possui permissão para esta operação." });
+    }
+
+    res.locals.sgdAuth = {
+      id: Number(usuario.usuario_id),
+      nome: String(usuario.nome),
+      login: String(usuario.login),
+      perfil: String(usuario.perfil),
+      exigirTrocaSenha: Boolean(usuario.exigir_troca_senha),
+      sessaoHash: idSessaoHash,
+      csrfHash: String(usuario.csrf_hash),
+    };
+    return next();
+  } catch (error) {
+    console.error("Falha ao validar sessão:", error);
+    return res.status(500).json({ message: "Não foi possível validar a sessão." });
+  }
+});
+
+app.get("/api/auth/csrf", async (_req, res) => {
+  const autenticacao = res.locals.sgdAuth as { csrfHash: string; sessaoHash: string } | undefined;
+  const cookies = cookiesDaRequisicao(_req.headers.cookie);
+  const atual = cookies[COOKIE_CSRF] ?? "";
+  const atualHash = atual ? createHash("sha256").update(atual).digest("hex") : "";
+
+  if (autenticacao && atual && hashesIguais(atualHash, autenticacao.csrfHash)) {
+    return res.json({ csrfToken: atual });
+  }
+
+  const novoToken = randomBytes(32).toString("base64url");
+  const novoHash = createHash("sha256").update(novoToken).digest("hex");
+  try {
+    await pool.query(
+      "UPDATE sessoes_autenticacao SET csrf_hash = $1 WHERE id_hash = $2",
+      [novoHash, autenticacao?.sessaoHash],
+    );
+    const cookiesDaSessao = cookiesDaRequisicao(_req.headers.cookie);
+    const idSessao = cookiesDaSessao[COOKIE_SESSAO];
+    if (idSessao) {
+      const secure = process.env.NODE_ENV === "production";
+      res.append("Set-Cookie", `${COOKIE_CSRF}=${encodeURIComponent(novoToken)}; ${cookieBase(secure)}; Max-Age=${DURACAO_SESSAO_SEGUNDOS}`);
+    }
+    return res.json({ csrfToken: novoToken });
+  } catch (error) {
+    console.error("Falha ao renovar token CSRF:", error);
+    return res.status(500).json({ message: "Não foi possível atualizar o token de segurança." });
+  }
+});
+
+app.post("/api/auth/logout", async (_req, res) => {
+  const autenticacao = res.locals.sgdAuth as { sessaoHash: string };
+  try {
+    await pool.query("DELETE FROM sessoes_autenticacao WHERE id_hash = $1", [autenticacao.sessaoHash]);
+    limparCookiesSessao(res);
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Falha ao encerrar sessão:", error);
+    return res.status(500).json({ message: "Não foi possível encerrar a sessão." });
+  }
+});
+
+// ============================================================
+// USUÁRIOS — PostgreSQL como fonte oficial
+// ============================================================
+// As rotas são protegidas por sessão HttpOnly, token CSRF e perfil Gestor.
+
+type UsuarioBanco = {
+  id: number | string;
+  nome: string;
+  login: string;
+  email: string;
+  telefone: string | null;
+  perfil: string;
+  status: string;
+  diretoria_sigla: string | null;
+  diretoria_nome: string | null;
+  gerencia_sigla: string | null;
+  gerencia_nome: string | null;
+  divisao_nome: string | null;
+  criado_em: string;
+  atualizado_em: string;
+  ultimo_acesso: string | null;
+  exigir_troca_senha: boolean;
+};
+
+const PERFIS_USUARIO = new Set([
+  "Gestor/Administrador",
+  "Analista",
+  "Desenvolvedor",
+  "Estagiário",
+]);
+
+function usuarioPublico(row: UsuarioBanco) {
+  const estruturaCompleta = Boolean(
+    row.diretoria_sigla && row.diretoria_nome && row.gerencia_sigla &&
+    row.gerencia_nome && row.divisao_nome,
+  );
+
+  return {
+    id: Number(row.id),
+    nome: row.nome,
+    login: row.login,
+    email: row.email,
+    telefone: row.telefone ?? "",
+    perfil: row.perfil,
+    status: row.status,
+    criadoEm: row.criado_em,
+    atualizadoEm: row.atualizado_em,
+    ultimoAcesso: row.ultimo_acesso,
+    exigirTrocaSenha: Boolean(row.exigir_troca_senha),
+    ...(estruturaCompleta ? {
+      estruturaOrganizacional: {
+        diretoriaSigla: row.diretoria_sigla,
+        diretoriaNome: row.diretoria_nome,
+        gerenciaSigla: row.gerencia_sigla,
+        gerenciaNome: row.gerencia_nome,
+        divisaoNome: row.divisao_nome,
+      },
+    } : {}),
+  };
+}
+
+function lerEstruturaOrganizacional(valor: unknown) {
+  const estrutura = valor && typeof valor === "object"
+    ? valor as Record<string, unknown>
+    : {};
+
+  const diretoriaSigla = typeof estrutura.diretoriaSigla === "string" ? estrutura.diretoriaSigla.trim() : "";
+  const diretoriaNome = typeof estrutura.diretoriaNome === "string" ? estrutura.diretoriaNome.trim() : "";
+  const gerenciaSigla = typeof estrutura.gerenciaSigla === "string" ? estrutura.gerenciaSigla.trim() : "";
+  const gerenciaNome = typeof estrutura.gerenciaNome === "string" ? estrutura.gerenciaNome.trim() : "";
+  const divisaoNome = typeof estrutura.divisaoNome === "string" ? estrutura.divisaoNome.trim() : "";
+
+  return { diretoriaSigla, diretoriaNome, gerenciaSigla, gerenciaNome, divisaoNome };
+}
+
+const SELECT_USUARIO_PUBLICO = `
+  SELECT id, nome, login, email, telefone, perfil, status,
+         diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+         divisao_nome, criado_em, atualizado_em, ultimo_acesso,
+         exigir_troca_senha
+    FROM usuarios
+`;
+
+app.get("/api/auth/me", async (_req, res) => {
+  const autenticacao = res.locals.sgdAuth as { id: number } | undefined;
+  if (!autenticacao) return res.status(401).json({ message: "Sessão não autenticada." });
+  try {
+    const resultado = await pool.query(`${SELECT_USUARIO_PUBLICO} WHERE id = $1`, [autenticacao.id]);
+    if (resultado.rows.length === 0) return res.status(401).json({ message: "Usuário não encontrado." });
+    return res.json({ usuario: usuarioPublico(resultado.rows[0] as UsuarioBanco) });
+  } catch (error) {
+    console.error("Falha ao consultar usuário da sessão:", error);
+    return res.status(500).json({ message: "Não foi possível consultar a sessão atual." });
+  }
+});
+
+app.get("/api/usuarios", async (_req, res) => {
+  try {
+    const resultado = await pool.query(`${SELECT_USUARIO_PUBLICO} ORDER BY nome, id`);
+    res.json(resultado.rows.map((row) => usuarioPublico(row as UsuarioBanco)));
+  } catch (error) {
+    console.error("Falha ao consultar usuários:", error);
+    res.status(500).json({ message: "Não foi possível consultar os usuários." });
+  }
+});
+
+app.post("/api/usuarios", async (req, res) => {
+  const body = req.body ?? {};
+  const nome = typeof body.nome === "string" ? body.nome.trim() : "";
+  const login = typeof body.login === "string" ? body.login.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const telefone = typeof body.telefone === "string" ? body.telefone.trim() : "";
+  const perfil = typeof body.perfil === "string" ? body.perfil.trim() : "";
+  const senha = typeof body.senha === "string" ? body.senha : "";
+  const estrutura = lerEstruturaOrganizacional(body.estruturaOrganizacional);
+
+  if (!nome || !login || !email || !perfil || !senha) {
+    return res.status(400).json({ message: "Informe nome, login, e-mail, perfil e senha temporária." });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: "Informe um e-mail válido." });
+  }
+  if (senha.length < 8) {
+    return res.status(400).json({ message: "A senha deve possuir no mínimo 8 caracteres." });
+  }
+  if (!PERFIS_USUARIO.has(perfil)) {
+    return res.status(400).json({ message: "Perfil de usuário inválido." });
+  }
+  if (!estrutura.diretoriaSigla || !estrutura.diretoriaNome || !estrutura.gerenciaSigla || !estrutura.gerenciaNome || !estrutura.divisaoNome) {
+    return res.status(400).json({ message: "Selecione Diretoria, Gerência e Divisão do usuário." });
+  }
+
+  try {
+    const senhaHash = await argon2.hash(senha, { type: argon2.argon2id });
+    const resultado = await pool.query(
+      `INSERT INTO usuarios (
+         nome, login, email, telefone, senha_hash, perfil, status,
+         diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+         divisao_nome, exigir_troca_senha, criado_em, atualizado_em
+       ) VALUES ($1,$2,$3,$4,$5,$6,'Ativo',$7,$8,$9,$10,$11,TRUE,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+       RETURNING id, nome, login, email, telefone, perfil, status,
+                 diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+                 divisao_nome, criado_em, atualizado_em, ultimo_acesso,
+                 exigir_troca_senha`,
+      [nome, login, email, telefone || null, senhaHash, perfil,
+       estrutura.diretoriaSigla, estrutura.diretoriaNome, estrutura.gerenciaSigla,
+       estrutura.gerenciaNome, estrutura.divisaoNome],
+    );
+    return res.status(201).json(usuarioPublico(resultado.rows[0] as UsuarioBanco));
+  } catch (error) {
+    const dbError = error as { code?: string };
+    if (dbError.code === "23505") {
+      return res.status(409).json({ message: "Este login ou e-mail já está cadastrado." });
+    }
+    console.error("Falha ao cadastrar usuário:", error);
+    return res.status(500).json({ message: "Não foi possível cadastrar o usuário." });
+  }
+});
+
+app.put("/api/usuarios/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const body = req.body ?? {};
+  const nome = typeof body.nome === "string" ? body.nome.trim() : "";
+  const login = typeof body.login === "string" ? body.login.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const telefone = typeof body.telefone === "string" ? body.telefone.trim() : "";
+  const perfil = typeof body.perfil === "string" ? body.perfil.trim() : "";
+  const senha = typeof body.senha === "string" && body.senha.length > 0 ? body.senha : null;
+  const estrutura = lerEstruturaOrganizacional(body.estruturaOrganizacional);
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ message: "ID de usuário inválido." });
+  }
+  if (!nome || !login || !email || !perfil) {
+    return res.status(400).json({ message: "Informe nome, login, e-mail e perfil." });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: "Informe um e-mail válido." });
+  }
+  if (!PERFIS_USUARIO.has(perfil)) {
+    return res.status(400).json({ message: "Perfil de usuário inválido." });
+  }
+  if (senha && senha.length < 8) {
+    return res.status(400).json({ message: "A senha deve possuir no mínimo 8 caracteres." });
+  }
+  if (!estrutura.diretoriaSigla || !estrutura.diretoriaNome || !estrutura.gerenciaSigla || !estrutura.gerenciaNome || !estrutura.divisaoNome) {
+    return res.status(400).json({ message: "Selecione Diretoria, Gerência e Divisão do usuário." });
+  }
+
+  try {
+    const senhaHash = senha ? await argon2.hash(senha, { type: argon2.argon2id }) : null;
+    const resultado = await pool.query(
+      `UPDATE usuarios SET
+         nome=$1, login=$2, email=$3, telefone=$4, perfil=$5,
+         diretoria_sigla=$6, diretoria_nome=$7, gerencia_sigla=$8,
+         gerencia_nome=$9, divisao_nome=$10,
+         senha_hash=COALESCE($11, senha_hash),
+         exigir_troca_senha=CASE WHEN $11::text IS NOT NULL THEN FALSE ELSE exigir_troca_senha END,
+         atualizado_em=CURRENT_TIMESTAMP
+       WHERE id=$12
+       RETURNING id, nome, login, email, telefone, perfil, status,
+                 diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+                 divisao_nome, criado_em, atualizado_em, ultimo_acesso,
+                 exigir_troca_senha`,
+      [nome, login, email, telefone || null, perfil,
+       estrutura.diretoriaSigla, estrutura.diretoriaNome, estrutura.gerenciaSigla,
+       estrutura.gerenciaNome, estrutura.divisaoNome, senhaHash, id],
+    );
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+    return res.json(usuarioPublico(resultado.rows[0] as UsuarioBanco));
+  } catch (error) {
+    const dbError = error as { code?: string };
+    if (dbError.code === "23505") {
+      return res.status(409).json({ message: "Este login ou e-mail já está cadastrado." });
+    }
+    console.error("Falha ao editar usuário:", error);
+    return res.status(500).json({ message: "Não foi possível editar o usuário." });
+  }
+});
+
+app.patch("/api/usuarios/:id/status", async (req, res) => {
+  const id = Number(req.params.id);
+  const status = typeof req.body?.status === "string" ? req.body.status.trim() : "";
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ message: "ID de usuário inválido." });
+  }
+  if (status !== "Ativo" && status !== "Inativo") {
+    return res.status(400).json({ message: "O status deve ser Ativo ou Inativo." });
+  }
+
+  const conexao = await pool.connect();
+  try {
+    await conexao.query("BEGIN");
+    if (status === "Inativo") {
+      const atual = await conexao.query(
+        "SELECT perfil, status FROM usuarios WHERE id=$1 FOR UPDATE", [id],
+      );
+      if (atual.rowCount === 0) {
+        await conexao.query("ROLLBACK");
+        return res.status(404).json({ message: "Usuário não encontrado." });
+      }
+      if (atual.rows[0].perfil === "Gestor/Administrador" && atual.rows[0].status === "Ativo") {
+        const gestores = await conexao.query(
+          "SELECT COUNT(*)::integer AS total FROM usuarios WHERE perfil='Gestor/Administrador' AND status='Ativo'",
+        );
+        if (Number(gestores.rows[0].total) <= 1) {
+          await conexao.query("ROLLBACK");
+          return res.status(409).json({ message: "O sistema precisa manter pelo menos um Gestor ativo." });
+        }
+      }
+    }
+    const resultado = await conexao.query(
+      `UPDATE usuarios SET status=$1, atualizado_em=CURRENT_TIMESTAMP
+       WHERE id=$2
+       RETURNING id, nome, login, email, telefone, perfil, status,
+                 diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+                 divisao_nome, criado_em, atualizado_em, ultimo_acesso,
+                 exigir_troca_senha`,
+      [status, id],
+    );
+    await conexao.query("COMMIT");
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+    return res.json(usuarioPublico(resultado.rows[0] as UsuarioBanco));
+  } catch (error) {
+    await conexao.query("ROLLBACK");
+    console.error("Falha ao atualizar status do usuário:", error);
+    return res.status(500).json({ message: "Não foi possível atualizar o status do usuário." });
+  } finally {
+    conexao.release();
+  }
+});
+
+app.post("/api/usuarios/:id/senha", async (req, res) => {
+  const id = Number(req.params.id);
+  const senha = typeof req.body?.senha === "string" ? req.body.senha : "";
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ message: "ID de usuário inválido." });
+  }
+  if (senha.length < 8) {
+    return res.status(400).json({ message: "A senha deve possuir no mínimo 8 caracteres." });
+  }
+
+  try {
+    const hash = await argon2.hash(senha, { type: argon2.argon2id });
+    const resultado = await pool.query(
+      `UPDATE usuarios
+          SET senha_hash=$1, exigir_troca_senha=FALSE, atualizado_em=CURRENT_TIMESTAMP
+        WHERE id=$2 RETURNING id`,
+      [hash, id],
+    );
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Falha ao alterar senha do usuário:", error);
+    return res.status(500).json({ message: "Não foi possível alterar a senha." });
+  }
+});
 
 // ============================================================
 // VERIFICAR CONEXÃO COM O POSTGRESQL
@@ -1362,6 +2020,9 @@ app.get("/api/demandas", async (_req, res) => {
   }
 });
 
+// Rotas de Feriados — registradas fora das demais rotas.
+app.use("/api", criarRotasFeriados(pool));
+
 // ============================================================
 // INICIAR SERVIDOR
 // ============================================================
@@ -1400,6 +2061,25 @@ async function reconciliarPrioridadesAtendimentoNoBanco(): Promise<void> {
 }
 
 async function iniciarServidor(): Promise<void> {
+  // Tabela de sessões aditiva. Tokens são armazenados como hash, nunca em texto puro.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS sessoes_autenticacao (
+      id_hash TEXT PRIMARY KEY,
+      usuario_id BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      csrf_hash TEXT NOT NULL,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      expira_em TIMESTAMPTZ NOT NULL
+    )
+  `);
+  await pool.query("CREATE INDEX IF NOT EXISTS idx_sessoes_autenticacao_expira_em ON sessoes_autenticacao (expira_em)");
+  await pool.query("DELETE FROM sessoes_autenticacao WHERE expira_em <= CURRENT_TIMESTAMP");
+
+  // Migração aditiva: mantém todos os usuários existentes e registra se
+  // a senha inicial ainda precisa ser trocada no primeiro acesso.
+  await pool.query(
+    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS exigir_troca_senha BOOLEAN NOT NULL DEFAULT FALSE",
+  );
+
   // Corrige divergências existentes, usando o último evento válido do histórico.
   // Se o banco estiver temporariamente indisponível, o backend ainda inicia e
   // continua informando a falha pelo endpoint /api/health.

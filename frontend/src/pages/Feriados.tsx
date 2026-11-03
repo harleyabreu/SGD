@@ -8,12 +8,13 @@
 
 
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import './Feriados.css'
 
 import MenuPrincipal from '../components/MenuPrincipal'
 import { mostrarToast } from '../services/toast'
+import { apiRequest } from '../services/api'
 
 
 
@@ -141,7 +142,7 @@ function carregarFeriados(): Feriado[] {
 
           const data =
 
-              /^\d{2}\/\d{2}\/\d{4}$/.test(item)
+               /^\d{2}\/\d{2}\/\d{4}$/.test(item)
 
               ? `${item.slice(6, 10)}-${item.slice(3, 5)}-${item.slice(0, 2)}`
 
@@ -302,6 +303,100 @@ export default function Feriados({
     useState<number | null>(null)
 
 
+  // ==========================================================
+  // SINCRONIZAR COM O POSTGRESQL
+  // ==========================================================
+
+  useEffect(() => {
+
+    let desmontado = false
+
+    async function sincronizarFeriados() {
+
+      try {
+
+        let registros = await apiRequest<Feriado[]>('/feriados')
+
+        if (!Array.isArray(registros)) {
+
+          registros = []
+
+        }
+
+        // Migra os feriados antigos somente quando o banco ainda
+        // não possui registros. A importação preserva datas históricas.
+
+        if (registros.length === 0) {
+
+          const antigos = carregarFeriados()
+
+          if (antigos.length > 0) {
+
+            const migracao = await apiRequest<{
+
+              migrado: boolean
+
+              feriados: Feriado[]
+
+            }>('/feriados/migrar', {
+
+              method: 'POST',
+
+              body: JSON.stringify(antigos),
+
+            })
+
+            registros = Array.isArray(migracao.feriados)
+
+              ? migracao.feriados
+
+              : await apiRequest<Feriado[]>('/feriados')
+
+          }
+
+        }
+
+        if (desmontado) return
+
+        setFeriados(registros)
+
+        salvarFeriados(registros)
+
+      } catch (erro) {
+
+        console.error(
+
+          'Não foi possível sincronizar os feriados com o PostgreSQL:',
+
+          erro,
+
+        )
+
+        if (!desmontado) {
+
+          mostrarToast(
+
+            'Não foi possível sincronizar os feriados com o banco de dados. Os dados locais foram mantidos na tela.',
+
+          )
+
+        }
+
+      }
+
+    }
+
+    void sincronizarFeriados()
+
+    return () => {
+
+      desmontado = true
+
+    }
+
+  }, [])
+
+
 
 
 
@@ -398,7 +493,7 @@ export default function Feriados({
 
 
 
-  function salvar() {
+  async function salvar() {
 
     if (!data) {
 
@@ -411,8 +506,6 @@ export default function Feriados({
       return
 
     }
-
-
 
     // Data de hoje e datas futuras são permitidas.
 
@@ -432,8 +525,6 @@ export default function Feriados({
 
         : undefined
 
-
-
     const dataPassada = data < hoje
 
     const alterandoParaDataPassada =
@@ -441,8 +532,6 @@ export default function Feriados({
       dataPassada &&
 
       (!registroEmEdicao || registroEmEdicao.data !== data)
-
-
 
     if (alterandoParaDataPassada) {
 
@@ -456,8 +545,6 @@ export default function Feriados({
 
     }
 
-
-
     if (!descricao.trim()) {
 
       window.alert(
@@ -469,8 +556,6 @@ export default function Feriados({
       return
 
     }
-
-
 
     const existente =
 
@@ -484,8 +569,6 @@ export default function Feriados({
 
       )
 
-
-
     if (existente) {
 
       window.alert(
@@ -498,41 +581,87 @@ export default function Feriados({
 
     }
 
+    try {
 
+      if (editandoId !== null) {
 
-    const agora =
+        const salvo = await apiRequest<Feriado>(
 
-      new Date().toISOString()
+          `/feriados/${editandoId}`,
 
+          {
 
+            method: 'PUT',
 
-    if (editandoId !== null) {
+            body: JSON.stringify({
 
-      const atualizados =
+              data,
 
-        feriados.map((item) =>
+              descricao: descricao.trim(),
 
-          item.id === editandoId
+            }),
 
-            ? {
-
-                ...item,
-
-                data,
-
-                descricao:
-
-                  descricao.trim(),
-
-                atualizadoEm: agora,
-
-              }
-
-            : item
+          },
 
         )
 
+        const atualizados =
 
+          feriados.map((item) =>
+
+            item.id === editandoId
+
+              ? salvo
+
+              : item
+
+          )
+
+        setFeriados(atualizados)
+
+        salvarFeriados(atualizados)
+
+        limparFormulario()
+
+        mostrarToast(
+
+          'Feriado Atualizado com Sucesso.'
+
+        )
+
+        return
+
+      }
+
+      const novo = await apiRequest<Feriado>(
+
+        '/feriados',
+
+        {
+
+          method: 'POST',
+
+          body: JSON.stringify({
+
+            data,
+
+            descricao: descricao.trim(),
+
+            ativo: true,
+
+          }),
+
+        },
+
+      )
+
+      const atualizados = [
+
+        ...feriados,
+
+        novo,
+
+      ].sort((a, b) => a.data.localeCompare(b.data))
 
       setFeriados(atualizados)
 
@@ -540,65 +669,35 @@ export default function Feriados({
 
       limparFormulario()
 
-
-
       mostrarToast(
 
-        'Feriado Atualizado com Sucesso.'
+        'Feriado Cadastrado com Sucesso.'
 
       )
 
+    } catch (erro) {
 
+      console.error(
 
-      return
+        'Falha ao salvar feriado no PostgreSQL:',
+
+        erro,
+
+      )
+
+      mostrarToast(
+
+        erro instanceof Error
+
+          ? erro.message
+
+          : 'Não foi possível gravar o feriado no PostgreSQL.'
+
+      )
 
     }
-
-
-
-    const novo: Feriado = {
-
-      id: Date.now(),
-
-      data,
-
-      descricao: descricao.trim(),
-
-      ativo: true,
-
-      criadoEm: agora,
-
-    }
-
-
-
-    const atualizados = [
-
-      ...feriados,
-
-      novo,
-
-    ]
-
-
-
-    setFeriados(atualizados)
-
-    salvarFeriados(atualizados)
-
-    limparFormulario()
-
-
-
-    mostrarToast(
-
-      'Feriado Cadastrado com Sucesso.'
-
-    )
 
   }
-
-
 
   function editar(item: Feriado) {
 
@@ -622,55 +721,81 @@ export default function Feriados({
 
 
 
-  function alternarStatus(
+  async function alternarStatus(
 
     item: Feriado
 
   ) {
 
-    const atualizados =
+    try {
 
-      feriados.map((registro) =>
+      const atualizado = await apiRequest<Feriado>(
 
-        registro.id === item.id
+        `/feriados/${item.id}/status`,
 
-          ? {
+        {
 
-              ...registro,
+          method: 'PATCH',
 
-              ativo: !registro.ativo,
+          body: JSON.stringify({
 
-              atualizadoEm:
+            ativo: !item.ativo,
 
-                new Date().toISOString(),
+          }),
 
-            }
-
-          : registro
+        },
 
       )
 
+      const atualizados =
 
+        feriados.map((registro) =>
 
-    setFeriados(atualizados)
+          registro.id === item.id
 
-    salvarFeriados(atualizados)
+            ? atualizado
 
+            : registro
 
+        )
 
-    mostrarToast(
+      setFeriados(atualizados)
 
-      item.ativo
+      salvarFeriados(atualizados)
 
-        ? 'Feriado Inativado.'
+      mostrarToast(
 
-        : 'Feriado Ativado.'
+        item.ativo
 
-    )
+          ? 'Feriado Inativado.'
+
+          : 'Feriado Ativado.'
+
+      )
+
+    } catch (erro) {
+
+      console.error(
+
+        'Falha ao alterar status do feriado no PostgreSQL:',
+
+        erro,
+
+      )
+
+      mostrarToast(
+
+        erro instanceof Error
+
+          ? erro.message
+
+          : 'Não foi possível atualizar o feriado no PostgreSQL.'
+
+      )
+
+    }
 
   }
-
-
 
   return (
 

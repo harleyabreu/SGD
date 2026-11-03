@@ -1,10 +1,12 @@
+
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 import type { Usuario } from '../types'
-import { carregarUsuarios } from '../services/storage'
+import { apiRequest } from '../services/api'
 import './Login.css'
 
-type UsuarioSeguranca = Usuario & {
-  senhaHash?: string
+type LoginResponse = {
+  usuario: Usuario
   exigirTrocaSenha?: boolean
 }
 
@@ -12,23 +14,15 @@ type LoginProps = {
   onLogin: (usuario: Usuario, exigirTrocaSenha?: boolean) => void
 }
 
-const MINIMO_SENHA = 6
-
-async function hashSenha(senha: string): Promise<string> {
-  const bytes = new TextEncoder().encode(senha)
-  const digest = await window.crypto.subtle.digest('SHA-256', bytes)
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('')
-}
+const MINIMO_SENHA = 8
 
 function Login({ onLogin }: LoginProps) {
   const [usuario, setUsuario] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
+  const [carregando, setCarregando] = useState(false)
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErro('')
 
@@ -45,40 +39,43 @@ function Login({ onLogin }: LoginProps) {
       return
     }
 
-    // VALIDAÇÃO OBRIGATÓRIA:
-    // menos de 6 caracteres nunca pode prosseguir para o login.
     if (senhaDigitada.length < MINIMO_SENHA) {
-      setErro(`A senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`)
+      setErro(
+        `A senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`,
+      )
       return
     }
 
-    const usuarios = carregarUsuarios() as UsuarioSeguranca[]
-    const usuarioEncontrado = usuarios.find(
-      (item) => item.login.toLowerCase() === login.toLowerCase()
-    )
+    setCarregando(true)
 
-    if (!usuarioEncontrado || usuarioEncontrado.status !== 'Ativo') {
-      setErro('Usuário ou senha inválidos.')
-      return
+    try {
+      const resposta = await apiRequest<LoginResponse>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          login,
+          senha: senhaDigitada,
+        }),
+      })
+
+      if (!resposta || !resposta.usuario) {
+        throw new Error(
+          'O servidor não retornou os dados do usuário.',
+        )
+      }
+
+      onLogin(
+        resposta.usuario,
+        Boolean(resposta.exigirTrocaSenha),
+      )
+    } catch (error: unknown) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível realizar o login.',
+      )
+    } finally {
+      setCarregando(false)
     }
-
-    if (!usuarioEncontrado.senhaHash) {
-      // Compatibilidade com usuários antigos criados antes da política de senha.
-      onLogin(usuarioEncontrado, false)
-      return
-    }
-
-    const senhaHash = await hashSenha(senhaDigitada)
-
-    if (senhaHash !== usuarioEncontrado.senhaHash) {
-      setErro('Usuário ou senha inválidos.')
-      return
-    }
-
-    onLogin(
-      usuarioEncontrado,
-      Boolean(usuarioEncontrado.exigirTrocaSenha)
-    )
   }
 
   const senhaValida = senha.length >= MINIMO_SENHA
@@ -86,7 +83,6 @@ function Login({ onLogin }: LoginProps) {
   return (
     <div className="login-page">
       <div className="login-card">
-
         <div className="login-header">
           <div
             className="login-icon"
@@ -102,11 +98,13 @@ function Login({ onLogin }: LoginProps) {
           </div>
 
           <h1>Gestão de Demandas</h1>
-          <p><em>Eficiência, Transparência e Controle.</em></p>
+
+          <p>
+            <em>Eficiência, Transparência e Controle.</em>
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>
-
           <div className="form-group">
             <label htmlFor="usuario">Usuário</label>
 
@@ -117,6 +115,8 @@ function Login({ onLogin }: LoginProps) {
               value={usuario}
               onChange={(event) => setUsuario(event.target.value)}
               autoComplete="username"
+              required
+              disabled={carregando}
             />
           </div>
 
@@ -131,6 +131,8 @@ function Login({ onLogin }: LoginProps) {
               onChange={(event) => setSenha(event.target.value)}
               autoComplete="current-password"
               minLength={MINIMO_SENHA}
+              required
+              disabled={carregando}
             />
           </div>
 
@@ -146,6 +148,7 @@ function Login({ onLogin }: LoginProps) {
                 color: '#b91c1c',
                 fontSize: 12,
                 lineHeight: 1.4,
+                whiteSpace: 'pre-line',
               }}
             >
               {erro}
@@ -154,16 +157,19 @@ function Login({ onLogin }: LoginProps) {
 
           <button
             type="submit"
-            disabled={!usuario.trim() || !senhaValida}
+            disabled={
+              !usuario.trim() ||
+              !senhaValida ||
+              carregando
+            }
             title={
               !senhaValida
                 ? `A senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`
                 : undefined
             }
           >
-            Entrar
+            {carregando ? 'Entrando...' : 'Entrar'}
           </button>
-
         </form>
 
         <div
@@ -181,7 +187,6 @@ function Login({ onLogin }: LoginProps) {
         <div className="login-footer">
           <strong>Gestão de Demandas de TI</strong>
         </div>
-
       </div>
     </div>
   )

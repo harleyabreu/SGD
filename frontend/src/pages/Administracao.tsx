@@ -30,8 +30,6 @@ import type {
 } from '../types'
 
 import {
-  carregarUsuarios,
-  salvarUsuarios,
   carregarDemandas,
   carregarAuditoria,
   carregarClientes,
@@ -47,6 +45,7 @@ import { registrarAlteracao } from '../services/auditoria'
 import './Administracao.css'
 import MenuPrincipal from '../components/MenuPrincipal'
 import { mostrarToast } from '../services/toast'
+import { apiRequest } from '../services/api'
 
 type Aba =
   | 'usuarios'
@@ -73,52 +72,14 @@ type Props = {
   onSair?: () => void
 }
 
-type UsuarioSeguranca = Usuario & {
-  senhaHash?: string
-  exigirTrocaSenha?: boolean
-}
+const MINIMO_SENHA = 8
 
-const MINIMO_SENHA = 6
-
-// URL base da API. Em produção, defina VITE_API_URL no ambiente do frontend.
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
-).replace(/\/+$/, '')
-
+// Requisições administrativas passam pelo cliente HTTP central, com cookie de sessão e CSRF.
 async function requisicaoCadastros<T>(
   caminho: string,
   opcoes: RequestInit = {},
 ): Promise<T> {
-  const resposta = await fetch(`${API_BASE_URL}${caminho}`, {
-    ...opcoes,
-    headers: {
-      'Content-Type': 'application/json',
-      ...((opcoes.headers || {}) as Record<string, string>),
-    },
-  })
-
-  const texto = await resposta.text()
-  let dados: unknown = null
-
-  if (texto) {
-    try {
-      dados = JSON.parse(texto)
-    } catch {
-      dados = texto
-    }
-  }
-
-  if (!resposta.ok) {
-    const mensagem =
-      dados && typeof dados === 'object' && 'message' in dados &&
-      typeof (dados as { message?: unknown }).message === 'string'
-        ? (dados as { message: string }).message
-        : `A API respondeu com o erro HTTP ${resposta.status}.`
-
-    throw new Error(mensagem)
-  }
-
-  return dados as T
+  return apiRequest<T>(caminho, opcoes)
 }
 
 function normalizarClienteApi(item: Cliente): Cliente {
@@ -140,6 +101,24 @@ function normalizarTipoApi(item: TipoDemanda): TipoDemanda {
   return { ...item, id: Number(item.id) }
 }
 
+type UsuarioApi = Usuario & { exigirTrocaSenha?: boolean }
+
+function normalizarUsuarioApi(item: UsuarioApi): UsuarioApi {
+  return {
+    ...item,
+    id: Number(item.id),
+    telefone: item.telefone || '',
+    criadoEm: item.criadoEm || '',
+    atualizadoEm: item.atualizadoEm || undefined,
+    ultimoAcesso: item.ultimoAcesso || undefined,
+  }
+}
+
+async function carregarUsuariosBanco(): Promise<UsuarioApi[]> {
+  const dados = await requisicaoCadastros<UsuarioApi[]>('/usuarios')
+  return dados.map(normalizarUsuarioApi)
+}
+
 async function carregarCadastrosBanco(): Promise<{
   clientes: Cliente[]
   sistemas: Sistema[]
@@ -158,14 +137,6 @@ async function carregarCadastrosBanco(): Promise<{
   }
 }
 
-async function hashSenha(senha: string): Promise<string> {
-  const dados = new TextEncoder().encode(senha)
-  const digest = await window.crypto.subtle.digest('SHA-256', dados)
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('')
-}
 
 function aplicarMascaraTelefone(valor: string): string {
   const numeros = valor.replace(/\D/g, '').slice(0, 11)
@@ -185,16 +156,6 @@ function aplicarMascaraTelefone(valor: string): string {
   return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`
 }
 
-function dataAtualISO() {
-  return new Date().toISOString()
-}
-
-function proximoId(lista: Array<{ id: number }>) {
-  return lista.reduce(
-    (maior, item) => Math.max(maior, item.id),
-    0
-  ) + 1
-}
 
 function formatarNomeComposto(nome: string) {
   return nome
@@ -281,43 +242,6 @@ function gerarLoginPadrao(
   return `${base}${contador}`
 }
 
-function carregarUsuariosPadronizados() {
-  const carregados = carregarUsuarios()
-  let alterou = false
-  const processados: Usuario[] = []
-
-  const normalizados = carregados.map((item) => {
-    const loginPadrao = gerarLoginPadrao(
-      item.nome,
-      processados,
-      item.id
-    )
-
-    const normalizado =
-      partesNomeComSobrenome(item.nome) &&
-      loginPadrao &&
-      loginPadrao !== item.login
-        ? {
-            ...item,
-            login: loginPadrao,
-          }
-        : item
-
-    if (normalizado.login !== item.login) {
-      alterou = true
-    }
-
-    processados.push(normalizado)
-    return normalizado
-  })
-
-  if (alterou) {
-    salvarUsuarios(normalizados)
-  }
-
-  return normalizados
-}
-
 function partesNomeComSobrenome(nome: string) {
   return nome.trim().split(/\s+/).filter(Boolean).length >= 2
 }
@@ -339,7 +263,7 @@ function Administracao({
   const [aba, setAba] = useState<Aba>('usuarios')
 
   const [usuarios, setUsuarios] =
-    useState<Usuario[]>(carregarUsuariosPadronizados)
+    useState<Usuario[]>([])
 
   // O cache local evita telas vazias durante a consulta inicial.
   // Após carregar, o PostgreSQL passa a ser a fonte oficial dos cadastros.
@@ -438,6 +362,27 @@ function Administracao({
 
   const [nomeTipo, setNomeTipo] =
     useState('')
+
+  // Usuários são carregados do PostgreSQL. O localStorage antigo é mantido
+  // intacto durante a transição, para preservar a conta legada lorenna.goes.
+  useEffect(() => {
+    let montado = true
+
+    void carregarUsuariosBanco()
+      .then((dados) => {
+        if (montado) setUsuarios(dados)
+      })
+      .catch((erro: unknown) => {
+        console.error('Falha ao carregar usuários do PostgreSQL:', erro)
+        if (montado) {
+          mostrarToast('Não foi possível carregar os usuários do banco. Verifique se o backend está ativo.')
+        }
+      })
+
+    return () => {
+      montado = false
+    }
+  }, [])
 
   // Carrega Clientes, Sistemas e Tipos diretamente do PostgreSQL pela API.
   useEffect(() => {
@@ -634,24 +579,15 @@ function Administracao({
       editUsuario?.id
     )
 
-    if (
-      !nomeUsuario.trim() ||
-      !emailUsuario.trim()
-    ) {
-      window.alert(
-        'Preencha nome, login e e-mail.'
-      )
+    if (!nomeUsuario.trim() || !emailUsuario.trim()) {
+      window.alert('Preencha nome, login e e-mail.')
       return
     }
 
     if (!partesNomeComSobrenome(nomeUsuario) || !loginPadrao.includes('.')) {
-      window.alert(
-        'Informe Nome e Sobrenome para gerar o Login no padrão nome.sobrenome.'
-      )
+      window.alert('Informe Nome e Sobrenome para gerar o Login no padrão nome.sobrenome.')
       return
     }
-
-    setLoginUsuario(loginPadrao)
 
     const diretoria = ESTRUTURA_ORGANIZACIONAL.diretoria
     const gerencia = gerenciaUsuario
@@ -675,12 +611,9 @@ function Administracao({
 
     if (!editUsuario || modoAlterarSenha) {
       if (senhaUsuario.length < MINIMO_SENHA) {
-        window.alert(
-          `A senha deve ter no mínimo ${MINIMO_SENHA} caracteres.`
-        )
+        window.alert(`A senha deve ter no mínimo ${MINIMO_SENHA} caracteres.`)
         return
       }
-
       if (senhaUsuario !== confirmarSenhaUsuario) {
         window.alert('A confirmação da senha não confere.')
         return
@@ -694,179 +627,119 @@ function Administracao({
       perfilUsuario !== 'Gestor/Administrador' &&
       quantidadeGestoresAtivos() <= 1
     ) {
-      window.alert(
-        'Não é possível retirar o perfil de Gestor deste usuário. O sistema precisa manter pelo menos um Gestor ativo.'
-      )
+      window.alert('Não é possível retirar o perfil de Gestor deste usuário. O sistema precisa manter pelo menos um Gestor ativo.')
       return
     }
 
     const duplicado = usuarios.find(
       (item) =>
         item.id !== editUsuario?.id &&
-        (
-          item.login.toLowerCase() ===
-            loginPadrao.toLowerCase() ||
-          item.email.toLowerCase() ===
-            emailUsuario.trim().toLowerCase()
-        )
+        (item.login.trim().toLowerCase() === loginPadrao.toLowerCase() ||
+          item.email.trim().toLowerCase() === emailUsuario.trim().toLowerCase())
     )
 
     if (duplicado) {
-      const loginDuplicado =
-        duplicado.login.trim().toLowerCase() ===
-        loginPadrao.trim().toLowerCase()
-
-      const emailDuplicado =
-        duplicado.email.trim().toLowerCase() ===
-        emailUsuario.trim().toLowerCase()
+      const loginDuplicado = duplicado.login.trim().toLowerCase() === loginPadrao.trim().toLowerCase()
+      const emailDuplicado = duplicado.email.trim().toLowerCase() === emailUsuario.trim().toLowerCase()
 
       if (loginDuplicado && emailDuplicado) {
-        window.alert(
-          `Já existem dados cadastrados com estas informações:\n\nLogin: ${loginPadrao}\nE-mail: ${emailUsuario.trim()}`
-        )
-        return
+        window.alert(`Já existem dados cadastrados com estas informações:\n\nLogin: ${loginPadrao}\nE-mail: ${emailUsuario.trim()}`)
+      } else if (loginDuplicado) {
+        window.alert(`O Login informado já está cadastrado:\n\n${loginPadrao}`)
+      } else {
+        window.alert(`O E-mail informado já está cadastrado:\n\n${emailUsuario.trim()}`)
       }
-
-      if (loginDuplicado) {
-        window.alert(
-          `O Login informado já está cadastrado:\n\n${loginPadrao}`
-        )
-        return
-      }
-
-      if (emailDuplicado) {
-        window.alert(
-          `O E-mail informado já está cadastrado:\n\n${emailUsuario.trim()}`
-        )
-        return
-      }
+      return
     }
 
-    const agora = dataAtualISO()
     const telefonePersistido = telefoneUsuario.replace(/\D/g, '')
-
-    let atualizados: Usuario[]
-
-    if (editUsuario) {
-      let senhaHashNova: string | undefined
-
-      if (modoAlterarSenha) {
-        senhaHashNova = await hashSenha(senhaUsuario)
-      }
-
-      atualizados = usuarios.map(
-        (item) =>
-          item.id === editUsuario.id
-            ? {
-                ...item,
-                nome: nomeUsuario.trim(),
-                login: loginPadrao,
-                email: emailUsuario.trim(),
-                telefone: telefonePersistido,
-                perfil: perfilUsuario,
-                estruturaOrganizacional,
-                atualizadoEm: agora,
-                ...(senhaHashNova
-                  ? {
-                      senhaHash: senhaHashNova,
-                      exigirTrocaSenha: false,
-                    }
-                  : {}),
-              }
-            : item
-      )
-
-      registrarAlteracao(
-        'usuario',
-        editUsuario.id,
-        modoAlterarSenha ? 'alteracao_senha' : 'edicao',
-        modoAlterarSenha
-          ? `Senha do usuário ${nomeUsuario.trim()} foi alterada pelo Gestor.`
-          : `Usuário ${nomeUsuario.trim()} foi atualizado.`,
-        usuarioAtual.nome,
-        {
-          valorAnterior: modoAlterarSenha
-            ? 'Senha: cadastrada anteriormente'
-            : `Nome: ${editUsuario.nome} | Login: ${editUsuario.login} | E-mail: ${editUsuario.email} | Telefone: ${editUsuario.telefone || '—'} | Perfil: ${rotuloPerfil(editUsuario.perfil)}`,
-          valorNovo: modoAlterarSenha
-            ? 'Senha: alterada'
-            : `Nome: ${nomeUsuario.trim()} | Login: ${loginPadrao} | E-mail: ${emailUsuario.trim()} | Telefone: ${telefoneUsuario.trim() || '—'} | Perfil: ${rotuloPerfil(perfilUsuario)}`,
-        }
-      )
-
-      atualizarAuditoriaLocal()
-
-      mostrarToast(
-        modoAlterarSenha
-          ? 'Senha alterada com sucesso.'
-          : 'Usuário atualizado com sucesso.'
-      )
-    } else {
-      const senhaHash = await hashSenha(senhaUsuario)
-
-      const novo: UsuarioSeguranca = {
-        id: proximoId(usuarios),
-        nome: nomeUsuario.trim(),
-        login: loginPadrao,
-        email: emailUsuario.trim(),
-        telefone: telefonePersistido,
-        perfil: perfilUsuario,
-        estruturaOrganizacional,
-        status: 'Ativo',
-        criadoEm: agora,
-        senhaHash,
-        exigirTrocaSenha: true,
-      }
-
-      atualizados = [
-        ...usuarios,
-        novo,
-      ]
-
-      registrarAlteracao(
-        'usuario',
-        novo.id,
-        'criacao',
-        `Usuário ${novo.nome} foi cadastrado no setor ${estruturaOrganizacional.gerenciaSigla} — ${estruturaOrganizacional.divisaoNome}.`,
-        usuarioAtual.nome
-      )
-
-      atualizarAuditoriaLocal()
-
-      mostrarToast(
-        'Usuário cadastrado com sucesso.'
-      )
+    const dadosUsuario: Record<string, unknown> = {
+      nome: nomeUsuario.trim(),
+      login: loginPadrao,
+      email: emailUsuario.trim(),
+      telefone: telefonePersistido,
+      perfil: perfilUsuario,
+      estruturaOrganizacional,
     }
 
-    setUsuarios(atualizados)
-    salvarUsuarios(atualizados)
-    limparUsuario()
+    if (!editUsuario) {
+      dadosUsuario.senha = senhaUsuario
+    } else if (modoAlterarSenha) {
+      dadosUsuario.senha = senhaUsuario
+    }
+
+    try {
+      if (editUsuario) {
+        const resposta = await requisicaoCadastros<UsuarioApi>(`/usuarios/${editUsuario.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(dadosUsuario),
+        })
+        const atualizado = normalizarUsuarioApi(resposta)
+        const atualizados = usuarios.map((item) => item.id === atualizado.id ? atualizado : item)
+        setUsuarios(atualizados)
+
+        registrarAlteracao(
+          'usuario',
+          atualizado.id,
+          modoAlterarSenha ? 'alteracao_senha' : 'edicao',
+          modoAlterarSenha
+            ? `Senha do usuário ${atualizado.nome} foi alterada pelo Gestor.`
+            : `Usuário ${atualizado.nome} foi atualizado.`,
+          usuarioAtual.nome,
+          {
+            valorAnterior: modoAlterarSenha
+              ? 'Senha: cadastrada anteriormente'
+              : `Nome: ${editUsuario.nome} | Login: ${editUsuario.login} | E-mail: ${editUsuario.email} | Telefone: ${editUsuario.telefone || '—'} | Perfil: ${rotuloPerfil(editUsuario.perfil)}`,
+            valorNovo: modoAlterarSenha
+              ? 'Senha: alterada'
+              : `Nome: ${atualizado.nome} | Login: ${atualizado.login} | E-mail: ${atualizado.email} | Telefone: ${atualizado.telefone || '—'} | Perfil: ${rotuloPerfil(atualizado.perfil)}`,
+          }
+        )
+
+        mostrarToast(modoAlterarSenha ? 'Senha alterada com sucesso.' : 'Usuário atualizado com sucesso.')
+      } else {
+        const resposta = await requisicaoCadastros<UsuarioApi>('/usuarios', {
+          method: 'POST',
+          body: JSON.stringify(dadosUsuario),
+        })
+        const novo = normalizarUsuarioApi(resposta)
+        setUsuarios((anteriores) => [...anteriores, novo].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')))
+
+        registrarAlteracao(
+          'usuario',
+          novo.id,
+          'criacao',
+          `Usuário ${novo.nome} foi cadastrado no setor ${estruturaOrganizacional.gerenciaSigla} — ${estruturaOrganizacional.divisaoNome}.`,
+          usuarioAtual.nome
+        )
+
+        mostrarToast('Usuário cadastrado no PostgreSQL com sucesso.')
+      }
+
+      atualizarAuditoriaLocal()
+      limparUsuario()
+    } catch (erro) {
+      console.error('Falha ao salvar usuário no PostgreSQL:', erro)
+      window.alert(erro instanceof Error ? erro.message : 'Não foi possível salvar o usuário no banco de dados.')
+    }
   }
 
-  function alternarUsuario(item: Usuario) {
-    if (
-      item.id === usuarioAtual.id &&
-      item.status === 'Ativo'
-    ) {
-      window.alert(
-        'O usuário atualmente logado não pode ser inativado.'
-      )
+  async function alternarUsuario(item: Usuario) {
+    if (item.id === usuarioAtual.id && item.status === 'Ativo') {
+      window.alert('O usuário atualmente logado não pode ser inativado.')
       return
     }
 
     if (item.status === 'Ativo') {
-      const abertas =
-        carregarDemandas().filter(
-          (demanda) =>
-            demanda.responsavel === item.nome &&
-            demanda.status !== 'Concluída' &&
-            demanda.status !== 'Cancelada'
-        )
+      const abertas = carregarDemandas().filter(
+        (demanda) =>
+          demanda.responsavel === item.nome &&
+          demanda.status !== 'Concluída' &&
+          demanda.status !== 'Cancelada'
+      )
 
       if (abertas.length > 0) {
-        window.alert(
-          `Não é possível inativar ${item.nome}. Existem ${abertas.length} demanda(s) aberta(s) atribuída(s) a este Analista. Redistribua as demandas antes.`
-        )
+        window.alert(`Não é possível inativar ${item.nome}. Existem ${abertas.length} demanda(s) aberta(s) atribuída(s) a este Analista. Redistribua as demandas antes.`)
         return
       }
     }
@@ -876,49 +749,35 @@ function Administracao({
       item.perfil === 'Gestor/Administrador' &&
       quantidadeGestoresAtivos() <= 1
     ) {
-      window.alert(
-        'Não é possível inativar este usuário. O sistema precisa manter pelo menos um Gestor ativo.'
-      )
+      window.alert('Não é possível inativar este usuário. O sistema precisa manter pelo menos um Gestor ativo.')
       return
     }
 
-    const novoStatus: Usuario['status'] =
-      item.status === 'Ativo'
-        ? 'Inativo'
-        : 'Ativo'
+    const novoStatus: Usuario['status'] = item.status === 'Ativo' ? 'Inativo' : 'Ativo'
 
-    const atualizados =
-      usuarios.map(
-        (registro) =>
-          registro.id === item.id
-            ? {
-                ...registro,
-                status: novoStatus,
-                atualizadoEm: dataAtualISO(),
-              }
-            : registro
+    try {
+      const resposta = await requisicaoCadastros<UsuarioApi>(`/usuarios/${item.id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: novoStatus }),
+      })
+      const atualizado = normalizarUsuarioApi(resposta)
+      setUsuarios((anteriores) => anteriores.map((registro) => registro.id === item.id ? atualizado : registro))
+
+      registrarAlteracao(
+        'usuario',
+        item.id,
+        'status',
+        `${item.nome} foi ${novoStatus.toLowerCase()}.`,
+        usuarioAtual.nome,
+        { valorAnterior: item.status, valorNovo: novoStatus }
       )
 
-    setUsuarios(atualizados)
-    salvarUsuarios(atualizados)
-
-    registrarAlteracao(
-      'usuario',
-      item.id,
-      'status',
-      `${item.nome} foi ${novoStatus.toLowerCase()}.`,
-      usuarioAtual.nome,
-      {
-        valorAnterior: item.status,
-        valorNovo: novoStatus,
-      }
-    )
-
-    atualizarAuditoriaLocal()
-
-    mostrarToast(
-      `Usuário ${novoStatus.toLowerCase()} com sucesso.`
-    )
+      atualizarAuditoriaLocal()
+      mostrarToast(`Usuário ${novoStatus.toLowerCase()} com sucesso.`)
+    } catch (erro) {
+      console.error('Falha ao alterar status do usuário no PostgreSQL:', erro)
+      window.alert(erro instanceof Error ? erro.message : 'Não foi possível atualizar o status do usuário.')
+    }
   }
 
   // ==========================================================
@@ -1688,8 +1547,8 @@ function Administracao({
                         <strong>{modoAlterarSenha ? 'Alterar Senha' : 'Senha de Acesso Inicial'}</strong>
                         <small>
                           {modoAlterarSenha
-                            ? 'Defina uma nova senha com no mínimo 6 caracteres para o usuário selecionado.'
-                            : 'Defina uma senha com no mínimo 6 caracteres. No primeiro acesso, o usuário deverá alterá-la.'}
+                            ? 'Defina uma nova senha com no mínimo 8 caracteres para o usuário selecionado.'
+                            : 'Defina uma senha com no mínimo 8 caracteres. No primeiro acesso, o usuário deverá alterá-la.'}
                         </small>
                       </div>
                     </div>
@@ -1702,7 +1561,7 @@ function Administracao({
                             type={mostrarSenhaUsuario ? 'text' : 'password'}
                             value={senhaUsuario}
                             onChange={(e) => setSenhaUsuario(e.target.value)}
-                            placeholder="Mínimo 6 caracteres"
+                            placeholder="Mínimo 8 caracteres"
                             minLength={MINIMO_SENHA}
                             autoComplete="new-password"
                           />
@@ -1767,7 +1626,7 @@ function Administracao({
                     </div>
 
                     <div className="adm-security-policy">
-                      <strong>Política de senha:</strong> mínimo de 6 caracteres.
+                      <strong>Política de senha:</strong> mínimo de 8 caracteres.
                     </div>
                   </div>
                 )}

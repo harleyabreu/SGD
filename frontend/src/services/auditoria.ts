@@ -21,6 +21,8 @@ import {
   salvarAuditoria,
 } from './storage'
 
+import { apiRequest } from './api'
+
 // ============================================================
 // GERAR ID
 // ============================================================
@@ -68,6 +70,19 @@ export function registrarAuditoria(
     novaAuditoria,
     ...registros,
   ])
+
+  // A auditoria é append-only no PostgreSQL.
+  // O registro local mantém compatibilidade com
+  // as telas que consultam a auditoria de forma síncrona.
+  void apiRequest('/auditoria', {
+    method: 'POST',
+    body: JSON.stringify(novaAuditoria),
+  }).catch((erro) => {
+    console.error(
+      'Não foi possível gravar a auditoria no PostgreSQL:',
+      erro
+    )
+  })
 
   return novaAuditoria
 }

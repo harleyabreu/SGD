@@ -23,13 +23,22 @@ export async function apiRequest<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const method = String(options.method ?? "GET").toUpperCase();
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...((options.headers ?? {}) as Record<string, string>),
+  };
+  if (typeof document !== "undefined" && !["GET", "HEAD", "OPTIONS"].includes(method)) {
+    const csrf = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith("sgd_csrf="));
+    if (csrf) headers["X-CSRF-Token"] = decodeURIComponent(csrf.slice("sgd_csrf=".length));
+  }
+
   const response = await fetch(`${API_BASE_URL}${normalizedPath}`, {
     ...options,
-    headers: {
-      Accept: "application/json",
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...options.headers,
-    },
+    method,
+    credentials: "include",
+    headers,
   });
 
   const text = await response.text();
@@ -77,6 +86,9 @@ export async function apiRequest<T>(
     throw new Error(message);
   }
 
+  if (normalizedPath === "/auth/logout" && typeof document !== "undefined") {
+    // The server clears the actual cookies. This branch simply keeps the helper explicit.
+  }
   return data as T;
 }
 
