@@ -1,3 +1,4 @@
+
 // ============================================================
 // GESTÃO DE DEMANDAS DE TI
 // V2.8 — RESPONSÁVEIS / ANALISTAS
@@ -5,11 +6,13 @@
 
 import { useMemo, useState, type CSSProperties } from 'react'
 import { PERFIS_RESPONSAVEIS, ROTULOS_PERFIL, type Usuario } from '../types'
-import { carregarUsuarios } from '../services/storage'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Responsaveis.css'
 
 interface Props {
+  usuarios: Usuario[]
+  carregandoUsuarios?: boolean
+  erroCarregamentoUsuarios?: boolean
   onVoltar: () => void
   nomeUsuario: string
   perfilUsuario: string
@@ -25,6 +28,9 @@ interface Props {
 }
 
 export default function Responsaveis({
+  usuarios,
+  carregandoUsuarios = false,
+  erroCarregamentoUsuarios = false,
   onVoltar,
   nomeUsuario,
   perfilUsuario,
@@ -38,7 +44,6 @@ export default function Responsaveis({
   onLogout,
   onConfiguracoes,
 }: Props) {
-  const [usuarios] = useState<Usuario[]>(carregarUsuarios)
   const [pesquisa, setPesquisa] = useState('')
   const [somenteAtivos, setSomenteAtivos] = useState(true)
 
@@ -219,7 +224,19 @@ export default function Responsaveis({
               </thead>
 
               <tbody>
-                {responsaveis.map((responsavel) => (
+                {carregandoUsuarios ? (
+                  <tr>
+                    <td colSpan={7} style={tabelaVazia}>
+                      Consultando os responsáveis cadastrados no PostgreSQL...
+                    </td>
+                  </tr>
+                ) : erroCarregamentoUsuarios ? (
+                  <tr>
+                    <td colSpan={7} style={tabelaVazia}>
+                      Não foi possível carregar os usuários do PostgreSQL. Atualize a página ou verifique a conexão com o Backend.
+                    </td>
+                  </tr>
+                ) : responsaveis.map((responsavel) => (
                   <tr className="responsaveis-table-row" key={responsavel.id}>
 
                     <td style={celulaPrincipal}>
@@ -278,16 +295,18 @@ export default function Responsaveis({
                   </tr>
                 ))}
 
-                {responsaveis.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      style={tabelaVazia}
-                    >
-                      Nenhum Responsável Encontrado.
-                    </td>
-                  </tr>
-                )}
+                {!carregandoUsuarios &&
+                  !erroCarregamentoUsuarios &&
+                  responsaveis.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        style={tabelaVazia}
+                      >
+                        Nenhum Responsável Encontrado no PostgreSQL.
+                      </td>
+                    </tr>
+                  )}
               </tbody>
             </table>
           </div>

@@ -1435,8 +1435,8 @@ export default function Configuracoes({
                 }
                 style={inputStyle}
               >
-                <option value="lista">☷ Lista</option>
                 <option value="kanban">▦ Kanban</option>
+                <option value="lista">☷ Lista</option>
               </select>
             </label>
           </div>

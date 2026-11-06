@@ -5,6 +5,7 @@
 
 export type PerfilUsuario =
   | 'Gestor/Administrador'
+  | 'Diretor (a)'
   | 'Analista'
   | 'Desenvolvedor'
   | 'Estagiário'
@@ -52,20 +53,45 @@ export const ESTRUTURA_ORGANIZACIONAL = {
   },
 } as const
 
-export type SiglaGerencia = keyof typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias
+export type SiglaGerencia =
+  keyof typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias
+
 export type DivisaoOrganizacional =
   typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[SiglaGerencia]['divisoes'][number]
+
+
+// ============================================================
+// ESTRUTURA ORGANIZACIONAL DO USUÁRIO
+// ============================================================
+//
+// Para Diretor (a):
+//
+// diretoriaSigla = DDS
+// diretoriaNome = Diretoria de Desenvolvimento de Sistemas
+// gerenciaSigla = undefined
+// gerenciaNome = undefined
+// divisaoNome = undefined
+//
+// O Diretor possui abrangência sobre toda a DDS.
+//
 
 export type EstruturaOrganizacionalUsuario = {
   diretoriaSigla: 'DDS'
   diretoriaNome: 'Diretoria de Desenvolvimento de Sistemas'
-  gerenciaSigla: SiglaGerencia
-  gerenciaNome: string
-  divisaoNome: DivisaoOrganizacional
+  gerenciaSigla?: SiglaGerencia
+  gerenciaNome?: string
+  divisaoNome?: DivisaoOrganizacional
 }
 
 
-// Perfis Operacionais: possuem exatamente a mesma experiência funcional do Analista.
+// ============================================================
+// PERFIS OPERACIONAIS
+// ============================================================
+//
+// Analista, Desenvolvedor e Estagiário possuem a mesma
+// experiência funcional operacional.
+//
+
 export const PERFIS_OPERACIONAIS: PerfilUsuario[] = [
   'Analista',
   'Desenvolvedor',
@@ -76,8 +102,24 @@ export function ehPerfilOperacional(perfil?: string): boolean {
   return PERFIS_OPERACIONAIS.includes(perfil as PerfilUsuario)
 }
 
-// Perfis que podem ser selecionados como Responsável pela Demanda.
-// Analista, Desenvolvedor e Estagiário formam o mesmo grupo operacional de execução.
+
+// ============================================================
+// PERFIL DIRETOR
+// ============================================================
+
+export function ehPerfilDiretor(perfil?: string): boolean {
+  return perfil === 'Diretor (a)'
+}
+
+
+// ============================================================
+// PERFIS RESPONSÁVEIS
+// ============================================================
+//
+// Diretor não é incluído como responsável por demanda.
+// Ele possui função de supervisão global da DDS.
+//
+
 export const PERFIS_RESPONSAVEIS: PerfilUsuario[] = [
   'Gestor/Administrador',
   'Analista',
@@ -85,13 +127,19 @@ export const PERFIS_RESPONSAVEIS: PerfilUsuario[] = [
   'Estagiário',
 ]
 
-// Rótulos apresentados na interface.
+
+// ============================================================
+// RÓTULOS APRESENTADOS NA INTERFACE
+// ============================================================
+
 export const ROTULOS_PERFIL: Record<PerfilUsuario, string> = {
   'Gestor/Administrador': 'Gestor (a)',
+  'Diretor (a)': 'Diretor (a)',
   Analista: 'Analista',
   Desenvolvedor: 'Desenvolvedor (a)',
   Estagiário: 'Estagiário (a)',
 }
+
 
 // ============================================================
 // COMENTÁRIOS
@@ -103,6 +151,7 @@ export type Comentario = {
   usuario: string
   data: string
 }
+
 
 // ============================================================
 // ARQUIVOS / ANEXOS
@@ -116,6 +165,7 @@ export type Arquivo = {
   usuario: string
   url: string
 }
+
 
 // ============================================================
 // HISTÓRICO DA DEMANDA
@@ -134,6 +184,7 @@ export type Historico = {
   motivo?: string
 }
 
+
 // ============================================================
 // PERÍODO DE PENDÊNCIA
 // ============================================================
@@ -143,6 +194,7 @@ export type PeriodoPendencia = {
   fim?: string
   motivo: string
 }
+
 
 // ============================================================
 // USUÁRIO
@@ -162,6 +214,7 @@ export type Usuario = {
   estruturaOrganizacional?: EstruturaOrganizacionalUsuario
 }
 
+
 // ============================================================
 // CLIENTE / ÓRGÃO
 // ============================================================
@@ -174,6 +227,7 @@ export type Cliente = {
   criadoEm: string
   atualizadoEm?: string
 }
+
 
 // ============================================================
 // SISTEMA
@@ -188,6 +242,7 @@ export type Sistema = {
   atualizadoEm?: string
 }
 
+
 // ============================================================
 // TIPO DE DEMANDA
 // ============================================================
@@ -199,6 +254,7 @@ export type TipoDemanda = {
   criadoEm: string
   atualizadoEm?: string
 }
+
 
 // ============================================================
 // NOTIFICAÇÃO
@@ -219,14 +275,10 @@ export type Notificacao = {
   lida: boolean
 }
 
+
 // ============================================================
 // ENTIDADES DA AUDITORIA
 // ============================================================
-//
-// Este tipo é utilizado pelo serviço central de auditoria
-// para garantir que todas as entidades auditáveis utilizem
-// os mesmos valores oficiais.
-//
 
 export type EntidadeAuditoria =
   | 'demanda'
@@ -236,6 +288,7 @@ export type EntidadeAuditoria =
   | 'tipo'
   | 'feriado'
   | 'sessao'
+
 
 // ============================================================
 // REGISTRO DE AUDITORIA
@@ -262,6 +315,7 @@ export type RegistroAuditoria = {
 
   motivo?: string
 }
+
 
 // ============================================================
 // DEMANDA
@@ -322,6 +376,7 @@ export type Demanda = {
   historico?: Historico[]
 }
 
+
 // ============================================================
 // STATUS OFICIAIS DA DEMANDA
 // ============================================================
@@ -334,6 +389,7 @@ export const STATUS_DEMANDA = [
   'Concluída',
   'Cancelada',
 ] as const
+
 
 // ============================================================
 // CRITICIDADES OFICIAIS
@@ -348,6 +404,7 @@ export const CRITICIDADES_DEMANDA = [
 
 /** Alias legado mantido para preservar compatibilidade com versões anteriores. */
 export const PRIORIDADES_DEMANDA = CRITICIDADES_DEMANDA
+
 
 // ============================================================
 // TIPOS OFICIAIS DE DEMANDA

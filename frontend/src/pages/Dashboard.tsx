@@ -620,10 +620,10 @@ function Dashboard({
   const [filtroSituacao, setFiltroSituacao] = useState('Todas')
 
   const criticidades = [
-    'Crítica',
     'Alta',
-    'Média',
     'Baixa',
+    'Crítica',
+    'Média',
   ]
 
   const prioridadesAtendimento = [
@@ -655,7 +655,7 @@ function Dashboard({
         .map((demanda) => String(demanda.cliente || '').trim())
         .filter(Boolean)
     )
-  ).sort((a, b) => a.localeCompare(b))
+  ).sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
   const responsaveisDisponiveis = Array.from(
     new Set([
@@ -664,7 +664,7 @@ function Dashboard({
         .map((demanda) => String(demanda.responsavel || '').trim())
         .filter(Boolean),
     ])
-  ).sort((a, b) => a.localeCompare(b))
+  ).sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
   function dataAberturaDaDemanda(demanda: Demanda): Date | null {
     if (!demanda.dataAbertura) {
@@ -1449,11 +1449,11 @@ function Dashboard({
                 </option>
 
                 <option>
-                  Hoje
+                  Este Mês
                 </option>
 
                 <option>
-                  Últimos 7 Dias
+                  Hoje
                 </option>
 
                 <option>
@@ -1461,7 +1461,7 @@ function Dashboard({
                 </option>
 
                 <option>
-                  Este Mês
+                  Últimos 7 Dias
                 </option>
 
               </select>

@@ -36,7 +36,7 @@ type NovaDemandaProps = {
   onConfiguracoes?: () => void
   onLogout: () => void
 }
-const CRITICIDADES = ['Crítica', 'Alta', 'Média', 'Baixa']
+const CRITICIDADES = ['Alta', 'Baixa', 'Crítica', 'Média']
 function textoItem(item: CadastroItem): string {
   return String(item.nome || item.descricao || '')
 }
@@ -122,9 +122,9 @@ export default function NovaDemanda({
       (item) =>
         item.clienteId === clienteObjetoSelecionado.id
     )
-    return vinculados.length > 0
-      ? vinculados
-      : sistemasAtivos
+    return [...(vinculados.length > 0 ? vinculados : sistemasAtivos)].sort(
+      (a, b) => textoItem(a).localeCompare(textoItem(b), 'pt-BR')
+    )
   }, [sistemasAtivos, clienteObjetoSelecionado])
   function selecionarArquivos(event: ChangeEvent<HTMLInputElement>) {
     const arquivos = Array.from(event.currentTarget.files || [])
@@ -319,6 +319,7 @@ export default function NovaDemanda({
                 <option value="">Selecione...</option>
                 {clientes
                   .filter((item) => item.status !== 'Inativo' && item.ativo !== false)
+                  .sort((a, b) => textoItem(a).localeCompare(textoItem(b), 'pt-BR'))
                   .map((cliente, index) => {
                     const valor = textoItem(cliente)
                     return (
@@ -362,6 +363,7 @@ export default function NovaDemanda({
                   <option value="">Selecione...</option>
                   {tipos
                     .filter((item) => item.status !== 'Inativo' && item.ativo !== false)
+                    .sort((a, b) => textoItem(a).localeCompare(textoItem(b), 'pt-BR'))
                     .map((tipo, index) => {
                       const valor = textoItem(tipo)
                       return (
@@ -453,6 +455,7 @@ export default function NovaDemanda({
                   </option>
                   {analistas
                     .filter((usuario) => usuario.status === 'Ativo')
+                    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
                     .map((usuario) => (
                       <option key={usuario.id} value={usuario.nome}>
                         {usuario.nome}

@@ -1,3 +1,4 @@
+
 // ============================================================
 // GESTÃO DE DEMANDAS DE TI
 // V2.10 — APLICAÇÃO PRINCIPAL — DECISÃO VISUAL DE PRAZO MANUAL
@@ -52,7 +53,7 @@ import type {
   TipoDemanda,
   Usuario,
 } from './types'
-import { ehPerfilOperacional } from './types'
+import { ehPerfilOperacional, ehPerfilDiretor } from './types'
 
 import {
   carregarClientes,
@@ -144,7 +145,7 @@ const TRANSICOES_PERMITIDAS: Record<string, string[]> = {
 }
 
 function ehGestor(sessaoAtual: SessaoUsuario | null): boolean {
-  return sessaoAtual?.perfil === 'Gestor/Administrador' || String(sessaoAtual?.perfil) === 'Gestor'
+  return sessaoAtual?.perfil === 'Gestor/Administrador' || ehPerfilDiretor(sessaoAtual?.perfil) || String(sessaoAtual?.perfil) === 'Gestor'
 }
 
 // Perfis que podem ser definidos como Responsável pela Demanda.
@@ -841,6 +842,12 @@ function App() {
     carregarSessao
   )
 
+  // Para as telas de distribuição, o PostgreSQL é a fonte oficial
+  // dos usuários. O cache legado não deve incluir contas antigas
+  // que já não existem ou foram alteradas no cadastro oficial.
+  const [usuariosBanco, setUsuariosBanco] = useState<Usuario[] | null>(null)
+  const [erroUsuariosBanco, setErroUsuariosBanco] = useState(false)
+
   const [
     pagina,
     setPagina,
@@ -899,6 +906,88 @@ function App() {
 
     return () => { montado = false }
   }, [sessao?.usuarioId, sessao?.login])
+
+  // ==========================================================
+  // USUÁRIOS OFICIAIS PARA RESPONSÁVEIS E NOVAS DEMANDAS
+  // O PostgreSQL é a fonte única para a lista de responsáveis.
+  // A lista local antiga é mantida intacta por compatibilidade,
+  // mas não é utilizada nas telas de distribuição do Gestor.
+  // ==========================================================
+
+  useEffect(() => {
+    let montado = true
+
+    const paginaPrecisaUsuariosDoBanco = [
+      'nova-demanda',
+      'responsaveis',
+      'detalhe-demanda',
+    ].includes(pagina)
+
+    if (!sessao || !ehGestor(sessao)) {
+      setUsuariosBanco(null)
+      setErroUsuariosBanco(false)
+      return () => {
+        montado = false
+      }
+    }
+
+    if (!paginaPrecisaUsuariosDoBanco) {
+      return () => {
+        montado = false
+      }
+    }
+
+    setUsuariosBanco(null)
+    setErroUsuariosBanco(false)
+
+    async function carregarUsuariosDoPostgreSQL() {
+      try {
+        await apiRequest<{ csrfToken: string }>('/auth/csrf')
+
+        const resposta = await apiRequest<Usuario[]>('/usuarios')
+
+        const usuariosNormalizados = Array.isArray(resposta)
+          ? resposta
+              .map((usuario) => ({
+                ...usuario,
+                id: Number(usuario.id),
+              }))
+              .filter(
+                (usuario) =>
+                  Number.isSafeInteger(usuario.id) &&
+                  usuario.id > 0 &&
+                  Boolean(usuario.login?.trim()) &&
+                  Boolean(usuario.nome?.trim())
+              )
+              .sort((a, b) =>
+                a.nome.localeCompare(b.nome, 'pt-BR')
+              )
+          : []
+
+        if (!montado) return
+
+        setUsuariosBanco(usuariosNormalizados)
+      } catch (erro) {
+        if (!montado) return
+
+        console.error(
+          'Não foi possível carregar os usuários oficiais do PostgreSQL:',
+          erro
+        )
+
+        // Não voltamos silenciosamente à lista local antiga.
+        // Isso evitará misturar usuários que não existem no banco.
+        setUsuariosBanco([])
+        setErroUsuariosBanco(true)
+      }
+    }
+
+    void carregarUsuariosDoPostgreSQL()
+
+    return () => {
+      montado = false
+    }
+  }, [sessao?.usuarioId, sessao?.login, sessao?.perfil, pagina])
 
   // Os formulários legados consomem os cadastros pelo serviço storage.
   // Ao iniciar o app, sincronizamos esse cache com o PostgreSQL para que
@@ -1219,9 +1308,14 @@ function App() {
   nomeUsuarioAtualGlobal =
     nomeUsuarioAtual
 
+  const usuariosDisponiveisParaSessao =
+    ehGestor(sessao) && usuariosBanco !== null
+      ? usuariosBanco
+      : carregarUsuarios()
+
   const usuarioAtual =
     sessao
-      ? carregarUsuarios().find(
+      ? usuariosDisponiveisParaSessao.find(
           (usuario) =>
             usuario.login.trim().toLowerCase() === sessao.login.trim().toLowerCase()
         ) || {
@@ -1238,7 +1332,9 @@ function App() {
       : null
 
   const usuariosCadastrados =
-    carregarUsuarios()
+    ehGestor(sessao)
+      ? (usuariosBanco ?? [])
+      : carregarUsuarios()
 
   const clientesCadastrados =
     carregarClientes()
@@ -3369,6 +3465,7 @@ function App() {
   function abrirConfiguracoes() {
     if (
       sessao?.perfil !== 'Gestor/Administrador' &&
+      !ehPerfilDiretor(sessao?.perfil) &&
       String(sessao?.perfil) !== 'Gestor'
     ) {
       return
@@ -3380,6 +3477,7 @@ function App() {
   function abrirAdministracao() {
     if (
       sessao?.perfil !== 'Gestor/Administrador' &&
+      !ehPerfilDiretor(sessao?.perfil) &&
       String(sessao?.perfil) !== 'Gestor'
     ) {
       return
@@ -3514,6 +3612,7 @@ function App() {
     (
       sessao.perfil ===
         'Gestor/Administrador' ||
+      ehPerfilDiretor(sessao.perfil) ||
       String(sessao.perfil) ===
         'Gestor'
     )
@@ -3546,6 +3645,7 @@ function App() {
     (
       sessao.perfil ===
         'Gestor/Administrador' ||
+      ehPerfilDiretor(sessao.perfil) ||
       String(sessao.perfil) ===
         'Gestor'
     )
@@ -3863,6 +3963,9 @@ function App() {
   if (ehGestor(sessao) && pagina === 'responsaveis') {
     return (
       <Responsaveis
+        usuarios={usuariosCadastrados}
+        carregandoUsuarios={usuariosBanco === null}
+        erroCarregamentoUsuarios={erroUsuariosBanco}
         onVoltar={() => setPagina('dashboard')}
         nomeUsuario={nomeUsuarioAtual}
         perfilUsuario={sessao.perfil || 'Gestor/Administrador'}

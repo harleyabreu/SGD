@@ -115,10 +115,10 @@ const STATUS = [
 // CRITICIDADES
 // ============================================================
 const PRIORIDADES = [
-  'Crítica',
   'Alta',
-  'Média',
   'Baixa',
+  'Crítica',
+  'Média',
 ]
 // ============================================================
 // FORMATAÇÕES
@@ -1812,7 +1812,9 @@ export function DetalheDemandaPage({
                 <option value="">
                   Não atribuído
                 </option>
-                {analistas.map(
+                {[...analistas]
+                  .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                  .map(
                   (item) => (
                     <option
                       key={item.id}

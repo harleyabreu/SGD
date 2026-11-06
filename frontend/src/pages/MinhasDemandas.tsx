@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 
 import type { Demanda, Usuario } from '../types'
+
 import { estaAtrasada as estaAtrasadaSLA, estaProximaDoVencimento as estaProximaDoVencimentoSLA } from '../sla'
 
 import { carregarUsuarios, salvarUsuarios } from '../services/storage'
@@ -15,1062 +16,1072 @@ import './MinhasDemandas.css'
 
 type Props = {
 
-  usuario: Usuario
+  usuario: Usuario
 
-  demandas: Demanda[]
+  demandas: Demanda[]
 
-  onVoltar: () => void
+  onVoltar: () => void
 
-  onDashboard?: () => void
+  onDashboard?: () => void
 
-  onConfiguracoes?: () => void
+  onConfiguracoes?: () => void
 
-  onAbrirDetalhe: (demanda: Demanda) => void
+  onAbrirDetalhe: (demanda: Demanda) => void
 
-  onAlterarStatus: (id: number, novoStatus: string, motivo?: string) => void
+  onAlterarStatus: (id: number, novoStatus: string, motivo?: string) => void
 
-  onAdicionarComentario: (id: number, texto: string) => void
+  onAdicionarComentario: (id: number, texto: string) => void
 
 }
 
 type UsuarioSeguranca = Usuario & {
 
-  senhaHash?: string
+  senhaHash?: string
 
-  exigirTrocaSenha?: boolean
+  exigirTrocaSenha?: boolean
 
 }
 
-const MINIMO_SENHA = 6
+const MINIMO_SENHA = 8
 
 const STATUS = ['Todos', 'Aguardando', 'Em Atendimento', 'Com Pendências', 'Concluída', 'Cancelada']
 
-const PRIORIDADES = ['Todas', 'Crítica', 'Alta', 'Média', 'Baixa']
+const PRIORIDADES = ['Todas', 'Alta', 'Baixa', 'Crítica', 'Média']
+
 const PRIORIDADES_ATENDIMENTO = ['Todas', 'P1 — Imediata', 'P2 — Urgente', 'P3 — Normal', 'P4 — Planejada']
 
 async function hashSenha(senha: string): Promise<string> {
 
-  const bytes = new TextEncoder().encode(senha)
+  const bytes = new TextEncoder().encode(senha)
 
-  const digest = await window.crypto.subtle.digest('SHA-256', bytes)
+  const digest = await window.crypto.subtle.digest('SHA-256', bytes)
 
-  return Array.from(new Uint8Array(digest))
+  return Array.from(new Uint8Array(digest))
 
-    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
 
-    .join('')
+    .join('')
 
 }
 
 function converterData(data: string): Date | null {
 
-  if (!data) return null
+  if (!data) return null
 
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(data)
 
-  if (match) {
+  if (match) {
 
-    const [, dia, mes, ano] = match
+    const [, dia, mes, ano] = match
 
-    const resultado = new Date(Number(ano), Number(mes) - 1, Number(dia))
+    const resultado = new Date(Number(ano), Number(mes) - 1, Number(dia))
 
-    resultado.setHours(0, 0, 0, 0)
+    resultado.setHours(0, 0, 0, 0)
 
-    return resultado
+    return resultado
 
-  }
+  }
 
-  const resultado = new Date(data)
+  const resultado = new Date(data)
 
-  if (Number.isNaN(resultado.getTime())) return null
+  if (Number.isNaN(resultado.getTime())) return null
 
-  resultado.setHours(0, 0, 0, 0)
+  resultado.setHours(0, 0, 0, 0)
 
-  return resultado
+  return resultado
 
 }
 
 function formatarData(data: string): string {
 
-  const valor = converterData(data)
+  const valor = converterData(data)
 
-  if (!valor) return data || '—'
+  if (!valor) return data || '—'
 
-  return valor.toLocaleDateString('pt-BR')
+  return valor.toLocaleDateString('pt-BR')
 
 }
 
 function estaAtrasada(demanda: Demanda): boolean {
-  return estaAtrasadaSLA(demanda)
+
+  return estaAtrasadaSLA(demanda)
 
 }
 
 function estaProxima(demanda: Demanda): boolean {
-  return estaProximaDoVencimentoSLA(demanda, 7)
+
+  return estaProximaDoVencimentoSLA(demanda, 7)
 
 }
 
 function classeStatus(status: string): string {
 
-  switch (status) {
+  switch (status) {
 
-    case 'Nova':
+    case 'Nova':
 
-      return 'md-status-nova'
+      return 'md-status-nova'
 
-    case 'Aguardando':
+    case 'Aguardando':
 
-      return 'md-status-aguardando'
+      return 'md-status-aguardando'
 
-    case 'Em Atendimento':
+    case 'Em Atendimento':
 
-      return 'md-status-em-atendimento'
+      return 'md-status-em-atendimento'
 
-    case 'Com Pendências':
+    case 'Com Pendências':
 
-      return 'md-status-com-pendencias'
+      return 'md-status-com-pendencias'
 
-    case 'Concluída':
+    case 'Concluída':
 
-      return 'md-status-concluida'
+      return 'md-status-concluida'
 
-    case 'Cancelada':
+    case 'Cancelada':
 
-      return 'md-status-cancelada'
+      return 'md-status-cancelada'
 
-    default:
+    default:
 
-      return 'md-status'
+      return 'md-status'
 
-  }
+  }
 
 }
 
 function classePrioridadeAtendimento(prioridadeAtendimento: string): string {
 
-  const prioridade = prioridadeAtendimento.trim().toUpperCase()
+  const prioridade = prioridadeAtendimento.trim().toUpperCase()
 
-  if (prioridade.startsWith('P1')) return 'md-prioridade-atendimento md-prioridade-p1'
+  if (prioridade.startsWith('P1')) return 'md-prioridade-atendimento md-prioridade-p1'
 
-  if (prioridade.startsWith('P2')) return 'md-prioridade-atendimento md-prioridade-p2'
+  if (prioridade.startsWith('P2')) return 'md-prioridade-atendimento md-prioridade-p2'
 
-  if (prioridade.startsWith('P3')) return 'md-prioridade-atendimento md-prioridade-p3'
+  if (prioridade.startsWith('P3')) return 'md-prioridade-atendimento md-prioridade-p3'
 
-  if (prioridade.startsWith('P4')) return 'md-prioridade-atendimento md-prioridade-p4'
+  if (prioridade.startsWith('P4')) return 'md-prioridade-atendimento md-prioridade-p4'
 
-  return 'md-prioridade-atendimento'
+  return 'md-prioridade-atendimento'
 
 }
 
 function normalizarCriticidade(valor: string): string {
 
-  return String(valor || '')
+  return String(valor || '')
 
-    .trim()
+    .trim()
 
-    .normalize('NFD')
+    .normalize('NFD')
 
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
 
-    .toLowerCase()
+    .toLowerCase()
 
 }
 
 function classeLinhaCriticidade(criticidade: string): string {
 
-  const valor = normalizarCriticidade(criticidade)
+  const valor = normalizarCriticidade(criticidade)
 
-  return valor === 'critica' || valor === 'urgente' ? 'md-row-critica' : ''
+  return valor === 'critica' || valor === 'urgente' ? 'md-row-critica' : ''
 
 }
 
 function classeCriticidade(criticidade: string): string {
 
-  switch (normalizarCriticidade(criticidade)) {
+  switch (normalizarCriticidade(criticidade)) {
 
-    case 'critica':
+    case 'critica':
 
-    case 'urgente':
+    case 'urgente':
 
-      return 'md-criticidade-critica'
+      return 'md-criticidade-critica'
 
-    case 'alta':
+    case 'alta':
 
-      return 'md-criticidade-alta'
+      return 'md-criticidade-alta'
 
-    case 'media':
+    case 'media':
 
-      return 'md-criticidade-media'
+      return 'md-criticidade-media'
 
-    case 'baixa':
+    case 'baixa':
 
-      return 'md-criticidade-baixa'
+      return 'md-criticidade-baixa'
 
-    default:
+    default:
 
-      return 'md-criticidade-indefinida'
+      return 'md-criticidade-indefinida'
 
-  }
+  }
 
 }
 
 export default function MinhasDemandas({
 
-  usuario,
+  usuario,
 
-  demandas,
+  demandas,
 
-  onVoltar,
+  onVoltar,
 
-  onDashboard,
+  onDashboard,
 
-  onConfiguracoes,
+  onConfiguracoes,
 
-  onAbrirDetalhe,
+  onAbrirDetalhe,
 
-  onAlterarStatus,
+  onAlterarStatus,
 
 }: Props) {
 
-  const [pesquisa, setPesquisa] = useState('')
+  const [pesquisa, setPesquisa] = useState('')
 
-  const [statusFiltro, setStatusFiltro] = useState('Todos')
+  const [statusFiltro, setStatusFiltro] = useState('Todos')
 
-  const [prioridadeFiltro, setPrioridadeFiltro] = useState('Todas')
-  const [prioridadeAtendimentoFiltro, setPrioridadeAtendimentoFiltro] = useState('Todas')
+  const [prioridadeFiltro, setPrioridadeFiltro] = useState('Todas')
 
-  const [situacaoFiltro, setSituacaoFiltro] = useState('Todos')
+  const [prioridadeAtendimentoFiltro, setPrioridadeAtendimentoFiltro] = useState('Todas')
 
-  const [contaAberta, setContaAberta] = useState(false)
+  const [situacaoFiltro, setSituacaoFiltro] = useState('Todos')
 
-  const [novoEmail, setNovoEmail] = useState(usuario.email || '')
+  const [contaAberta, setContaAberta] = useState(false)
 
-  const [novaSenha, setNovaSenha] = useState('')
+  const [novoEmail, setNovoEmail] = useState(usuario.email || '')
 
-  const [confirmacaoSenha, setConfirmacaoSenha] = useState('')
+  const [novaSenha, setNovaSenha] = useState('')
 
-  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
+  const [confirmacaoSenha, setConfirmacaoSenha] = useState('')
 
-  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
 
-  const [erroConta, setErroConta] = useState('')
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
 
-  const minhasDemandas = useMemo(
+  const [erroConta, setErroConta] = useState('')
 
-    () => demandas.filter((demanda) => demanda.responsavel?.trim().toLowerCase() === usuario.nome?.trim().toLowerCase()),
+  const minhasDemandas = useMemo(
 
-    [demandas, usuario.nome],
+    () => demandas.filter((demanda) => demanda.responsavel?.trim().toLowerCase() === usuario.nome?.trim().toLowerCase()),
 
-  )
+    [demandas, usuario.nome],
 
-  const demandasFiltradas = useMemo(() => {
+  )
 
-    const termo = pesquisa.trim().toLowerCase()
+  const demandasFiltradas = useMemo(() => {
 
-    return minhasDemandas.filter((demanda) => {
+    const termo = pesquisa.trim().toLowerCase()
 
-      const correspondePesquisa = !termo ||
+    return minhasDemandas.filter((demanda) => {
 
-        `${demanda.id} ${demanda.titulo} ${demanda.cliente} ${demanda.sistema || ''} ${demanda.descricao} ${demanda.criticidade || demanda.prioridade || ''} ${demanda.prioridadeAtendimento || ''}`
+      const correspondePesquisa = !termo ||
 
-          .toLowerCase()
+        `${demanda.id} ${demanda.titulo} ${demanda.cliente} ${demanda.sistema || ''} ${demanda.descricao} ${demanda.criticidade || demanda.prioridade || ''} ${demanda.prioridadeAtendimento || ''}`
 
-          .includes(termo)
+          .toLowerCase()
 
-      const correspondeStatus = statusFiltro === 'Todos' || demanda.status === statusFiltro
+          .includes(termo)
 
-      const correspondePrioridade = prioridadeFiltro === 'Todas' || (demanda.criticidade || demanda.prioridade) === prioridadeFiltro
+      const correspondeStatus = statusFiltro === 'Todos' || demanda.status === statusFiltro
 
-      const correspondePrioridadeAtendimento = prioridadeAtendimentoFiltro === 'Todas' || demanda.prioridadeAtendimento === prioridadeAtendimentoFiltro
+      const correspondePrioridade = prioridadeFiltro === 'Todas' || (demanda.criticidade || demanda.prioridade) === prioridadeFiltro
 
-      const correspondeSituacao = situacaoFiltro === 'Todos'
+      const correspondePrioridadeAtendimento = prioridadeAtendimentoFiltro === 'Todas' || demanda.prioridadeAtendimento === prioridadeAtendimentoFiltro
 
-        || (situacaoFiltro === 'Abertas' && demanda.status !== 'Concluída' && demanda.status !== 'Cancelada')
+      const correspondeSituacao = situacaoFiltro === 'Todos'
 
-        || (situacaoFiltro === 'Concluídas' && demanda.status === 'Concluída')
+        || (situacaoFiltro === 'Abertas' && demanda.status !== 'Concluída' && demanda.status !== 'Cancelada')
 
-        || (situacaoFiltro === 'Atrasadas' && estaAtrasada(demanda))
+        || (situacaoFiltro === 'Concluídas' && demanda.status === 'Concluída')
 
-      return correspondePesquisa && correspondeStatus && correspondePrioridade && correspondePrioridadeAtendimento && correspondeSituacao
+        || (situacaoFiltro === 'Atrasadas' && estaAtrasada(demanda))
 
-    })
+      return correspondePesquisa && correspondeStatus && correspondePrioridade && correspondePrioridadeAtendimento && correspondeSituacao
 
-  }, [minhasDemandas, pesquisa, statusFiltro, prioridadeFiltro, prioridadeAtendimentoFiltro, situacaoFiltro])
+    })
 
-  const indicadores = useMemo(() => ({
+  }, [minhasDemandas, pesquisa, statusFiltro, prioridadeFiltro, prioridadeAtendimentoFiltro, situacaoFiltro])
 
-    total: minhasDemandas.length,
+  const indicadores = useMemo(() => ({
 
-    abertas: minhasDemandas.filter((item) => item.status !== 'Concluída' && item.status !== 'Cancelada').length,
+    total: minhasDemandas.length,
 
-    aguardando: minhasDemandas.filter((item) => item.status === 'Aguardando').length,
+    abertas: minhasDemandas.filter((item) => item.status !== 'Concluída' && item.status !== 'Cancelada').length,
 
-    atendimento: minhasDemandas.filter((item) => item.status === 'Em Atendimento').length,
+    aguardando: minhasDemandas.filter((item) => item.status === 'Aguardando').length,
 
-    pendencias: minhasDemandas.filter((item) => item.status === 'Com Pendências').length,
+    atendimento: minhasDemandas.filter((item) => item.status === 'Em Atendimento').length,
 
-    atrasadas: minhasDemandas.filter(estaAtrasada).length,
+    pendencias: minhasDemandas.filter((item) => item.status === 'Com Pendências').length,
 
-    concluidas: minhasDemandas.filter((item) => item.status === 'Concluída').length,
+    atrasadas: minhasDemandas.filter(estaAtrasada).length,
 
-  }), [minhasDemandas])
+    concluidas: minhasDemandas.filter((item) => item.status === 'Concluída').length,
 
-  function limparFiltros() {
+  }), [minhasDemandas])
 
-    setPesquisa('')
+  function limparFiltros() {
 
-    setStatusFiltro('Todos')
+    setPesquisa('')
 
-    setPrioridadeFiltro('Todas')
-    setPrioridadeAtendimentoFiltro('Todas')
+    setStatusFiltro('Todos')
 
-    setSituacaoFiltro('Todos')
+    setPrioridadeFiltro('Todas')
 
-  }
+    setPrioridadeAtendimentoFiltro('Todas')
 
-  async function salvarConta(event: FormEvent<HTMLFormElement>) {
+    setSituacaoFiltro('Todos')
 
-    event.preventDefault()
+  }
 
-    setErroConta('')
+  async function salvarConta(event: FormEvent<HTMLFormElement>) {
 
-    const email = novoEmail.trim()
+    event.preventDefault()
 
-    const senha = novaSenha
+    setErroConta('')
 
-    if (!email) {
+    const email = novoEmail.trim()
 
-      setErroConta('Informe Um E-mail Válido.')
+    const senha = novaSenha
 
-      return
+    if (!email) {
 
-    }
+      setErroConta('Informe Um E-mail Válido.')
 
-    if (senha && senha.length < MINIMO_SENHA) {
+      return
 
-      setErroConta(`A nova senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`)
+    }
 
-      return
+    if (senha && senha.length < MINIMO_SENHA) {
 
-    }
+      setErroConta(`A nova senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`)
 
-    if (senha && senha !== confirmacaoSenha) {
+      return
 
-      setErroConta('A Confirmação Da Senha Não Confere.')
+    }
 
-      return
+    if (senha && senha !== confirmacaoSenha) {
 
-    }
+      setErroConta('A Confirmação Da Senha Não Confere.')
 
-    try {
+      return
 
-      const usuarios = carregarUsuarios() as UsuarioSeguranca[]
+    }
 
-      const usuarioAtual = usuarios.find((item) => item.id === usuario.id)
+    try {
 
-      if (!usuarioAtual) {
+      const usuarios = carregarUsuarios() as UsuarioSeguranca[]
 
-        setErroConta('Usuário Não Encontrado.')
+      const usuarioAtual = usuarios.find((item) => item.id === usuario.id)
 
-        return
+      if (!usuarioAtual) {
 
-      }
+        setErroConta('Usuário Não Encontrado.')
 
-      const emailEmUso = usuarios.some(
+        return
 
-        (item) => item.id !== usuario.id && item.email.toLowerCase() === email.toLowerCase(),
+      }
 
-      )
+      const emailEmUso = usuarios.some(
 
-      if (emailEmUso) {
+        (item) => item.id !== usuario.id && item.email.toLowerCase() === email.toLowerCase(),
 
-        setErroConta('Este E-mail Já Está Sendo Utilizado Por Outro Usuário.')
+      )
 
-        return
+      if (emailEmUso) {
 
-      }
+        setErroConta('Este E-mail Já Está Sendo Utilizado Por Outro Usuário.')
 
-      let usuarioAtualizado: UsuarioSeguranca = {
+        return
 
-        ...usuarioAtual,
+      }
 
-        email,
+      let usuarioAtualizado: UsuarioSeguranca = {
 
-        atualizadoEm: new Date().toISOString(),
+        ...usuarioAtual,
 
-      }
+        email,
 
-      if (senha) {
+        atualizadoEm: new Date().toISOString(),
 
-        usuarioAtualizado = {
+      }
 
-          ...usuarioAtualizado,
+      if (senha) {
 
-          senhaHash: await hashSenha(senha),
+        usuarioAtualizado = {
 
-          exigirTrocaSenha: false,
+          ...usuarioAtualizado,
 
-        }
+          senhaHash: await hashSenha(senha),
 
-      }
+          exigirTrocaSenha: false,
 
-      const atualizados = usuarios.map((item) => item.id === usuario.id ? usuarioAtualizado : item)
+        }
 
-      salvarUsuarios(atualizados)
+      }
 
-      if (usuarioAtual.email !== email) {
+      const atualizados = usuarios.map((item) => item.id === usuario.id ? usuarioAtualizado : item)
 
-        registrarAlteracao(
+      salvarUsuarios(atualizados)
 
-          'usuario',
+      if (usuarioAtual.email !== email) {
 
-          usuario.id,
+        registrarAlteracao(
 
-          'alteracao_email',
+          'usuario',
 
-          `O Usuário ${usuario.nome} Alterou O Próprio E-mail.`,
+          usuario.id,
 
-          usuario.nome,
+          'alteracao_email',
 
-          { valorAnterior: usuarioAtual.email, valorNovo: email },
+          `O Usuário ${usuario.nome} Alterou O Próprio E-mail.`,
 
-        )
+          usuario.nome,
 
-      }
+          { valorAnterior: usuarioAtual.email, valorNovo: email },
 
-      if (senha) {
+        )
 
-        registrarAlteracao(
+      }
 
-          'usuario',
+      if (senha) {
 
-          usuario.id,
+        registrarAlteracao(
 
-          'troca_senha',
+          'usuario',
 
-          `O Usuário ${usuario.nome} Alterou A Própria Senha.`,
+          usuario.id,
 
-          usuario.nome,
+          'troca_senha',
 
-        )
+          `O Usuário ${usuario.nome} Alterou A Própria Senha.`,
 
-      }
+          usuario.nome,
 
-      mostrarToast('Dados Da Conta Atualizados Com Sucesso.')
+        )
 
-      setNovaSenha('')
+      }
 
-      setConfirmacaoSenha('')
+      mostrarToast('Dados Da Conta Atualizados Com Sucesso.')
 
-      setContaAberta(false)
+      setNovaSenha('')
 
-    } catch {
+      setConfirmacaoSenha('')
 
-      setErroConta('Não Foi Possível Salvar As Alterações Da Conta.')
+      setContaAberta(false)
 
-    }
+    } catch {
 
-  }
+      setErroConta('Não Foi Possível Salvar As Alterações Da Conta.')
 
-  function abrirConta() {
+    }
 
-    setNovoEmail(usuario.email || '')
+  }
 
-    setNovaSenha('')
+  function abrirConta() {
 
-    setConfirmacaoSenha('')
+    setNovoEmail(usuario.email || '')
 
-    setErroConta('')
+    setNovaSenha('')
 
-    setContaAberta(true)
+    setConfirmacaoSenha('')
 
-  }
+    setErroConta('')
 
-  function cancelarConta() {
+    setContaAberta(true)
 
-    setErroConta('')
+  }
 
-    setContaAberta(false)
+  function cancelarConta() {
 
-    setNovaSenha('')
+    setErroConta('')
 
-    setConfirmacaoSenha('')
+    setContaAberta(false)
 
-  }
+    setNovaSenha('')
 
-  return (
+    setConfirmacaoSenha('')
 
-    <MenuPrincipal
+  }
 
-      usuarioAtual={usuario}
+  return (
 
-      ativo="minhas-demandas"
+    <MenuPrincipal
 
-      subtitulo="Minhas Demandas"
+      usuarioAtual={usuario}
 
-      onDashboard={onDashboard}
+      ativo="minhas-demandas"
 
-      onMinhasDemandas={() => {
+      subtitulo="Minhas Demandas"
 
-        setContaAberta(false)
+      onDashboard={onDashboard}
 
-      }}
+      onMinhasDemandas={() => {
 
-      onConfiguracoes={onConfiguracoes}
+        setContaAberta(false)
 
-      onMinhaConta={() => {
+      }}
 
-        if (onConfiguracoes) {
+      onConfiguracoes={onConfiguracoes}
 
-          onConfiguracoes()
+      onMinhaConta={() => {
 
-          return
+        if (onConfiguracoes) {
 
-        }
+          onConfiguracoes()
 
-        abrirConta()
+          return
 
-      }}
+        }
 
-      onSair={onVoltar}
+        abrirConta()
 
-    >
+      }}
 
-      <div className="minhas-demandas-page">
+      onSair={onVoltar}
 
-        <div className="minhas-demandas-heading">
+    >
 
-          <div>
+      <div className="minhas-demandas-page">
 
-            <h2>Minhas Demandas</h2>
+        <div className="minhas-demandas-heading">
 
-            <p>Demandas Atualmente Atribuídas A <strong>{usuario.nome}</strong>.</p>
+          <div>
 
-          </div>
+            <h2>Minhas Demandas</h2>
 
-        </div>
+            <p>Demandas Atualmente Atribuídas A <strong>{usuario.nome}</strong>.</p>
 
-        <div className="md-summary">
+          </div>
 
-          <span>
+        </div>
 
-            <strong>{indicadores.total}</strong>{' '}
+        <div className="md-summary">
 
-            {indicadores.total === 1 ? 'Demanda Atribuída' : 'Demandas Atribuídas'}
+          <span>
 
-          </span>
+            <strong>{indicadores.total}</strong>{' '}
 
-          <span className={`md-summary-alert ${indicadores.atrasadas > 0 ? 'is-danger' : ''}`}>
+            {indicadores.total === 1 ? 'Demanda Atribuída' : 'Demandas Atribuídas'}
 
-            <strong>{indicadores.atrasadas}</strong>{' '}
+          </span>
 
-            {indicadores.atrasadas === 1 ? 'Demanda Atrasada' : 'Demandas Atrasadas'}
+          <span className={`md-summary-alert ${indicadores.atrasadas > 0 ? 'is-danger' : ''}`}>
 
-          </span>
+            <strong>{indicadores.atrasadas}</strong>{' '}
 
-        </div>
+            {indicadores.atrasadas === 1 ? 'Demanda Atrasada' : 'Demandas Atrasadas'}
 
-        <section className="md-indicators" aria-label="Resumo Das Minhas Demandas">
+          </span>
 
-          <button
+        </div>
 
-            type="button"
+        <section className="md-indicators" aria-label="Resumo Das Minhas Demandas">
 
-            className={`md-indicator ${statusFiltro === 'Em Atendimento' ? 'is-active' : ''}`}
+          <button
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Em Atendimento' ? 'Todos' : 'Em Atendimento')}
+            type="button"
 
-            aria-pressed={statusFiltro === 'Em Atendimento'}
+            className={`md-indicator ${statusFiltro === 'Em Atendimento' ? 'is-active' : ''}`}
 
-          >
+            onClick={() => setStatusFiltro(statusFiltro === 'Em Atendimento' ? 'Todos' : 'Em Atendimento')}
 
-            <span>Em Atendimento</span>
+            aria-pressed={statusFiltro === 'Em Atendimento'}
 
-            <strong>{indicadores.atendimento}</strong>
+          >
 
-            <small>Ver Demandas</small>
+            <span>Em Atendimento</span>
 
-          </button>
+            <strong>{indicadores.atendimento}</strong>
 
-          <button
+            <small>Ver Demandas</small>
 
-            type="button"
+          </button>
 
-            className={`md-indicator md-indicator-warning ${statusFiltro === 'Com Pendências' ? 'is-active' : ''}`}
+          <button
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Com Pendências' ? 'Todos' : 'Com Pendências')}
+            type="button"
 
-            aria-pressed={statusFiltro === 'Com Pendências'}
+            className={`md-indicator md-indicator-warning ${statusFiltro === 'Com Pendências' ? 'is-active' : ''}`}
 
-          >
+            onClick={() => setStatusFiltro(statusFiltro === 'Com Pendências' ? 'Todos' : 'Com Pendências')}
 
-            <span>Com Pendências</span>
+            aria-pressed={statusFiltro === 'Com Pendências'}
 
-            <strong>{indicadores.pendencias}</strong>
+          >
 
-            <small>Ver Pendências</small>
+            <span>Com Pendências</span>
 
-          </button>
+            <strong>{indicadores.pendencias}</strong>
 
-          <button
+            <small>Ver Pendências</small>
 
-            type="button"
+          </button>
 
-            className={`md-indicator md-indicator-muted ${statusFiltro === 'Aguardando' ? 'is-active' : ''}`}
+          <button
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Aguardando' ? 'Todos' : 'Aguardando')}
+            type="button"
 
-            aria-pressed={statusFiltro === 'Aguardando'}
+            className={`md-indicator md-indicator-muted ${statusFiltro === 'Aguardando' ? 'is-active' : ''}`}
 
-          >
+            onClick={() => setStatusFiltro(statusFiltro === 'Aguardando' ? 'Todos' : 'Aguardando')}
 
-            <span>Aguardando</span>
+            aria-pressed={statusFiltro === 'Aguardando'}
 
-            <strong>{indicadores.aguardando}</strong>
+          >
 
-            <small>Ver Aguardando</small>
+            <span>Aguardando</span>
 
-          </button>
+            <strong>{indicadores.aguardando}</strong>
 
-          <button
+            <small>Ver Aguardando</small>
 
-            type="button"
+          </button>
 
-            className={`md-indicator md-indicator-success ${statusFiltro === 'Concluída' ? 'is-active' : ''}`}
+          <button
 
-            onClick={() => setStatusFiltro(statusFiltro === 'Concluída' ? 'Todos' : 'Concluída')}
+            type="button"
 
-            aria-pressed={statusFiltro === 'Concluída'}
+            className={`md-indicator md-indicator-success ${statusFiltro === 'Concluída' ? 'is-active' : ''}`}
 
-          >
+            onClick={() => setStatusFiltro(statusFiltro === 'Concluída' ? 'Todos' : 'Concluída')}
 
-            <span>Concluídas</span>
+            aria-pressed={statusFiltro === 'Concluída'}
 
-            <strong>{indicadores.concluidas}</strong>
+          >
 
-            <small>Ver Concluídas</small>
+            <span>Concluídas</span>
 
-          </button>
+            <strong>{indicadores.concluidas}</strong>
 
-        </section>
+            <small>Ver Concluídas</small>
 
-        <section className="md-filter-card">
+          </button>
 
-          <div className="md-filter-heading">
+        </section>
 
-            <div>
+        <section className="md-filter-card">
 
-              <h3>Filtros</h3>
+          <div className="md-filter-heading">
 
-              <span>Use Os Filtros Para Encontrar Rapidamente Uma Demanda.</span>
+            <div>
 
-            </div>
+              <h3>Filtros</h3>
 
-          </div>
+              <span>Use Os Filtros Para Encontrar Rapidamente Uma Demanda.</span>
 
-          <div className="md-filter-search">
+            </div>
 
-            <label htmlFor="md-pesquisa">Pesquisar</label>
+          </div>
 
-            <input
+          <div className="md-filter-search">
 
-              id="md-pesquisa"
+            <label htmlFor="md-pesquisa">Pesquisar</label>
 
-              value={pesquisa}
+            <input
 
-              onChange={(event) => setPesquisa(event.target.value)}
+              id="md-pesquisa"
 
-              placeholder="Pesquisar Por ID, Título, Órgão, Sistema Ou Descrição..."
+              value={pesquisa}
 
-            />
+              onChange={(event) => setPesquisa(event.target.value)}
 
-          </div>
+              placeholder="Pesquisar Por ID, Título, Órgão, Sistema Ou Descrição..."
 
-          <div className="md-filter-field">
+            />
 
-            <label htmlFor="md-status">Status</label>
+          </div>
 
-            <select id="md-status" value={statusFiltro} onChange={(event) => setStatusFiltro(event.target.value)}>
+          <div className="md-filter-field">
 
-              {STATUS.map((status) => <option key={status} value={status}>{status}</option>)}
+            <label htmlFor="md-status">Status</label>
 
-            </select>
+            <select id="md-status" value={statusFiltro} onChange={(event) => setStatusFiltro(event.target.value)}>
 
-          </div>
+              {STATUS.map((status) => <option key={status} value={status}>{status}</option>)}
 
-          <div className="md-filter-field">
+            </select>
 
-            <label htmlFor="md-prioridade">Criticidade</label>
+          </div>
 
-            <select id="md-prioridade" value={prioridadeFiltro} onChange={(event) => setPrioridadeFiltro(event.target.value)}>
+          <div className="md-filter-field">
 
-              <option value="Todas">Selecione...</option>
+            <label htmlFor="md-prioridade">Criticidade</label>
 
-              {PRIORIDADES.filter((prioridade) => prioridade !== "Todas").map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
+            <select id="md-prioridade" value={prioridadeFiltro} onChange={(event) => setPrioridadeFiltro(event.target.value)}>
 
-            </select>
+              <option value="Todas">Selecione...</option>
 
-          </div>
+              {PRIORIDADES.filter((prioridade) => prioridade !== "Todas").map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
 
-          <div className="md-filter-field">
-            <label htmlFor="md-prioridade-atendimento">Prioridade de Atendimento</label>
-            <select id="md-prioridade-atendimento" value={prioridadeAtendimentoFiltro} onChange={(event) => setPrioridadeAtendimentoFiltro(event.target.value)}>
-              {PRIORIDADES_ATENDIMENTO.map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
-            </select>
-          </div>
+            </select>
 
-          <div className="md-filter-field">
+          </div>
 
-            <label htmlFor="md-situacao">Situação</label>
+          <div className="md-filter-field">
 
-            <select id="md-situacao" value={situacaoFiltro} onChange={(event) => setSituacaoFiltro(event.target.value)}>
+            <label htmlFor="md-prioridade-atendimento">Prioridade de Atendimento</label>
 
-              <option value="Todos">Todas</option>
+            <select id="md-prioridade-atendimento" value={prioridadeAtendimentoFiltro} onChange={(event) => setPrioridadeAtendimentoFiltro(event.target.value)}>
 
-              <option value="Abertas">Abertas</option>
+              {PRIORIDADES_ATENDIMENTO.map((prioridade) => <option key={prioridade} value={prioridade}>{prioridade}</option>)}
 
-              <option value="Concluídas">Concluídas</option>
+            </select>
 
-              <option value="Atrasadas">Atrasadas</option>
+          </div>
 
-            </select>
+          <div className="md-filter-field">
 
-          </div>
+            <label htmlFor="md-situacao">Situação</label>
 
-          <button type="button" className="md-clear-button btn-secundario" onClick={limparFiltros}>Limpar Filtros</button>
+            <select id="md-situacao" value={situacaoFiltro} onChange={(event) => setSituacaoFiltro(event.target.value)}>
 
-        </section>
+              <option value="Todos">Todas</option>
 
-        <section className="md-table-card">
+              <option value="Abertas">Abertas</option>
 
-          <div className="md-table-header">
+              <option value="Concluídas">Concluídas</option>
 
-            <div>
+              <option value="Atrasadas">Atrasadas</option>
 
-              <h3>Minhas Demandas</h3>
+            </select>
 
-              <p>
+          </div>
 
-                {demandasFiltradas.length}{' '}
+          <button type="button" className="md-clear-button btn-secundario" onClick={limparFiltros}>Limpar Filtros</button>
 
-                {demandasFiltradas.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}
+        </section>
 
-              </p>
+        <section className="md-table-card">
 
-            </div>
+          <div className="md-table-header">
 
-            <span className="md-table-count">
+            <div>
 
-              {demandasFiltradas.length === 1 ? '1 Demanda' : `${demandasFiltradas.length} Demandas`}
+              <h3>Minhas Demandas</h3>
 
-            </span>
+              <p>
 
-          </div>
+                {demandasFiltradas.length}{' '}
 
-          {demandasFiltradas.length === 0 ? (
+                {demandasFiltradas.length === 1 ? 'Registro Encontrado' : 'Registros Encontrados'}
 
-            <div className="md-empty">
+              </p>
 
-              <div className="md-empty-icon">📋</div>
+            </div>
 
-              <h3>Nenhuma Demanda Encontrada</h3>
+            <span className="md-table-count">
 
-              <p>Não Há Demandas Atribuídas A Você Com Os Filtros Selecionados.</p>
+              {demandasFiltradas.length === 1 ? '1 Demanda' : `${demandasFiltradas.length} Demandas`}
 
-            </div>
+            </span>
 
-          ) : (
+          </div>
 
-            <div className="md-table-wrap">
+          {demandasFiltradas.length === 0 ? (
 
-              <table className="md-table">
+            <div className="md-empty">
 
-                <thead>
+              <div className="md-empty-icon">📋</div>
 
-                  <tr>
+              <h3>Nenhuma Demanda Encontrada</h3>
 
-                    <th>ID</th>
+              <p>Não Há Demandas Atribuídas A Você Com Os Filtros Selecionados.</p>
 
-                    <th>Demanda</th>
+            </div>
 
-                    <th>Órgão</th>
+          ) : (
 
-                    <th>Classificação</th>
+            <div className="md-table-wrap">
 
-                    <th>Status</th>
+              <table className="md-table">
 
-                    <th>Prazo</th>
+                <thead>
 
-                    <th>SLA</th>
+                  <tr>
 
-                    <th>Ações</th>
+                    <th>ID</th>
 
-                  </tr>
+                    <th>Demanda</th>
 
-                </thead>
+                    <th>Órgão</th>
 
-                <tbody>
+                    <th>Classificação</th>
 
-                  {demandasFiltradas.map((demanda) => {
+                    <th>Status</th>
 
-                    const atrasada = estaAtrasada(demanda)
+                    <th>Prazo</th>
 
-                    const proxima = estaProxima(demanda)
+                    <th>SLA</th>
 
-                    return (
+                    <th>Ações</th>
 
-                      <tr
+                  </tr>
 
-                        key={demanda.id}
+                </thead>
 
-                        className={classeLinhaCriticidade(demanda.criticidade || demanda.prioridade)}
+                <tbody>
 
-                      >
+                  {demandasFiltradas.map((demanda) => {
 
-                        <td className="md-id">DEM-{String(demanda.id).padStart(5, '0')}</td>
+                    const atrasada = estaAtrasada(demanda)
 
-                        <td>
+                    const proxima = estaProxima(demanda)
 
-                          <strong>{demanda.titulo}</strong>
+                    return (
 
-                          <small>{demanda.sistema || '—'}</small>
+                      <tr
 
-                        </td>
+                        key={demanda.id}
 
-                        <td>{demanda.cliente || '—'}</td>
+                        className={classeLinhaCriticidade(demanda.criticidade || demanda.prioridade)}
 
-                        <td>
+                      >
 
-                          <div className="md-classificacao-cell">
+                        <td className="md-id">DEM-{String(demanda.id).padStart(5, '0')}</td>
 
-                            <span className={`md-priority ${classeCriticidade(demanda.criticidade || demanda.prioridade)}`}>
+                        <td>
 
-                              {demanda.criticidade || demanda.prioridade}
+                          <strong>{demanda.titulo}</strong>
 
-                            </span>
+                          <small>{demanda.sistema || '—'}</small>
 
-                            <small className={classePrioridadeAtendimento(demanda.prioridadeAtendimento || '')}>
+                        </td>
 
-                              {demanda.prioridadeAtendimento || '—'}
+                        <td>{demanda.cliente || '—'}</td>
 
-                            </small>
+                        <td>
 
-                          </div>
+                          <div className="md-classificacao-cell">
 
-                        </td>
+                            <span className={`md-priority ${classeCriticidade(demanda.criticidade || demanda.prioridade)}`}>
 
-                        <td><span className={`md-status ${classeStatus(demanda.status)}`}>{demanda.status}</span></td>
+                              {demanda.criticidade || demanda.prioridade}
 
-                        <td>{formatarData(demanda.prazo)}</td>
+                            </span>
 
-                        <td>
+                            <small className={classePrioridadeAtendimento(demanda.prioridadeAtendimento || '')}>
 
-                          <span className={`md-sla ${atrasada ? 'danger' : proxima ? 'warning' : 'ok'}`}>
+                              {demanda.prioridadeAtendimento || '—'}
 
-                            {atrasada ? 'Atrasada' : proxima ? 'Próxima' : 'No Prazo'}
+                            </small>
 
-                          </span>
+                          </div>
 
-                        </td>
+                        </td>
 
-                        <td>
+                        <td><span className={`md-status ${classeStatus(demanda.status)}`}>{demanda.status}</span></td>
 
-                          <div className="md-actions">
+                        <td>{formatarData(demanda.prazo)}</td>
 
-                            <button type="button" onClick={() => onAbrirDetalhe(demanda)}>Detalhes</button>
+                        <td>
 
-                            {demanda.status === 'Aguardando' && (
+                          <span className={`md-sla ${atrasada ? 'danger' : proxima ? 'warning' : 'ok'}`}>
 
-                              <button
+                            {atrasada ? 'Atrasada' : proxima ? 'Próxima' : 'No Prazo'}
 
-                                type="button"
+                          </span>
 
-                                className="md-action-primary"
+                        </td>
 
-                                onClick={() => onAlterarStatus(demanda.id, 'Em Atendimento')}
+                        <td>
 
-                              >
+                          <div className="md-actions">
 
-                                Atender
+                            <button type="button" onClick={() => onAbrirDetalhe(demanda)}>Detalhes</button>
 
-                              </button>
+                            {demanda.status === 'Aguardando' && (
 
-                            )}
+                              <button
 
-                            {demanda.status !== 'Concluída' && demanda.status !== 'Cancelada' && (
+                                type="button"
 
-                              <>
+                                className="md-action-primary"
 
-                                <button type="button" className="md-action-warning" onClick={() => {
+                                onClick={() => onAlterarStatus(demanda.id, 'Em Atendimento')}
 
-                                  const motivo = window.prompt('Informe O Motivo Da Pendência:')
+                              >
 
-                                  if (motivo?.trim()) onAlterarStatus(demanda.id, 'Com Pendências', motivo)
+                                Atender
 
-                                }}>Pendência</button>
+                              </button>
 
-                                <button type="button" className="md-action-success" onClick={() => {
+                            )}
 
-                                  const comentario = window.prompt('Informe O Comentário De Conclusão:')
+                            {demanda.status !== 'Concluída' && demanda.status !== 'Cancelada' && (
 
-                                  if (comentario?.trim()) onAlterarStatus(demanda.id, 'Concluída', comentario)
+                              <>
 
-                                }}>Concluir</button>
+                                <button type="button" className="md-action-warning" onClick={() => {
 
-                              </>
+                                  const motivo = window.prompt('Informe O Motivo Da Pendência:')
 
-                            )}
+                                  if (motivo?.trim()) onAlterarStatus(demanda.id, 'Com Pendências', motivo)
 
-                          </div>
+                                }}>Pendência</button>
 
-                        </td>
+                                <button type="button" className="md-action-success" onClick={() => {
 
-                      </tr>
+                                  const comentario = window.prompt('Informe O Comentário De Conclusão:')
 
-                    )
+                                  if (comentario?.trim()) onAlterarStatus(demanda.id, 'Concluída', comentario)
 
-                  })}
+                                }}>Concluir</button>
 
-                </tbody>
+                              </>
 
-              </table>
+                            )}
 
-            </div>
+                          </div>
 
-          )}
+                        </td>
 
-        </section>
+                      </tr>
 
-      </div>
+                    )
 
-      {contaAberta && (
+                  })}
 
-        <div className="md-modal-backdrop" role="presentation">
+                </tbody>
 
-          <div className="md-modal" role="dialog" aria-modal="true" aria-labelledby="md-conta-title">
+              </table>
 
-            <div className="md-modal-header">
+            </div>
 
-              <div>
+          )}
 
-                <h3 id="md-conta-title">Minha Conta</h3>
+        </section>
 
-                <p>Altere seu e-mail e sua senha quando desejar.</p>
+      </div>
 
-              </div>
+      {contaAberta && (
 
-              <button type="button" className="md-modal-close" onClick={cancelarConta} aria-label="Fechar">×</button>
+        <div className="md-modal-backdrop" role="presentation">
 
-            </div>
+          <div className="md-modal" role="dialog" aria-modal="true" aria-labelledby="md-conta-title">
 
-            <form onSubmit={salvarConta}>
+            <div className="md-modal-header">
 
-              <div className="md-account-grid">
+              <div>
 
-                <label>
+                <h3 id="md-conta-title">Minha Conta</h3>
 
-                  Nome
+                <p>Altere seu e-mail e sua senha quando desejar.</p>
 
-                  <input value={usuario.nome} readOnly />
+              </div>
 
-                </label>
+              <button type="button" className="md-modal-close" onClick={cancelarConta} aria-label="Fechar">×</button>
 
-                <label>
+            </div>
 
-                  Login
+            <form onSubmit={salvarConta}>
 
-                  <input value={usuario.login} readOnly />
+              <div className="md-account-grid">
 
-                </label>
+                <label>
 
-                <label className="md-account-full">
+                  Nome
 
-                  E-mail
+                  <input value={usuario.nome} readOnly />
 
-                  <input type="email" value={novoEmail} onChange={(event) => setNovoEmail(event.target.value)} autoComplete="email" />
+                </label>
 
-                </label>
+                <label>
 
-                <label>
+                  Login
 
-                  Nova Senha
+                  <input value={usuario.login} readOnly />
 
-                  <div className="md-password-wrap">
+                </label>
 
-                    <input
+                <label className="md-account-full">
 
-                      type={mostrarNovaSenha ? 'text' : 'password'}
+                  E-mail
 
-                      value={novaSenha}
+                  <input type="email" value={novoEmail} onChange={(event) => setNovoEmail(event.target.value)} autoComplete="email" />
 
-                      onChange={(event) => setNovaSenha(event.target.value)}
+                </label>
 
-                      minLength={MINIMO_SENHA}
+                <label>
 
-                      placeholder={`Mínimo ${MINIMO_SENHA} Caracteres`}
+                  Nova Senha
 
-                      autoComplete="new-password"
+                  <div className="md-password-wrap">
 
-                    />
+                    <input
 
-                    <button type="button" onClick={() => setMostrarNovaSenha((valor) => !valor)} aria-label={mostrarNovaSenha ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
+                      type={mostrarNovaSenha ? 'text' : 'password'}
 
-                  </div>
+                      value={novaSenha}
 
-                </label>
+                      onChange={(event) => setNovaSenha(event.target.value)}
 
-                <label>
+                      minLength={MINIMO_SENHA}
 
-                  Confirmar Senha
+                      placeholder={`Mínimo ${MINIMO_SENHA} Caracteres`}
 
-                  <div className="md-password-wrap">
+                      autoComplete="new-password"
 
-                    <input
+                    />
 
-                      type={mostrarConfirmacao ? 'text' : 'password'}
+                    <button type="button" onClick={() => setMostrarNovaSenha((valor) => !valor)} aria-label={mostrarNovaSenha ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
 
-                      value={confirmacaoSenha}
+                  </div>
 
-                      onChange={(event) => setConfirmacaoSenha(event.target.value)}
+                </label>
 
-                      minLength={MINIMO_SENHA}
+                <label>
 
-                      placeholder="Repita A Senha"
+                  Confirmar Senha
 
-                      autoComplete="new-password"
+                  <div className="md-password-wrap">
 
-                    />
+                    <input
 
-                    <button type="button" onClick={() => setMostrarConfirmacao((valor) => !valor)} aria-label={mostrarConfirmacao ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
+                      type={mostrarConfirmacao ? 'text' : 'password'}
 
-                  </div>
+                      value={confirmacaoSenha}
 
-                </label>
+                      onChange={(event) => setConfirmacaoSenha(event.target.value)}
 
-              </div>
+                      minLength={MINIMO_SENHA}
 
-              <div className="md-account-note">A Alteração De Senha Exige No Mínimo 6 Caracteres. Deixe Os Campos De Senha Vazios Para Manter A Senha Atual.</div>
+                      placeholder="Repita A Senha"
 
-              {erroConta && <div className="md-account-error">{erroConta}</div>}
+                      autoComplete="new-password"
 
-              <div className="md-modal-actions">
+                    />
 
-                <button type="button" className="md-cancel-button btn-secundario" onClick={cancelarConta}>Cancelar</button>
+                    <button type="button" onClick={() => setMostrarConfirmacao((valor) => !valor)} aria-label={mostrarConfirmacao ? 'Ocultar Senha' : 'Visualizar Senha'}>🔍</button>
 
-                <button type="submit" className="md-save-button btn-principal">Salvar Alterações</button>
+                  </div>
 
-              </div>
+                </label>
 
-            </form>
+              </div>
 
-          </div>
+              <div className="md-account-note">A Alteração De Senha Exige No Mínimo 8 Caracteres. Deixe Os Campos De Senha Vazios Para Manter A Senha Atual.</div>
 
-        </div>
+              {erroConta && <div className="md-account-error">{erroConta}</div>}
 
-      )}
+              <div className="md-modal-actions">
 
-    </MenuPrincipal>
+                <button type="button" className="md-cancel-button btn-secundario" onClick={cancelarConta}>Cancelar</button>
 
-  )
+                <button type="submit" className="md-save-button btn-principal">Salvar Alterações</button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </MenuPrincipal>
+
+  )
 
 }

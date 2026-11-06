@@ -155,10 +155,10 @@ const STATUS = [
 // ============================================================
 
 const PRIORIDADES = [
-  'Crítica',
   'Alta',
-  'Média',
   'Baixa',
+  'Crítica',
+  'Média',
 ]
 
 // Prioridade de Atendimento é um campo independente da Criticidade.
@@ -560,7 +560,7 @@ export default function TodasDemandas({
           )
           .filter(Boolean)
       ),
-    ].sort()
+    ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
   }, [demandas])
 
@@ -574,7 +574,7 @@ export default function TodasDemandas({
           )
           .filter(Boolean)
       ),
-    ].sort()
+    ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
   }, [demandas])
 

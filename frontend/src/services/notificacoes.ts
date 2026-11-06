@@ -1,32 +1,16 @@
+
 // ============================================================
 // GESTÃO DE DEMANDAS DE TI
-// V2.2 — NOTIFICAÇÕES CENTRALIZADAS
+// V2.3 — NOTIFICAÇÕES CENTRALIZADAS
+// PERSISTÊNCIA PELO SERVIÇO STORAGE
 // ============================================================
-//
-// RESPONSABILIDADES:
-// - Criar e persistir notificações
-// - Marcar notificações como lidas
-// - Marcar todas como lidas
-// - Consultar não lidas
-// - Respeitar as configurações de notificações do sistema
-// - Manter compatibilidade com o storage atual
-//
-// Observação:
-// As notificações de atraso e próximo vencimento são calculadas
-// pelo Dashboard a partir do SLA central. Este serviço permanece
-// responsável pelas notificações persistidas geradas pelo fluxo
-// da demanda.
-//
 
 import type { Notificacao } from '../types'
+
 import {
   carregarNotificacoes,
   salvarNotificacoes,
 } from './storage'
-
-// ============================================================
-// CONFIGURAÇÕES DE NOTIFICAÇÕES
-// ============================================================
 
 type ConfiguracaoNotificacao =
   | 'atrasadas'
@@ -48,18 +32,13 @@ const CONFIGURACOES_PADRAO: Record<
   cancelamento: true,
 }
 
-// ============================================================
-// LEITURA SEGURA DAS CONFIGURAÇÕES
-// ============================================================
-
 function notificacaoHabilitada(
   campo: ConfiguracaoNotificacao
 ): boolean {
   try {
-    const salvo =
-      localStorage.getItem(
-        'configuracoes_sistema'
-      )
+    const salvo = localStorage.getItem(
+      'configuracoes_sistema'
+    )
 
     if (!salvo) {
       return CONFIGURACOES_PADRAO[campo]
@@ -80,10 +59,6 @@ function notificacaoHabilitada(
   }
 }
 
-// ============================================================
-// IDENTIFICAÇÃO DO TIPO CONFIGURÁVEL
-// ============================================================
-
 function identificarConfiguracao(
   titulo: string
 ): ConfiguracaoNotificacao | null {
@@ -100,26 +75,18 @@ function identificarConfiguracao(
     return 'atribuicao'
   }
 
-  if (
-    valor === 'demanda concluída'
-  ) {
+  if (valor === 'demanda concluída') {
     return 'conclusao'
   }
 
-  if (
-    valor === 'demanda reaberta'
-  ) {
+  if (valor === 'demanda reaberta') {
     return 'reabertura'
   }
 
-  if (
-    valor === 'demanda cancelada'
-  ) {
+  if (valor === 'demanda cancelada') {
     return 'cancelamento'
   }
 
-  // A notificação de pendência não possui
-  // chave própria nas Configurações atuais.
   return null
 }
 
@@ -133,8 +100,9 @@ export function criarNotificacao(
     'id' | 'data' | 'lida'
   >
 ): Notificacao | null {
-  const configuracao =
-    identificarConfiguracao(dados.titulo)
+  const configuracao = identificarConfiguracao(
+    dados.titulo
+  )
 
   if (
     configuracao &&
@@ -157,6 +125,9 @@ export function criarNotificacao(
     ...carregarNotificacoes(),
   ])
 
+  // O próprio serviço storage realiza a sincronização
+  // com o PostgreSQL. Não duplicar a chamada à API.
+
   return nova
 }
 
@@ -167,21 +138,19 @@ export function criarNotificacao(
 export function marcarNotificacaoComoLida(
   id: string
 ) {
-  if (!id) {
-    return
-  }
+  if (!id) return
 
-  salvarNotificacoes(
-    carregarNotificacoes().map(
-      (item) =>
-        item.id === id
-          ? {
-              ...item,
-              lida: true,
-            }
-          : item
-    )
+  const atualizadas = carregarNotificacoes().map(
+    (item) =>
+      item.id === id
+        ? {
+            ...item,
+            lida: true,
+          }
+        : item
   )
+
+  salvarNotificacoes(atualizadas)
 }
 
 // ============================================================
@@ -189,18 +158,18 @@ export function marcarNotificacaoComoLida(
 // ============================================================
 
 export function marcarTodasComoLidas() {
-  salvarNotificacoes(
-    carregarNotificacoes().map(
-      (item) => ({
-        ...item,
-        lida: true,
-      })
-    )
+  const atualizadas = carregarNotificacoes().map(
+    (item) => ({
+      ...item,
+      lida: true,
+    })
   )
+
+  salvarNotificacoes(atualizadas)
 }
 
 // ============================================================
-// NÃO LIDAS
+// CONSULTAR NOTIFICAÇÕES NÃO LIDAS
 // ============================================================
 
 export function notificacoesNaoLidas() {

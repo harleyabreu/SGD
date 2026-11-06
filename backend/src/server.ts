@@ -5,6 +5,7 @@ import argon2 from "argon2";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import { criarRotasFeriados } from "./feriadosRoutes.js";
+import { criarRotasOperacionais } from "./operacionalRoutes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -299,7 +300,8 @@ app.use("/api", async (req, res, next) => {
       }
     }
 
-    const perfilGestor = String(usuario.perfil ?? "").trim().toLowerCase() === "gestor/administrador";
+    const perfilNormalizado = String(usuario.perfil ?? "").trim().toLowerCase();
+    const perfilGestor = perfilNormalizado === "gestor/administrador" || perfilNormalizado === "diretor (a)";
     const rotaUsuarios = /^\/usuarios(?:\/|$)/.test(caminho);
     const rotaSenhaPropria = req.method === "POST" && Boolean(usuario.exigir_troca_senha) &&
       /^\/usuarios\/(\d+)\/senha$/.test(caminho) &&
@@ -403,10 +405,30 @@ type UsuarioBanco = {
 
 const PERFIS_USUARIO = new Set([
   "Gestor/Administrador",
+  "Diretor (a)",
   "Analista",
   "Desenvolvedor",
   "Estagiário",
 ]);
+
+function ehPerfilDiretor(perfil: string): boolean {
+  return perfil === "Diretor (a)";
+}
+
+function validarEstruturaPorPerfil(perfil: string, estrutura: ReturnType<typeof lerEstruturaOrganizacional>): string | null {
+  if (ehPerfilDiretor(perfil)) {
+    if (estrutura.diretoriaSigla !== "DDS" || estrutura.diretoriaNome !== "Diretoria de Desenvolvimento de Sistemas") {
+      return "O Diretor (a) deve estar vinculado à DDS.";
+    }
+    return null;
+  }
+
+  if (!estrutura.diretoriaSigla || !estrutura.diretoriaNome || !estrutura.gerenciaSigla || !estrutura.gerenciaNome || !estrutura.divisaoNome) {
+    return "Selecione Diretoria, Gerência e Divisão do usuário.";
+  }
+
+  return null;
+}
 
 function usuarioPublico(row: UsuarioBanco) {
   const estruturaCompleta = Boolean(
@@ -505,8 +527,18 @@ app.post("/api/usuarios", async (req, res) => {
   if (!PERFIS_USUARIO.has(perfil)) {
     return res.status(400).json({ message: "Perfil de usuário inválido." });
   }
-  if (!estrutura.diretoriaSigla || !estrutura.diretoriaNome || !estrutura.gerenciaSigla || !estrutura.gerenciaNome || !estrutura.divisaoNome) {
-    return res.status(400).json({ message: "Selecione Diretoria, Gerência e Divisão do usuário." });
+  const erroEstrutura = validarEstruturaPorPerfil(perfil, estrutura);
+  if (erroEstrutura) {
+    return res.status(400).json({ message: erroEstrutura });
+  }
+
+  if (ehPerfilDiretor(perfil)) {
+    const diretorExistente = await pool.query(
+      "SELECT id FROM usuarios WHERE perfil = 'Diretor (a)' LIMIT 1",
+    );
+    if (diretorExistente.rowCount && Number(diretorExistente.rows[0].id) > 0) {
+      return res.status(409).json({ message: "Já existe um usuário com o perfil Diretor (a). O sistema permite apenas um Diretor (a)." });
+    }
   }
 
   try {
@@ -522,8 +554,10 @@ app.post("/api/usuarios", async (req, res) => {
                  divisao_nome, criado_em, atualizado_em, ultimo_acesso,
                  exigir_troca_senha`,
       [nome, login, email, telefone || null, senhaHash, perfil,
-       estrutura.diretoriaSigla, estrutura.diretoriaNome, estrutura.gerenciaSigla,
-       estrutura.gerenciaNome, estrutura.divisaoNome],
+       estrutura.diretoriaSigla, estrutura.diretoriaNome,
+       ehPerfilDiretor(perfil) ? null : estrutura.gerenciaSigla,
+       ehPerfilDiretor(perfil) ? null : estrutura.gerenciaNome,
+       ehPerfilDiretor(perfil) ? null : estrutura.divisaoNome],
     );
     return res.status(201).json(usuarioPublico(resultado.rows[0] as UsuarioBanco));
   } catch (error) {
@@ -562,8 +596,19 @@ app.put("/api/usuarios/:id", async (req, res) => {
   if (senha && senha.length < 8) {
     return res.status(400).json({ message: "A senha deve possuir no mínimo 8 caracteres." });
   }
-  if (!estrutura.diretoriaSigla || !estrutura.diretoriaNome || !estrutura.gerenciaSigla || !estrutura.gerenciaNome || !estrutura.divisaoNome) {
-    return res.status(400).json({ message: "Selecione Diretoria, Gerência e Divisão do usuário." });
+  const erroEstrutura = validarEstruturaPorPerfil(perfil, estrutura);
+  if (erroEstrutura) {
+    return res.status(400).json({ message: erroEstrutura });
+  }
+
+  if (ehPerfilDiretor(perfil)) {
+    const diretorExistente = await pool.query(
+      "SELECT id FROM usuarios WHERE perfil = 'Diretor (a)' AND id <> $1 LIMIT 1",
+      [id],
+    );
+    if (diretorExistente.rowCount) {
+      return res.status(409).json({ message: "Já existe um usuário com o perfil Diretor (a). O sistema permite apenas um Diretor (a)." });
+    }
   }
 
   try {
@@ -582,8 +627,10 @@ app.put("/api/usuarios/:id", async (req, res) => {
                  divisao_nome, criado_em, atualizado_em, ultimo_acesso,
                  exigir_troca_senha`,
       [nome, login, email, telefone || null, perfil,
-       estrutura.diretoriaSigla, estrutura.diretoriaNome, estrutura.gerenciaSigla,
-       estrutura.gerenciaNome, estrutura.divisaoNome, senhaHash, id],
+       estrutura.diretoriaSigla, estrutura.diretoriaNome,
+       ehPerfilDiretor(perfil) ? null : estrutura.gerenciaSigla,
+       ehPerfilDiretor(perfil) ? null : estrutura.gerenciaNome,
+       ehPerfilDiretor(perfil) ? null : estrutura.divisaoNome, senhaHash, id],
     );
     if (resultado.rowCount === 0) {
       return res.status(404).json({ message: "Usuário não encontrado." });
@@ -596,6 +643,59 @@ app.put("/api/usuarios/:id", async (req, res) => {
     }
     console.error("Falha ao editar usuário:", error);
     return res.status(500).json({ message: "Não foi possível editar o usuário." });
+  }
+});
+
+app.delete("/api/usuarios/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  const autenticacao = res.locals.sgdAuth as { id: number } | undefined;
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({ message: "ID de usuário inválido." });
+  }
+
+  if (autenticacao && Number(autenticacao.id) === id) {
+    return res.status(409).json({ message: "O usuário atualmente logado não pode ser excluído." });
+  }
+
+  const conexao = await pool.connect();
+  try {
+    await conexao.query("BEGIN");
+
+    const atual = await conexao.query(
+      "SELECT id, nome, perfil, status FROM usuarios WHERE id=$1 FOR UPDATE",
+      [id],
+    );
+
+    if (atual.rowCount === 0) {
+      await conexao.query("ROLLBACK");
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    if (atual.rows[0].perfil === "Gestor/Administrador" && atual.rows[0].status === "Ativo") {
+      const gestores = await conexao.query(
+        "SELECT COUNT(*)::integer AS total FROM usuarios WHERE perfil='Gestor/Administrador' AND status='Ativo'",
+      );
+      if (Number(gestores.rows[0].total) <= 1) {
+        await conexao.query("ROLLBACK");
+        return res.status(409).json({ message: "O sistema precisa manter pelo menos um Gestor ativo." });
+      }
+    }
+
+    await conexao.query("DELETE FROM usuarios WHERE id=$1", [id]);
+    await conexao.query("COMMIT");
+
+    return res.json({ ok: true, id });
+  } catch (error) {
+    await conexao.query("ROLLBACK");
+    const dbError = error as { code?: string };
+    if (dbError.code === "23503") {
+      return res.status(409).json({ message: "Não é possível excluir este usuário porque existem registros relacionados a ele no banco de dados. Inative o usuário para preservar o histórico." });
+    }
+    console.error("Falha ao excluir usuário:", error);
+    return res.status(500).json({ message: "Não foi possível excluir o usuário." });
+  } finally {
+    conexao.release();
   }
 });
 
@@ -2020,8 +2120,9 @@ app.get("/api/demandas", async (_req, res) => {
   }
 });
 
-// Rotas de Feriados — registradas fora das demais rotas.
+// Rotas adicionais do backend: feriados, notificações e auditoria.
 app.use("/api", criarRotasFeriados(pool));
+app.use("/api", criarRotasOperacionais(pool));
 
 // ============================================================
 // INICIAR SERVIDOR
@@ -2060,7 +2161,49 @@ async function reconciliarPrioridadesAtendimentoNoBanco(): Promise<void> {
   }
 }
 
+async function prepararPerfisUsuariosNoBanco(): Promise<void> {
+  // Diretor(a) é único no sistema e não possui Gerência/Divisão específica.
+  await pool.query(`
+    ALTER TABLE usuarios
+      ALTER COLUMN gerencia_sigla DROP NOT NULL,
+      ALTER COLUMN gerencia_nome DROP NOT NULL,
+      ALTER COLUMN divisao_nome DROP NOT NULL
+  `);
+
+  // Atualiza o conjunto permitido de perfis sem depender do nome fixo de uma constraint antiga.
+  await pool.query(`
+    DO $$
+    DECLARE
+      c RECORD;
+    BEGIN
+      FOR c IN
+        SELECT conname
+          FROM pg_constraint
+         WHERE conrelid = 'usuarios'::regclass
+           AND contype = 'c'
+           AND pg_get_constraintdef(oid) ILIKE '%perfil%'
+      LOOP
+        EXECUTE format('ALTER TABLE usuarios DROP CONSTRAINT %I', c.conname);
+      END LOOP;
+    END $$;
+  `);
+
+  await pool.query(`
+    ALTER TABLE usuarios
+      ADD CONSTRAINT usuarios_perfil_check
+      CHECK (perfil IN ('Gestor/Administrador', 'Diretor (a)', 'Analista', 'Desenvolvedor', 'Estagiário'))
+  `);
+
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_usuarios_unico_diretor
+      ON usuarios (perfil)
+      WHERE perfil = 'Diretor (a)'
+  `);
+}
+
 async function iniciarServidor(): Promise<void> {
+  await prepararPerfisUsuariosNoBanco();
+
   // Tabela de sessões aditiva. Tokens são armazenados como hash, nunca em texto puro.
   await pool.query(`
     CREATE TABLE IF NOT EXISTS sessoes_autenticacao (

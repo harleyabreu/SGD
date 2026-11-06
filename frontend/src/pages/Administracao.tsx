@@ -18,7 +18,7 @@
 // ============================================================
 
 import { useEffect, useMemo, useState } from 'react'
-import { ESTRUTURA_ORGANIZACIONAL } from '../types'
+import { ESTRUTURA_ORGANIZACIONAL, ehPerfilDiretor } from '../types'
 import type {
   Cliente,
   Sistema,
@@ -172,13 +172,15 @@ function formatarNomeComposto(nome: string) {
 function rotuloPerfil(perfil: Usuario['perfil']) {
   switch (perfil) {
     case 'Gestor/Administrador':
-      return 'Gestor (a)'
+      return 'Gestor(a)'
+    case 'Diretor (a)':
+      return 'Diretor(a)'
     case 'Analista':
-      return 'Analista'
+      return 'Analista(a)'
     case 'Desenvolvedor':
-      return 'Desenvolvedor (a)'
+      return 'Desenvolvedor(a)'
     case 'Estagiário':
-      return 'Estagiário (a)'
+      return 'Estagiário(a)'
     default:
       return perfil
   }
@@ -304,7 +306,7 @@ function Administracao({
     useState('')
 
   const [perfilUsuario, setPerfilUsuario] =
-    useState<Usuario['perfil']>('Analista')
+    useState<Usuario['perfil']>('' as Usuario['perfil'])
 
   const [gerenciaUsuario, setGerenciaUsuario] =
     useState<SiglaGerencia | ''>('')
@@ -513,7 +515,7 @@ function Administracao({
     setLoginUsuario('')
     setEmailUsuario('')
     setTelefoneUsuario('')
-    setPerfilUsuario('Analista')
+    setPerfilUsuario('' as Usuario['perfil'])
     setGerenciaUsuario('')
     setDivisaoUsuario('')
     setSenhaUsuario('')
@@ -532,17 +534,24 @@ function Administracao({
     setPerfilUsuario(item.perfil)
 
     const estruturaExistente = item.estruturaOrganizacional
-    const gerenciaInformada = estruturaExistente?.gerenciaSigla
-    const gerenciaExistente: SiglaGerencia =
-      gerenciaInformada && gerenciaInformada in ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias
-        ? gerenciaInformada as SiglaGerencia
-        : 'GNS'
-    const gerenciaDados = ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaExistente]
 
-    setGerenciaUsuario(gerenciaExistente)
-    setDivisaoUsuario(
-      estruturaExistente?.divisaoNome || gerenciaDados.divisoes[0]
-    )
+    if (ehPerfilDiretor(item.perfil)) {
+      // Diretor(a) representa toda a DDS e não pertence a uma Gerência/Divisão específica.
+      setGerenciaUsuario('')
+      setDivisaoUsuario('')
+    } else {
+      const gerenciaInformada = estruturaExistente?.gerenciaSigla
+      const gerenciaExistente: SiglaGerencia =
+        gerenciaInformada && gerenciaInformada in ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias
+          ? gerenciaInformada as SiglaGerencia
+          : 'GNS'
+      const gerenciaDados = ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaExistente]
+
+      setGerenciaUsuario(gerenciaExistente)
+      setDivisaoUsuario(
+        estruturaExistente?.divisaoNome || gerenciaDados.divisoes[0]
+      )
+    }
 
     window.scrollTo({
       top: 0,
@@ -552,14 +561,14 @@ function Administracao({
 
   function alterarSenhaUsuario(item: Usuario) {
     const ehGestor =
-      usuarioAtual.perfil === 'Gestor/Administrador'
+      (usuarioAtual.perfil === 'Gestor/Administrador' || usuarioAtual.perfil === 'Diretor (a)')
 
     const podeAlterar =
       ehGestor || item.id === usuarioAtual.id
 
     if (!podeAlterar) {
       window.alert(
-        'Somente o Gestor pode alterar a senha de outros usuários. Você pode alterar apenas a sua própria senha.'
+        'Somente o Gestor(a) ou Diretor(a) pode alterar a senha de outros usuários. Você pode alterar apenas a sua própria senha.'
       )
       return
     }
@@ -584,27 +593,42 @@ function Administracao({
       return
     }
 
+    if (!perfilUsuario) {
+      window.alert('Selecione um Perfil.')
+      return
+    }
+
     if (!partesNomeComSobrenome(nomeUsuario) || !loginPadrao.includes('.')) {
       window.alert('Informe Nome e Sobrenome para gerar o Login no padrão nome.sobrenome.')
       return
     }
 
     const diretoria = ESTRUTURA_ORGANIZACIONAL.diretoria
-    const gerencia = gerenciaUsuario
-      ? diretoria.gerencias[gerenciaUsuario]
-      : undefined
+    let estruturaOrganizacional: EstruturaOrganizacionalUsuario
 
-    if (!gerencia || !gerencia.divisoes.includes(divisaoUsuario as never)) {
-      window.alert('Selecione uma Gerência e uma Divisão válidas.')
-      return
-    }
+    if (ehPerfilDiretor(perfilUsuario)) {
+      // O Diretor(a) responde por toda a DDS. Gerência e Divisão ficam propositalmente vazias.
+      estruturaOrganizacional = {
+        diretoriaSigla: diretoria.sigla,
+        diretoriaNome: diretoria.nome,
+      }
+    } else {
+      const gerencia = gerenciaUsuario
+        ? diretoria.gerencias[gerenciaUsuario]
+        : undefined
 
-    const estruturaOrganizacional: EstruturaOrganizacionalUsuario = {
-      diretoriaSigla: diretoria.sigla,
-      diretoriaNome: diretoria.nome,
-      gerenciaSigla: gerencia.sigla,
-      gerenciaNome: gerencia.nome,
-      divisaoNome: divisaoUsuario as EstruturaOrganizacionalUsuario['divisaoNome'],
+      if (!gerencia || !gerencia.divisoes.includes(divisaoUsuario as never)) {
+        window.alert('Selecione uma Gerência e uma Divisão válidas.')
+        return
+      }
+
+      estruturaOrganizacional = {
+        diretoriaSigla: diretoria.sigla,
+        diretoriaNome: diretoria.nome,
+        gerenciaSigla: gerencia.sigla,
+        gerenciaNome: gerencia.nome,
+        divisaoNome: divisaoUsuario as EstruturaOrganizacionalUsuario['divisaoNome'],
+      }
     }
 
     setLoginUsuario(loginPadrao)
@@ -628,6 +652,16 @@ function Administracao({
       quantidadeGestoresAtivos() <= 1
     ) {
       window.alert('Não é possível retirar o perfil de Gestor deste usuário. O sistema precisa manter pelo menos um Gestor ativo.')
+      return
+    }
+
+    if (
+      ehPerfilDiretor(perfilUsuario) &&
+      usuarios.some((item) =>
+        item.id !== editUsuario?.id && item.perfil === 'Diretor (a)'
+      )
+    ) {
+      window.alert('Já existe um usuário com o perfil Diretor(a). O sistema permite apenas um Diretor(a).')
       return
     }
 
@@ -709,7 +743,9 @@ function Administracao({
           'usuario',
           novo.id,
           'criacao',
-          `Usuário ${novo.nome} foi cadastrado no setor ${estruturaOrganizacional.gerenciaSigla} — ${estruturaOrganizacional.divisaoNome}.`,
+          ehPerfilDiretor(novo.perfil)
+            ? `Usuário ${novo.nome} foi cadastrado como Diretor(a), com abrangência sobre toda a DDS.`
+            : `Usuário ${novo.nome} foi cadastrado no setor ${estruturaOrganizacional.gerenciaSigla} — ${estruturaOrganizacional.divisaoNome}.`,
           usuarioAtual.nome
         )
 
@@ -777,6 +813,39 @@ function Administracao({
     } catch (erro) {
       console.error('Falha ao alterar status do usuário no PostgreSQL:', erro)
       window.alert(erro instanceof Error ? erro.message : 'Não foi possível atualizar o status do usuário.')
+    }
+  }
+
+
+  async function excluirUsuario(item: Usuario) {
+    if (item.id === usuarioAtual.id) {
+      window.alert('O usuário atualmente logado não pode ser excluído.')
+      return
+    }
+
+    const confirmar = window.confirm(
+      `Deseja realmente excluir o usuário ${item.nome}?\n\nEsta ação removerá o cadastro do PostgreSQL e não poderá ser desfeita.`
+    )
+    if (!confirmar) return
+
+    try {
+      await requisicaoCadastros<{ ok: boolean }>(`/usuarios/${item.id}`, {
+        method: 'DELETE',
+      })
+
+      setUsuarios((anteriores) => anteriores.filter((registro) => registro.id !== item.id))
+      registrarAlteracao(
+        'usuario',
+        item.id,
+        'exclusao',
+        `Usuário ${item.nome} foi excluído permanentemente do cadastro.`,
+        usuarioAtual.nome,
+      )
+      atualizarAuditoriaLocal()
+      mostrarToast('Usuário excluído com sucesso.')
+    } catch (erro) {
+      console.error('Falha ao excluir usuário do PostgreSQL:', erro)
+      window.alert(erro instanceof Error ? erro.message : 'Não foi possível excluir o usuário.')
     }
   }
 
@@ -1400,8 +1469,8 @@ function Administracao({
                   <div>
                     <h2>
                       {editUsuario
-                        ? 'Editar Analista'
-                        : 'Novo Analista'}
+                        ? 'Editar Usuário'
+                        : 'Novo Usuário'}
                     </h2>
 
                     <p>
@@ -1476,13 +1545,40 @@ function Administracao({
                     />
                   </label>
 
+                  <label>
+                    Perfil
+
+                    <select
+                      value={perfilUsuario}
+                      onChange={(e) => {
+                        const perfil = e.target.value as Usuario['perfil']
+                        setPerfilUsuario(perfil)
+
+                        if (ehPerfilDiretor(perfil)) {
+                          setGerenciaUsuario('')
+                          setDivisaoUsuario('')
+                        } else if (!gerenciaUsuario) {
+                          setGerenciaUsuario('')
+                          setDivisaoUsuario('')
+                        }
+                      }}
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="Gestor/Administrador">Gestor(a)</option>
+                      <option value="Diretor (a)">Diretor(a)</option>
+                      <option value="Analista">Analista(a)</option>
+                      <option value="Desenvolvedor">Desenvolvedor(a)</option>
+                      <option value="Estagiário">Estagiário(a)</option>
+                    </select>
+                  </label>
+
                 </div>
 
                 <div className="adm-org-section">
                   <div className="adm-org-heading">
                     <div>
                       <strong>Setor (Estrutura Organizacional)</strong>
-                      <small>Defina a Diretoria, Gerência e Divisão do usuário.</small>
+                      <small>Defina a estrutura do usuário. Diretor(a) responde por toda a DDS e não possui Gerência ou Divisão específica.</small>
                     </div>
                   </div>
 
@@ -1497,9 +1593,10 @@ function Administracao({
                     </label>
 
                     <label>
-                      Gerência *
+                      Gerência {ehPerfilDiretor(perfilUsuario) ? '' : '*'}
                       <select
-                        value={gerenciaUsuario}
+                        value={ehPerfilDiretor(perfilUsuario) ? '' : gerenciaUsuario}
+                        disabled={ehPerfilDiretor(perfilUsuario)}
                         onChange={(event) => {
                           const valor = event.target.value as SiglaGerencia | ''
                           setGerenciaUsuario(valor)
@@ -1519,11 +1616,11 @@ function Administracao({
                     </label>
 
                     <label>
-                      Divisão *
+                      Divisão {ehPerfilDiretor(perfilUsuario) ? '' : '*'}
                       <select
-                        value={divisaoUsuario}
+                        value={ehPerfilDiretor(perfilUsuario) ? '' : divisaoUsuario}
+                        disabled={ehPerfilDiretor(perfilUsuario) || !gerenciaUsuario}
                         onChange={(event) => setDivisaoUsuario(event.target.value)}
-                        disabled={!gerenciaUsuario}
                       >
                         <option value="">
                           Selecione...
@@ -1631,39 +1728,6 @@ function Administracao({
                   </div>
                 )}
 
-                <div className="adm-form-footer">
-
-                  <label>
-                    Perfil
-
-                    <select
-                      value={perfilUsuario}
-                      onChange={(e) =>
-                        setPerfilUsuario(
-                          e.target.value as Usuario['perfil']
-                        )
-                      }
-                    >
-                      <option value="Gestor/Administrador">
-                        Gestor (a)
-                      </option>
-
-                      <option value="Analista">
-                        Analista
-                      </option>
-
-                      <option value="Desenvolvedor">
-                        Desenvolvedor (a)
-                      </option>
-
-                      <option value="Estagiário">
-                        Estagiário (a)
-                      </option>
-                    </select>
-                  </label>
-
-                </div>
-
               </section>
 
               <section className="adm-card">
@@ -1712,7 +1776,12 @@ function Administracao({
                             </td>
 
                             <td>
-                              {item.estruturaOrganizacional ? (
+                              {ehPerfilDiretor(item.perfil) ? (
+                                <div className="adm-sector-cell">
+                                  <strong>DDS — Diretoria de Desenvolvimento de Sistemas</strong>
+                                  <small>Todas as Gerências e Divisões</small>
+                                </div>
+                              ) : item.estruturaOrganizacional ? (
                                 <div className="adm-sector-cell">
                                   <strong>
                                     {item.estruturaOrganizacional.gerenciaSigla} — {item.estruturaOrganizacional.gerenciaNome}
@@ -1762,6 +1831,7 @@ function Administracao({
                               </button>
 
                               {(usuarioAtual.perfil === 'Gestor/Administrador' ||
+                                usuarioAtual.perfil === 'Diretor (a)' ||
                                 item.id === usuarioAtual.id) && (
                                 <button
                                   type="button"
@@ -1786,6 +1856,16 @@ function Administracao({
                                   ? 'Inativar'
                                   : 'Ativar'}
                               </button>
+
+                              {item.id !== usuarioAtual.id && (
+                                <button
+                                  type="button"
+                                  onClick={() => excluirUsuario(item)}
+                                  className="adm-table-action adm-table-action-danger"
+                                >
+                                  Excluir
+                                </button>
+                              )}
                             </td>
 
                           </tr>
