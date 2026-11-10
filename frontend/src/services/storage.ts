@@ -29,6 +29,12 @@ export const STORAGE_KEYS = {
   feriados: 'feriados',
 } as const
 
+const CHAVE_DONO_CACHE_NOTIFICACOES = 'notificacoes_usuario_cache_id'
+
+// As gravações são serializadas para impedir que uma resposta de rede
+// atrasada sobrescreva uma atualização mais recente do mesmo usuário.
+let filaPersistenciaNotificacoes: Promise<void> = Promise.resolve()
+
 function ler<T>(chave: string, padrao: T): T {
   try {
     const valor = localStorage.getItem(chave)
@@ -55,6 +61,12 @@ function ordenarPorNome<T extends { nome: string }>(itens: T[]): T[] {
   return [...itens].sort((a, b) =>
     a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })
   )
+}
+
+function obterUsuarioSessaoId(): number | null {
+  const sessao = ler<{ usuarioId?: unknown } | null>(STORAGE_KEYS.sessao, null)
+  const id = Number(sessao?.usuarioId)
+  return Number.isSafeInteger(id) && id > 0 ? id : null
 }
 
 export function carregarDemandas(): Demanda[] {
@@ -311,38 +323,99 @@ export function salvarTipos(
 // ============================================================
 
 export function carregarNotificacoes(): Notificacao[] {
+  const usuarioId = obterUsuarioSessaoId()
+  if (usuarioId === null) return []
+
+  // Não exibe o cache de notificações de outra conta ou de versões antigas
+  // que ainda não possuem identificação do proprietário.
+  const donoCache = localStorage.getItem(CHAVE_DONO_CACHE_NOTIFICACOES)
+  if (donoCache !== String(usuarioId)) return []
+
   return lerLista<Notificacao>(STORAGE_KEYS.notificacoes)
 }
 
 export function salvarNotificacoes(
   notificacoes: Notificacao[]
 ) {
+  const listaRecebida = Array.isArray(notificacoes) ? [...notificacoes] : []
+
+  // Mantém resposta imediata para as telas que usam o cache síncrono.
   salvar(
     STORAGE_KEYS.notificacoes,
-    notificacoes
+    listaRecebida
   )
 
-  /*
-   * O cache local mantém compatibilidade com
-   * as telas atuais.
-   *
-   * O PostgreSQL mantém a lista compartilhada
-   * por usuário.
-   */
-  void apiRequest<Notificacao[]>(
-    '/notificacoes',
-    {
-      method: 'PUT',
-      body: JSON.stringify(
-        notificacoes
-      ),
-    }
-  ).catch((erro) => {
-    console.error(
-      'Não foi possível sincronizar as notificações com o PostgreSQL:',
-      erro
-    )
-  })
+  const usuarioIdDaGravacao = obterUsuarioSessaoId()
+  if (usuarioIdDaGravacao === null) return
+
+  // Cada gravação aguarda a anterior e valida novamente a sessão antes de
+  // enviar os dados. Assim, uma operação enfileirada por um usuário não é
+  // enviada usando a sessão de outro usuário após uma troca de conta.
+  filaPersistenciaNotificacoes = filaPersistenciaNotificacoes
+    .catch(() => undefined)
+    .then(async () => {
+      if (obterUsuarioSessaoId() !== usuarioIdDaGravacao) return
+
+      // Garante que o cache do usuário foi sincronizado com o PostgreSQL
+      // antes de enviar a lista completa de notificações.
+      await apiRequest<{ csrfToken?: string }>('/auth/csrf')
+
+      if (obterUsuarioSessaoId() !== usuarioIdDaGravacao) return
+
+      const donoCache = localStorage.getItem(CHAVE_DONO_CACHE_NOTIFICACOES)
+      if (donoCache !== String(usuarioIdDaGravacao)) {
+        console.warn(
+          'Notificações não foram gravadas: o cache do usuário ainda não foi sincronizado com o PostgreSQL.'
+        )
+        return
+      }
+
+      // Mescla com a lista oficial já carregada para evitar que uma gravação
+      // iniciada durante a sincronização inicial substitua notificações existentes.
+      const porId = new Map<string, Notificacao>()
+
+      for (const item of carregarNotificacoes()) {
+        porId.set(item.id, item)
+      }
+
+      for (const item of listaRecebida) {
+        porId.set(item.id, item)
+      }
+
+      const listaFinal = [...porId.values()].sort(
+        (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
+      )
+
+      salvar(STORAGE_KEYS.notificacoes, listaFinal)
+
+      const confirmadas = await apiRequest<Notificacao[]>(
+        '/notificacoes',
+        {
+          method: 'PUT',
+          body: JSON.stringify(listaFinal),
+        }
+      )
+
+      if (
+        obterUsuarioSessaoId() === usuarioIdDaGravacao &&
+        Array.isArray(confirmadas)
+      ) {
+        const ordenadas = [...confirmadas].sort(
+          (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
+        )
+        salvar(STORAGE_KEYS.notificacoes, ordenadas)
+        localStorage.setItem(
+          CHAVE_DONO_CACHE_NOTIFICACOES,
+          String(usuarioIdDaGravacao)
+        )
+      }
+    })
+    .catch((erro) => {
+      console.error(
+        'Não foi possível sincronizar as notificações com o PostgreSQL:',
+        erro
+      )
+    })
 }
 
 

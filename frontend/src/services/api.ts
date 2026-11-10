@@ -1,5 +1,4 @@
-﻿
-const API_BASE_URL = (
+﻿const API_BASE_URL = (
   import.meta.env.VITE_API_URL ?? "http://localhost:3001/api"
 ).replace(/\/+$/, "");
 
@@ -43,8 +42,29 @@ type AuditoriaLocal = {
   motivo?: string;
 };
 
-let dadosCompartilhadosSincronizados = false;
+const CHAVE_NOTIFICACOES = "notificacoes";
+const CHAVE_DONO_NOTIFICACOES = "notificacoes_usuario_cache_id";
+const CHAVE_AUDITORIA = "auditoria";
+const CHAVE_DONO_AUDITORIA = "auditoria_usuario_cache_id";
+
+let usuarioDadosCompartilhadosSincronizados: number | null = null;
+let versaoSessao = 0;
 let sincronizacaoEmAndamento: Promise<void> | null = null;
+
+class ErroHttpApi extends Error {
+  readonly status: number;
+
+  constructor(mensagem: string, status: number) {
+    super(mensagem);
+    this.name = "ErroHttpApi";
+    this.status = status;
+  }
+}
+
+function invalidarSincronizacao(): void {
+  versaoSessao += 1;
+  usuarioDadosCompartilhadosSincronizados = null;
+}
 
 function lerCookie(nome: string): string | null {
   if (typeof document === "undefined") return null;
@@ -73,14 +93,36 @@ function lerLocal<T>(chave: string, padrao: T): T {
 }
 
 function obterUsuarioLocalId(): number | null {
-  const sessao = lerLocal<{ usuarioId?: unknown } | null>(
-    "sessao",
-    null,
-  );
-
+  const sessao = lerLocal<{ usuarioId?: unknown } | null>("sessao", null);
   const id = Number(sessao?.usuarioId);
 
   return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+function sessaoAindaEh(
+  usuarioId: number,
+  versaoCapturada: number,
+): boolean {
+  return (
+    versaoCapturada === versaoSessao &&
+    obterUsuarioLocalId() === usuarioId
+  );
+}
+
+function prepararCacheDoUsuario(
+  chaveDados: string,
+  chaveDono: string,
+  usuarioId: number,
+): boolean {
+  const donoAtual = localStorage.getItem(chaveDono);
+  const pertenceAoUsuario = donoAtual === String(usuarioId);
+
+  if (!pertenceAoUsuario) {
+    localStorage.removeItem(chaveDados);
+    localStorage.removeItem(chaveDono);
+  }
+
+  return pertenceAoUsuario;
 }
 
 async function requisicaoDireta<T>(
@@ -98,23 +140,17 @@ async function requisicaoDireta<T>(
 
   if (method !== "GET") {
     const csrf = lerCookie("sgd_csrf");
-
-    if (csrf) {
-      headers["X-CSRF-Token"] = csrf;
-    }
+    if (csrf) headers["X-CSRF-Token"] = csrf;
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     credentials: "include",
     headers,
-    ...(body !== undefined
-      ? { body: JSON.stringify(body) }
-      : {}),
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
 
   const texto = await response.text();
-
   let dados: unknown = null;
 
   try {
@@ -131,7 +167,7 @@ async function requisicaoDireta<T>(
         ? String((dados as ApiErrorPayload).message)
         : `A consulta ${path} falhou (HTTP ${response.status}).`;
 
-    throw new Error(mensagem);
+    throw new ErroHttpApi(mensagem, response.status);
   }
 
   return dados as T;
@@ -144,175 +180,210 @@ function combinarAuditoria(
   const registros = new Map<string, AuditoriaLocal>();
 
   for (const item of [...local, ...banco]) {
-    const chave =
-      `${item.usuario ?? ""}|${item.id}|${item.entidade}|${item.acao}`;
-
+    const chave = `${item.usuario ?? ""}|${item.id}|${item.entidade}|${item.acao}`;
     registros.set(chave, item);
   }
 
   return [...registros.values()]
     .sort(
       (a, b) =>
-        new Date(b.data).getTime() -
-        new Date(a.data).getTime(),
+        new Date(b.data).getTime() - new Date(a.data).getTime(),
     )
     .slice(0, 5000);
 }
 
-async function sincronizarDadosCompartilhados(): Promise<void> {
-  if (
-    typeof document === "undefined" ||
-    dadosCompartilhadosSincronizados
-  ) {
-    return;
-  }
+async function executarSincronizacaoDoUsuario(
+  usuarioId: number,
+  versaoCapturada: number,
+): Promise<void> {
+  let configuracoesSincronizadas = false;
+  let notificacoesSincronizadas = false;
+  let auditoriaSincronizada = false;
 
-  if (!sincronizacaoEmAndamento) {
-    sincronizacaoEmAndamento = (async () => {
-      // ========================================================
-      // 1. CONFIGURAÇÕES GLOBAIS
-      // ========================================================
+  // ========================================================
+  // 1. CONFIGURAÇÕES GLOBAIS
+  // ========================================================
 
-      try {
-        const configuracoes =
-          await requisicaoDireta<unknown>("/configuracoes");
+  try {
+    const configuracoes = await requisicaoDireta<unknown>("/configuracoes");
 
-        if (
-          typeof configuracoes === "object" &&
-          configuracoes !== null &&
-          !Array.isArray(configuracoes)
-        ) {
-          localStorage.setItem(
-            "configuracoes_sistema",
-            JSON.stringify(configuracoes),
-          );
-        }
-      } catch (erro) {
-        console.warn(
-          "Não foi possível sincronizar as configurações do PostgreSQL. O cache local será preservado:",
-          erro,
-        );
-      }
+    if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
 
-      // ========================================================
-      // 2. NOTIFICAÇÕES DO USUÁRIO
-      // ========================================================
-      // O PostgreSQL é a fonte oficial das notificações.
-      // Não importamos notificações antigas do localStorage.
-      // O cache local só pode ser reutilizado quando pertence ao
-      // mesmo usuário autenticado; em caso de troca de usuário,
-      // ele é descartado para evitar mistura de informações.
-
-      const usuarioId = obterUsuarioLocalId();
-      const usuarioCache = localStorage.getItem(
-        "notificacoes_usuario_cache_id",
+    if (
+      typeof configuracoes === "object" &&
+      configuracoes !== null &&
+      !Array.isArray(configuracoes)
+    ) {
+      localStorage.setItem(
+        "configuracoes_sistema",
+        JSON.stringify(configuracoes),
       );
-      const cachePertenceAoUsuario =
-        usuarioId !== null && usuarioCache === String(usuarioId);
+      configuracoesSincronizadas = true;
+    } else {
+      throw new Error("O Backend retornou configurações inválidas.");
+    }
+  } catch (erro) {
+    if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
 
-      if (!cachePertenceAoUsuario) {
-        localStorage.removeItem("notificacoes");
-        localStorage.removeItem("notificacoes_usuario_cache_id");
-      }
-
-      try {
-        const remotas =
-          await requisicaoDireta<NotificacaoLocal[]>("/notificacoes");
-
-        if (!Array.isArray(remotas)) {
-          throw new Error(
-            "O Backend retornou uma lista de notificações inválida.",
-          );
-        }
-
-        const notificacoesOrdenadas = [...remotas].sort(
-          (a, b) =>
-            new Date(b.data).getTime() -
-            new Date(a.data).getTime(),
-        );
-
-        localStorage.setItem(
-          "notificacoes",
-          JSON.stringify(notificacoesOrdenadas),
-        );
-
-        if (usuarioId !== null) {
-          localStorage.setItem(
-            "notificacoes_usuario_cache_id",
-            String(usuarioId),
-          );
-        }
-      } catch (erro) {
-        console.warn(
-          "Não foi possível sincronizar notificações do PostgreSQL. O cache do mesmo usuário, quando existente, foi preservado:",
-          erro,
-        );
-      }
-
-      // ========================================================
-      // 3. AUDITORIA
-      // ========================================================
-
-      try {
-        const remota =
-          await requisicaoDireta<AuditoriaLocal[]>("/auditoria");
-
-        if (Array.isArray(remota)) {
-          const local = lerLocal<AuditoriaLocal[]>(
-            "auditoria",
-            [],
-          );
-
-          localStorage.setItem(
-            "auditoria",
-            JSON.stringify(combinarAuditoria(local, remota)),
-          );
-        }
-      } catch (erro) {
-        // O GET de auditoria é restrito ao Gestor e ao Diretor.
-        // Resposta 403 para os demais perfis é esperada e não exige aviso.
-        const mensagemErro = erro instanceof Error
-          ? erro.message.toLowerCase()
-          : "";
-        if (
-          !mensagemErro.includes("auditoria completa") &&
-          !mensagemErro.includes("somente o perfil gestor")
-        ) {
-          console.warn(
-            "Não foi possível sincronizar a auditoria do PostgreSQL:",
-            erro,
-          );
-        }
-      }
-
-      dadosCompartilhadosSincronizados = true;
-    })().finally(() => {
-      sincronizacaoEmAndamento = null;
-    });
+    console.warn(
+      "Não foi possível sincronizar as configurações do PostgreSQL. O cache global existente será mantido apenas como contingência:",
+      erro,
+    );
   }
 
-  await sincronizacaoEmAndamento;
+  // ========================================================
+  // 2. NOTIFICAÇÕES DO USUÁRIO AUTENTICADO
+  // ========================================================
+  // Nunca importamos notificações antigas para o PostgreSQL.
+  // O cache só é reutilizado quando possui o mesmo usuário.
+
+  if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
+
+  prepararCacheDoUsuario(
+    CHAVE_NOTIFICACOES,
+    CHAVE_DONO_NOTIFICACOES,
+    usuarioId,
+  );
+
+  try {
+    const remotas = await requisicaoDireta<NotificacaoLocal[]>("/notificacoes");
+
+    if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
+
+    if (!Array.isArray(remotas)) {
+      throw new Error("O Backend retornou uma lista de notificações inválida.");
+    }
+
+    const notificacoesOrdenadas = [...remotas].sort(
+      (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime(),
+    );
+
+    localStorage.setItem(
+      CHAVE_NOTIFICACOES,
+      JSON.stringify(notificacoesOrdenadas),
+    );
+    localStorage.setItem(CHAVE_DONO_NOTIFICACOES, String(usuarioId));
+    notificacoesSincronizadas = true;
+  } catch (erro) {
+    if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
+
+    console.warn(
+      "Não foi possível sincronizar notificações do PostgreSQL. O cache do mesmo usuário, quando existente, foi preservado:",
+      erro,
+    );
+  }
+
+  // ========================================================
+  // 3. AUDITORIA
+  // ========================================================
+  // O cache local de auditoria também é separado por usuário.
+  // Gestor e Diretor recebem a auditoria completa do PostgreSQL.
+  // Para os demais perfis, HTTP 403 é uma restrição esperada.
+
+  if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
+
+  const cacheAuditoriaPertenceAoUsuario = prepararCacheDoUsuario(
+    CHAVE_AUDITORIA,
+    CHAVE_DONO_AUDITORIA,
+    usuarioId,
+  );
+
+  try {
+    const remota = await requisicaoDireta<AuditoriaLocal[]>("/auditoria");
+
+    if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
+
+    if (!Array.isArray(remota)) {
+      throw new Error("O Backend retornou uma lista de auditoria inválida.");
+    }
+
+    const local = cacheAuditoriaPertenceAoUsuario
+      ? lerLocal<AuditoriaLocal[]>(CHAVE_AUDITORIA, [])
+      : [];
+
+    localStorage.setItem(
+      CHAVE_AUDITORIA,
+      JSON.stringify(combinarAuditoria(local, remota)),
+    );
+    localStorage.setItem(CHAVE_DONO_AUDITORIA, String(usuarioId));
+    auditoriaSincronizada = true;
+  } catch (erro) {
+    if (!sessaoAindaEh(usuarioId, versaoCapturada)) return;
+
+    if (erro instanceof ErroHttpApi && erro.status === 403) {
+      // O perfil operacional não pode consultar a auditoria completa.
+      // O cache próprio desse usuário pode ser preservado, sem misturar contas.
+      localStorage.setItem(CHAVE_DONO_AUDITORIA, String(usuarioId));
+      auditoriaSincronizada = true;
+    } else {
+      console.warn(
+        "Não foi possível sincronizar a auditoria do PostgreSQL:",
+        erro,
+      );
+    }
+  }
+
+  if (
+    sessaoAindaEh(usuarioId, versaoCapturada) &&
+    configuracoesSincronizadas &&
+    notificacoesSincronizadas &&
+    auditoriaSincronizada
+  ) {
+    usuarioDadosCompartilhadosSincronizados = usuarioId;
+  }
+}
+
+async function sincronizarDadosCompartilhados(): Promise<void> {
+  if (typeof document === "undefined") return;
+
+  const usuarioId = obterUsuarioLocalId();
+  if (usuarioId === null) return;
+
+  if (usuarioDadosCompartilhadosSincronizados === usuarioId) return;
+
+  // Evita sincronizações concorrentes. Se a sessão mudou enquanto outra
+  // sincronização estava em andamento, a chamada seguinte executa para o novo usuário.
+  if (sincronizacaoEmAndamento) {
+    await sincronizacaoEmAndamento.catch(() => undefined);
+    if (usuarioDadosCompartilhadosSincronizados === usuarioId) return;
+  }
+
+  const versaoCapturada = versaoSessao;
+  const trabalho = executarSincronizacaoDoUsuario(
+    usuarioId,
+    versaoCapturada,
+  );
+
+  sincronizacaoEmAndamento = trabalho;
+
+  try {
+    await trabalho;
+  } finally {
+    if (sincronizacaoEmAndamento === trabalho) {
+      sincronizacaoEmAndamento = null;
+    }
+  }
 }
 
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const normalizedPath = path.startsWith("/")
-    ? path
-    : `/${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const method = String(options.method ?? "GET").toUpperCase();
 
-  const method = String(
-    options.method ?? "GET",
-  ).toUpperCase();
+  // Login e logout mudam o contexto de autenticação. Invalidar antes da
+  // requisição também cobre logout que falha por indisponibilidade da API.
+  if (
+    (normalizedPath === "/auth/login" && method === "POST") ||
+    (normalizedPath === "/auth/logout" && method === "POST")
+  ) {
+    invalidarSincronizacao();
+  }
 
   const headers: Record<string, string> = {
     Accept: "application/json",
-
-    ...(options.body
-      ? { "Content-Type": "application/json" }
-      : {}),
-
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
     ...((options.headers ?? {}) as Record<string, string>),
   };
 
@@ -321,24 +392,17 @@ export async function apiRequest<T>(
     !["GET", "HEAD", "OPTIONS"].includes(method)
   ) {
     const csrf = lerCookie("sgd_csrf");
-
-    if (csrf) {
-      headers["X-CSRF-Token"] = csrf;
-    }
+    if (csrf) headers["X-CSRF-Token"] = csrf;
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}${normalizedPath}`,
-    {
-      ...options,
-      method,
-      credentials: "include",
-      headers,
-    },
-  );
+  const response = await fetch(`${API_BASE_URL}${normalizedPath}`, {
+    ...options,
+    method,
+    credentials: "include",
+    headers,
+  });
 
   const texto = await response.text();
-
   let dados: unknown;
 
   try {
@@ -355,50 +419,25 @@ export async function apiRequest<T>(
 
     const partes: string[] = [];
 
-    if (
-      typeof payload?.message === "string" &&
-      payload.message.trim()
-    ) {
+    if (typeof payload?.message === "string" && payload.message.trim()) {
       partes.push(payload.message.trim());
-    } else if (
-      typeof dados === "string" &&
-      dados.trim()
-    ) {
+    } else if (typeof dados === "string" && dados.trim()) {
       partes.push(dados.trim());
     }
 
-    if (
-      typeof payload?.detail === "string" &&
-      payload.detail.trim()
-    ) {
+    if (typeof payload?.detail === "string" && payload.detail.trim()) {
       partes.push(`Detalhe do PostgreSQL: ${payload.detail.trim()}`);
     }
-
-    if (
-      typeof payload?.code === "string" &&
-      payload.code.trim()
-    ) {
+    if (typeof payload?.code === "string" && payload.code.trim()) {
       partes.push(`Código: ${payload.code.trim()}`);
     }
-
-    if (
-      typeof payload?.constraint === "string" &&
-      payload.constraint.trim()
-    ) {
+    if (typeof payload?.constraint === "string" && payload.constraint.trim()) {
       partes.push(`Restrição: ${payload.constraint.trim()}`);
     }
-
-    if (
-      typeof payload?.column === "string" &&
-      payload.column.trim()
-    ) {
+    if (typeof payload?.column === "string" && payload.column.trim()) {
       partes.push(`Coluna: ${payload.column.trim()}`);
     }
-
-    if (
-      typeof payload?.table === "string" &&
-      payload.table.trim()
-    ) {
+    if (typeof payload?.table === "string" && payload.table.trim()) {
       partes.push(`Tabela: ${payload.table.trim()}`);
     }
 
@@ -409,14 +448,18 @@ export async function apiRequest<T>(
     );
   }
 
-  // O App valida a sessão chamando /auth/csrf.
-  // Nesse momento sincronizamos os dados compartilhados.
+  if (normalizedPath === "/auth/login" && method === "POST") {
+    // O servidor acabou de criar outra sessão. A próxima chamada a /auth/csrf
+    // buscará os dados do usuário efetivamente autenticado.
+    invalidarSincronizacao();
+  }
+
   if (normalizedPath === "/auth/csrf") {
     await sincronizarDadosCompartilhados();
   }
 
-  if (normalizedPath === "/auth/logout") {
-    dadosCompartilhadosSincronizados = false;
+  if (normalizedPath === "/auth/logout" && method === "POST") {
+    invalidarSincronizacao();
   }
 
   return dados as T;

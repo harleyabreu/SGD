@@ -336,7 +336,7 @@ export function registrarReabertura(
     'demanda',
     entidadeId,
     'reabertura',
-    'Demanda reaberta pelo Gestor.',
+    'Demanda reaberta pela gestão.',
     usuario,
     {
       motivo,

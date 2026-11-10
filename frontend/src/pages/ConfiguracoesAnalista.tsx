@@ -4,6 +4,8 @@ import type { Usuario } from '../types'
 
 import MenuPrincipal from '../components/MenuPrincipal'
 
+import { apiRequest } from '../services/api'
+
 import { carregarUsuarios, salvarUsuarios } from '../services/storage'
 
 import { registrarAlteracao } from '../services/auditoria'
@@ -30,36 +32,7 @@ type Props = {
 
 
 
-type UsuarioSeguranca = Usuario & {
-
-  senhaHash?: string
-
-  exigirTrocaSenha?: boolean
-
-}
-
-
-
-const MINIMO_SENHA = 6
-
-
-
-async function hashSenha(senha: string): Promise<string> {
-
-  const bytes = new TextEncoder().encode(senha)
-
-  const digest = await window.crypto.subtle.digest('SHA-256', bytes)
-
-
-
-  return Array.from(new Uint8Array(digest))
-
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-
-    .join('')
-
-}
-
+const MINIMO_SENHA = 8
 
 
 function aplicarMascaraTelefone(valor: string): string {
@@ -113,230 +86,140 @@ export default function ConfiguracoesAnalista({
 }: Props) {
 
   const [email, setEmail] = useState(usuario.email || '')
-
-  const [telefone, setTelefone] = useState(usuario.telefone || '')
-
+  const [telefone, setTelefone] = useState(aplicarMascaraTelefone(usuario.telefone || ''))
+  const [emailOriginal, setEmailOriginal] = useState(usuario.email || '')
+  const [telefoneOriginal, setTelefoneOriginal] = useState((usuario.telefone || '').replace(/\D/g, ''))
   const [novaSenha, setNovaSenha] = useState('')
-
   const [confirmacao, setConfirmacao] = useState('')
-
   const [erro, setErro] = useState('')
-
+  const [salvando, setSalvando] = useState(false)
   const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false)
-
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false)
 
-
-
   useEffect(() => {
+    const emailAtual = usuario.email || ''
+    const telefoneAtual = (usuario.telefone || '').replace(/\D/g, '')
 
-    setEmail(usuario.email || '')
-
-    setTelefone(aplicarMascaraTelefone(usuario.telefone || ''))
-
+    setEmail(emailAtual)
+    setTelefone(aplicarMascaraTelefone(telefoneAtual))
+    setEmailOriginal(emailAtual)
+    setTelefoneOriginal(telefoneAtual)
   }, [usuario])
 
-
-
   async function salvar(event: FormEvent<HTMLFormElement>) {
-
     event.preventDefault()
-
     setErro('')
 
     const emailLimpo = email.trim()
+    const telefonePersistido = telefone.trim().replace(/\D/g, '')
 
-    const telefoneLimpo = telefone.trim()
-
-
-
-    if (!emailLimpo) {
-
+    if (!emailLimpo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpo)) {
       setErro('Informe um e-mail válido.')
-
       return
-
     }
 
-
+    if (telefonePersistido && !/^\d{10,11}$/.test(telefonePersistido)) {
+      setErro('Informe um telefone com DDD e 10 ou 11 dígitos, ou deixe o campo vazio.')
+      return
+    }
 
     if (novaSenha && novaSenha.length < MINIMO_SENHA) {
-
       setErro(`A nova senha deve possuir no mínimo ${MINIMO_SENHA} caracteres.`)
-
       return
-
     }
-
-
 
     if (novaSenha !== confirmacao) {
-
       setErro('A confirmação da senha não confere.')
-
       return
-
     }
 
+    setSalvando(true)
 
+    try {
+      const resposta = await apiRequest<{ usuario: Usuario }>('/auth/me/perfil', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          email: emailLimpo,
+          telefone: telefonePersistido,
+          ...(novaSenha ? { senha: novaSenha } : {}),
+        }),
+      })
 
-    const usuarios = carregarUsuarios() as UsuarioSeguranca[]
-
-    const atual = usuarios.find((item) => item.id === usuario.id)
-
-
-
-    if (!atual) {
-
-      setErro('Usuário não encontrado.')
-
-      return
-
-    }
-
-
-
-    const emailDuplicado = usuarios.some(
-
-      (item) =>
-
-        item.id !== usuario.id &&
-
-        item.email.trim().toLowerCase() === emailLimpo.toLowerCase()
-
-    )
-
-
-
-    if (emailDuplicado) {
-
-      setErro('Este e-mail já está sendo utilizado por outro usuário.')
-
-      return
-
-    }
-
-
-
-    const telefonePersistido = telefoneLimpo.replace(/\D/g, '')
-
-
-
-    let atualizado: UsuarioSeguranca = {
-
-      ...atual,
-
-      email: emailLimpo,
-
-      telefone: telefonePersistido,
-
-      atualizadoEm: new Date().toISOString(),
-
-    }
-
-
-
-    if (novaSenha) {
-
-      atualizado = {
-
-        ...atualizado,
-
-        senhaHash: await hashSenha(novaSenha),
-
-        exigirTrocaSenha: false,
-
+      if (!resposta?.usuario) {
+        throw new Error('O servidor não retornou os dados atualizados do usuário.')
       }
 
-    }
+      const atualizado = resposta.usuario
+      const emailAtualizado = atualizado.email || emailLimpo
+      const telefoneAtualizado = (atualizado.telefone || '').replace(/\D/g, '')
 
-
-
-    salvarUsuarios(
-
-      usuarios.map((item) =>
-
-        item.id === usuario.id ? atualizado : item
-
+      // O PostgreSQL já confirmou a gravação. Atualizamos apenas o cache
+      // local do usuário autenticado para as telas que ainda o consultam.
+      // O cache não é usado como fonte para gravar dados no banco.
+      const usuariosCache = carregarUsuarios()
+      const loginNormalizado = usuario.login.trim().toLowerCase()
+      const existeNoCache = usuariosCache.some(
+        (item) => item.login.trim().toLowerCase() === loginNormalizado,
+      )
+      salvarUsuarios(
+        existeNoCache
+          ? usuariosCache.map((item) =>
+              item.login.trim().toLowerCase() === loginNormalizado
+                ? { ...item, ...atualizado }
+                : item,
+            )
+          : [...usuariosCache, atualizado],
       )
 
-    )
+      if (emailOriginal !== emailAtualizado) {
+        registrarAlteracao(
+          'usuario',
+          usuario.id,
+          'alteracao_email',
+          `O usuário ${usuario.nome} alterou o próprio e-mail.`,
+          usuario.nome,
+          { valorAnterior: emailOriginal, valorNovo: emailAtualizado },
+        )
+      }
 
+      if (telefoneOriginal !== telefoneAtualizado) {
+        registrarAlteracao(
+          'usuario',
+          usuario.id,
+          'alteracao_telefone',
+          `O usuário ${usuario.nome} alterou o próprio telefone.`,
+          usuario.nome,
+          { valorAnterior: telefoneOriginal, valorNovo: telefoneAtualizado },
+        )
+      }
 
+      if (novaSenha) {
+        registrarAlteracao(
+          'usuario',
+          usuario.id,
+          'troca_senha',
+          `O usuário ${usuario.nome} alterou a própria senha.`,
+          usuario.nome,
+        )
+      }
 
-    if (atual.email !== emailLimpo) {
-
-      registrarAlteracao(
-
-        'usuario',
-
-        usuario.id,
-
-        'alteracao_email',
-
-        `O usuário ${usuario.nome} alterou o próprio e-mail.`,
-
-        usuario.nome,
-
-        { valorAnterior: atual.email, valorNovo: emailLimpo }
-
+      setEmail(emailAtualizado)
+      setTelefone(aplicarMascaraTelefone(telefoneAtualizado))
+      setEmailOriginal(emailAtualizado)
+      setTelefoneOriginal(telefoneAtualizado)
+      setNovaSenha('')
+      setConfirmacao('')
+      mostrarToast('Configurações Atualizadas Com Sucesso.')
+    } catch (error: unknown) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível atualizar suas configurações. Tente novamente.',
       )
-
+    } finally {
+      setSalvando(false)
     }
-
-
-
-    if ((atual.telefone || '').replace(/\D/g, '') !== telefonePersistido) {
-
-      registrarAlteracao(
-
-        'usuario',
-
-        usuario.id,
-
-        'alteracao_telefone',
-
-        `O usuário ${usuario.nome} alterou o próprio telefone.`,
-
-        usuario.nome,
-
-        { valorAnterior: atual.telefone || '', valorNovo: telefonePersistido }
-
-      )
-
-    }
-
-
-
-    if (novaSenha) {
-
-      registrarAlteracao(
-
-        'usuario',
-
-        usuario.id,
-
-        'troca_senha',
-
-        `O usuário ${usuario.nome} alterou a própria senha.`,
-
-        usuario.nome
-
-      )
-
-    }
-
-
-
-    setNovaSenha('')
-
-    setConfirmacao('')
-
-    mostrarToast('Configurações Atualizadas Com Sucesso.')
-
   }
-
-
 
   return (
 
@@ -566,7 +449,8 @@ export default function ConfiguracoesAnalista({
                     placeholder={`Mínimo ${MINIMO_SENHA} Caracteres`}
 
                     autoComplete="new-password"
-
+                    required={Boolean(novaSenha)}
+                    disabled={salvando}
                   />
 
                   <button
@@ -580,7 +464,7 @@ export default function ConfiguracoesAnalista({
                     aria-label={mostrarNovaSenha ? 'Ocultar Nova Senha' : 'Mostrar Nova Senha'}
 
                     title={mostrarNovaSenha ? 'Ocultar Senha' : 'Mostrar Senha'}
-
+                    disabled={salvando}
                   >
 
                     {mostrarNovaSenha ? (
@@ -636,7 +520,8 @@ export default function ConfiguracoesAnalista({
                     placeholder="Repita A Nova Senha"
 
                     autoComplete="new-password"
-
+                    required={Boolean(novaSenha)}
+                    disabled={salvando}
                   />
 
                   <button
@@ -650,7 +535,7 @@ export default function ConfiguracoesAnalista({
                     aria-label={mostrarConfirmacao ? 'Ocultar Confirmação Da Senha' : 'Mostrar Confirmação Da Senha'}
 
                     title={mostrarConfirmacao ? 'Ocultar Senha' : 'Mostrar Senha'}
-
+                    disabled={salvando}
                   >
 
                     {mostrarConfirmacao ? (
@@ -722,7 +607,7 @@ export default function ConfiguracoesAnalista({
               className="analista-config-secondary"
 
               onClick={onMinhasDemandas}
-
+              disabled={salvando}
             >
 
               Cancelar
@@ -736,10 +621,10 @@ export default function ConfiguracoesAnalista({
               type="submit"
 
               className="analista-config-primary"
-
+              disabled={salvando}
             >
 
-              Salvar Alterações
+              {salvando ? 'Salvando...' : 'Salvar Alterações'}
 
             </button>
 

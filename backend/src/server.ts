@@ -533,6 +533,104 @@ app.get("/api/auth/me", async (_req, res) => {
   }
 });
 
+
+// ============================================================
+// PERFIL DO PRÓPRIO USUÁRIO — E-MAIL, TELEFONE E SENHA
+// ============================================================
+// O usuário autenticado pode atualizar somente seus próprios dados
+// de contato e, opcionalmente, sua senha. A senha é armazenada com
+// Argon2id no servidor; nenhum hash é calculado no navegador.
+app.patch("/api/auth/me/perfil", async (req, res) => {
+  const autenticacao = res.locals.sgdAuth as { id: number } | undefined;
+  if (!autenticacao?.id) {
+    return res.status(401).json({ message: "Sessão não autenticada." });
+  }
+
+  const body = req.body ?? {};
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const telefoneRecebido = body.telefone;
+  const telefoneTexto =
+    typeof telefoneRecebido === "string"
+      ? telefoneRecebido.trim()
+      : telefoneRecebido === undefined || telefoneRecebido === null
+        ? ""
+        : null;
+  const senha = typeof body.senha === "string" ? body.senha : "";
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: "Informe um e-mail válido." });
+  }
+
+  if (telefoneTexto === null) {
+    return res.status(400).json({ message: "O telefone informado é inválido." });
+  }
+
+  const telefone = telefoneTexto.replace(/\D/g, "");
+  if (telefone && !/^\d{10,11}$/.test(telefone)) {
+    return res.status(400).json({ message: "Informe um telefone com DDD e 10 ou 11 dígitos, ou deixe o campo vazio." });
+  }
+
+  if (body.senha !== undefined && typeof body.senha !== "string") {
+    return res.status(400).json({ message: "A nova senha informada é inválida." });
+  }
+
+  if (senha && senha.length < 8) {
+    return res.status(400).json({ message: "A senha deve possuir no mínimo 8 caracteres." });
+  }
+
+  try {
+    const emailDuplicado = await pool.query(
+      `SELECT id FROM usuarios
+        WHERE LOWER(email) = LOWER($1) AND id <> $2
+        LIMIT 1`,
+      [email, autenticacao.id],
+    );
+
+    if (emailDuplicado.rowCount) {
+      return res.status(409).json({ message: "Este e-mail já está sendo utilizado por outro usuário." });
+    }
+
+    const senhaHash = senha
+      ? await argon2.hash(senha, { type: argon2.argon2id })
+      : null;
+
+    const atualizado = await pool.query(
+      `UPDATE usuarios
+          SET email = $1,
+              telefone = $2,
+              senha_hash = COALESCE($3, senha_hash),
+              exigir_troca_senha = CASE
+                WHEN $3::text IS NOT NULL THEN FALSE
+                ELSE exigir_troca_senha
+              END,
+              atualizado_em = CURRENT_TIMESTAMP
+        WHERE id = $4
+        RETURNING id`,
+      [email, telefone || null, senhaHash, autenticacao.id],
+    );
+
+    if (!atualizado.rowCount) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    const resultado = await pool.query(
+      `${SELECT_USUARIO_PUBLICO} WHERE id = $1`,
+      [autenticacao.id],
+    );
+
+    return res.json({
+      usuario: usuarioPublico(resultado.rows[0] as UsuarioBanco),
+    });
+  } catch (error) {
+    const dbError = error as { code?: string };
+    if (dbError.code === "23505") {
+      return res.status(409).json({ message: "Este e-mail já está sendo utilizado por outro usuário." });
+    }
+    console.error("Falha ao atualizar o próprio perfil do usuário:", error);
+    return res.status(500).json({ message: "Não foi possível atualizar suas configurações." });
+  }
+});
+
 app.get("/api/usuarios", async (_req, res) => {
   try {
     const resultado = await pool.query(`${SELECT_USUARIO_PUBLICO} ORDER BY nome, id`);
@@ -1731,10 +1829,67 @@ async function obterUsuarioIdPorNome(
   return resultado.rows.length ? Number(resultado.rows[0].id) : null;
 }
 
+// Responsáveis devem existir no PostgreSQL, estar ativos e pertencer
+// a um dos perfis aceitos pelo cadastro de responsáveis do frontend.
+// O Diretor (a) não pode ser atribuído a uma demanda.
+async function obterResponsavelIdPorNome(
+  conexao: PoolClient,
+  nome: string,
+): Promise<number | null> {
+  if (!nome) return null;
+
+  const resultado = await conexao.query(
+    `SELECT id, nome, perfil, status
+       FROM usuarios
+      WHERE LOWER(BTRIM(nome)) = LOWER(BTRIM($1))
+      ORDER BY id
+      LIMIT 2`,
+    [nome],
+  );
+
+  if (resultado.rows.length === 0) {
+    throw erroValidacao(
+      `O responsável "${nome}" não está cadastrado no PostgreSQL.`,
+    );
+  }
+
+  if (resultado.rows.length > 1) {
+    throw erroValidacao(
+      `Existe mais de um usuário chamado "${nome}". Corrija os nomes para evitar atribuição ambígua.`,
+    );
+  }
+
+  const responsavel = resultado.rows[0];
+  const perfil = String(responsavel.perfil ?? "").trim();
+  const status = String(responsavel.status ?? "").trim().toLowerCase();
+  const perfisPermitidos = new Set([
+    "Gestor/Administrador",
+    "Analista",
+    "Desenvolvedor",
+    "Estagiário",
+  ]);
+
+  if (status !== "ativo") {
+    throw erroValidacao(
+      `O responsável "${nome}" está inativo e não pode receber demandas.`,
+    );
+  }
+
+  if (!perfisPermitidos.has(perfil)) {
+    throw erroValidacao(
+      `O perfil do usuário "${nome}" não permite atribuição de demandas.`,
+    );
+  }
+
+  return Number(responsavel.id);
+}
+
 async function gravarDemanda(
   conexao: PoolClient,
   id: number,
   demanda: RegistroJson,
+  responsavelIdPreservado?: number | null,
+  autorAutenticado?: { id: number; nome: string },
 ): Promise<void> {
   const titulo = textoCampo(demanda.titulo);
   const descricao = textoCampo(demanda.descricao);
@@ -1785,7 +1940,10 @@ async function gravarDemanda(
   }
 
   const sistemaId = await obterSistemaIdPorNome(conexao, nomeSistema);
-  const responsavelId = await obterUsuarioIdPorNome(conexao, responsavel);
+  const responsavelId =
+    responsavelIdPreservado !== undefined
+      ? responsavelIdPreservado
+      : await obterResponsavelIdPorNome(conexao, responsavel);
   const usuarioCriacao = textoCampo(demanda.usuarioCriacao);
   const usuarioConclusao = textoCampo(demanda.usuarioConclusao);
   const usuarioReabertura = textoCampo(demanda.usuarioReabertura);
@@ -1881,32 +2039,57 @@ async function gravarDemanda(
     ],
   );
 
-  // A gravação é transacional: listas relacionadas são atualizadas junto com a demanda.
-  await conexao.query("DELETE FROM comentarios WHERE demanda_id = $1", [id]);
-  await conexao.query("DELETE FROM arquivos WHERE demanda_id = $1", [id]);
-  await conexao.query("DELETE FROM periodos_pendencia WHERE demanda_id = $1", [id]);
-  await conexao.query("DELETE FROM historico WHERE demanda_id = $1", [id]);
+  // Os registros relacionados são preservados. Comentários, anexos e histórico
+  // são append-only; períodos de pendência só permitem encerrar um período aberto.
+  // Uma atualização parcial da demanda nunca apaga registros anteriores.
 
   for (const comentario of objetosJson(demanda.comentarios)) {
     const comentarioId = numeroPositivoSeguro(comentario.id);
     const texto = textoCampo(comentario.texto);
     if (!texto) continue;
-    const usuarioNome = textoCampo(comentario.usuario) || "Usuário não identificado";
-    const usuarioId = await obterUsuarioIdPorNome(conexao, usuarioNome);
+    const usuarioNome = autorAutenticado?.nome || textoCampo(comentario.usuario) || "Usuário não identificado";
+    const usuarioId = autorAutenticado?.id ?? await obterUsuarioIdPorNome(conexao, usuarioNome);
     const data = timestampParaBanco(comentario.data);
 
     if (comentarioId !== null) {
-      await conexao.query(
+      const inserido = await conexao.query(
         `INSERT INTO comentarios (id, demanda_id, texto, usuario_id, usuario_nome, data)
-         VALUES ($1, $2, $3, $4, $5, COALESCE($6::timestamptz, CURRENT_TIMESTAMP))`,
+         VALUES ($1, $2, $3, $4, $5, COALESCE($6::timestamptz, CURRENT_TIMESTAMP))
+         ON CONFLICT (id) DO NOTHING
+         RETURNING id`,
         [comentarioId, id, texto, usuarioId, usuarioNome, data],
       );
+
+      if (!inserido.rowCount) {
+        const existente = await conexao.query(
+          "SELECT demanda_id FROM comentarios WHERE id = $1",
+          [comentarioId],
+        );
+        if (existente.rowCount && Number(existente.rows[0].demanda_id) === id) {
+          continue;
+        }
+        // O ID veio de outra demanda: gera um novo ID no banco sem sobrescrever o registro anterior.
+        await conexao.query(
+          `INSERT INTO comentarios (demanda_id, texto, usuario_id, usuario_nome, data)
+           VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP))`,
+          [id, texto, usuarioId, usuarioNome, data],
+        );
+      }
     } else {
-      await conexao.query(
-        `INSERT INTO comentarios (demanda_id, texto, usuario_id, usuario_nome, data)
-         VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP))`,
-        [id, texto, usuarioId, usuarioNome, data],
+      const existente = await conexao.query(
+        `SELECT id FROM comentarios
+          WHERE demanda_id = $1 AND texto = $2 AND usuario_nome = $3
+            AND data = COALESCE($4::timestamptz, CURRENT_TIMESTAMP)
+          LIMIT 1`,
+        [id, texto, usuarioNome, data],
       );
+      if (!existente.rowCount) {
+        await conexao.query(
+          `INSERT INTO comentarios (demanda_id, texto, usuario_id, usuario_nome, data)
+           VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP))`,
+          [id, texto, usuarioId, usuarioNome, data],
+        );
+      }
     }
   }
 
@@ -1918,31 +2101,104 @@ async function gravarDemanda(
       Number.isSafeInteger(tamanhoInformado) && tamanhoInformado >= 0
         ? tamanhoInformado
         : 0;
-    const usuarioNome = textoCampo(arquivo.usuario) || "Usuário não identificado";
-    const usuarioId = await obterUsuarioIdPorNome(conexao, usuarioNome);
+    const usuarioNome = autorAutenticado?.nome || textoCampo(arquivo.usuario) || "Usuário não identificado";
+    const usuarioId = autorAutenticado?.id ?? await obterUsuarioIdPorNome(conexao, usuarioNome);
     const data = timestampParaBanco(arquivo.data);
     const url = typeof arquivo.url === "string" ? arquivo.url : "";
 
     if (arquivoId !== null) {
-      await conexao.query(
+      const inserido = await conexao.query(
         `INSERT INTO arquivos (id, demanda_id, nome, tamanho, data, usuario_id, usuario_nome, url)
-         VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP), $6, $7, $8)`,
+         VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP), $6, $7, $8)
+         ON CONFLICT (id) DO NOTHING
+         RETURNING id`,
         [arquivoId, id, nome, tamanho, data, usuarioId, usuarioNome, url],
       );
+
+      if (!inserido.rowCount) {
+        const existente = await conexao.query(
+          "SELECT demanda_id FROM arquivos WHERE id = $1",
+          [arquivoId],
+        );
+        if (existente.rowCount && Number(existente.rows[0].demanda_id) === id) {
+          continue;
+        }
+        await conexao.query(
+          `INSERT INTO arquivos (demanda_id, nome, tamanho, data, usuario_id, usuario_nome, url)
+           VALUES ($1, $2, $3, COALESCE($4::timestamptz, CURRENT_TIMESTAMP), $5, $6, $7)`,
+          [id, nome, tamanho, data, usuarioId, usuarioNome, url],
+        );
+      }
     } else {
-      await conexao.query(
-        `INSERT INTO arquivos (demanda_id, nome, tamanho, data, usuario_id, usuario_nome, url)
-         VALUES ($1, $2, $3, COALESCE($4::timestamptz, CURRENT_TIMESTAMP), $5, $6, $7)`,
-        [id, nome, tamanho, data, usuarioId, usuarioNome, url],
+      const existente = await conexao.query(
+        `SELECT id FROM arquivos
+          WHERE demanda_id = $1 AND nome = $2 AND tamanho = $3
+            AND data = COALESCE($4::timestamptz, CURRENT_TIMESTAMP)
+            AND usuario_nome = $5 AND url = $6
+          LIMIT 1`,
+        [id, nome, tamanho, data, usuarioNome, url],
       );
+      if (!existente.rowCount) {
+        await conexao.query(
+          `INSERT INTO arquivos (demanda_id, nome, tamanho, data, usuario_id, usuario_nome, url)
+           VALUES ($1, $2, $3, COALESCE($4::timestamptz, CURRENT_TIMESTAMP), $5, $6, $7)`,
+          [id, nome, tamanho, data, usuarioId, usuarioNome, url],
+        );
+      }
     }
   }
 
   for (const periodo of objetosJson(demanda.periodosPendencia)) {
+    const periodoId = numeroPositivoSeguro(periodo.id);
     const inicio = timestampParaBanco(periodo.inicio);
     if (!inicio) continue;
     const fim = timestampParaBanco(periodo.fim);
     const motivo = textoCampo(periodo.motivo) || "Pendência";
+
+    let existente: { id: number | string; fim: string | Date | null } | null = null;
+
+    if (periodoId !== null) {
+      const porId = await conexao.query(
+        `SELECT id, fim FROM periodos_pendencia WHERE id = $1 AND demanda_id = $2`,
+        [periodoId, id],
+      );
+      if (porId.rowCount) existente = porId.rows[0];
+    }
+
+    if (!existente) {
+      const porDados = await conexao.query(
+        `SELECT id, fim FROM periodos_pendencia
+          WHERE demanda_id = $1 AND inicio = $2::timestamptz AND motivo = $3
+          ORDER BY id DESC LIMIT 1`,
+        [id, inicio, motivo],
+      );
+      if (porDados.rowCount) existente = porDados.rows[0];
+    }
+
+    if (existente) {
+      // Só é permitido fechar um período ainda aberto. Nunca se altera o início,
+      // o motivo ou a data de encerramento já registrada.
+      if (existente.fim == null && fim !== null) {
+        await conexao.query(
+          `UPDATE periodos_pendencia SET fim = $1::timestamptz
+            WHERE id = $2 AND demanda_id = $3 AND fim IS NULL`,
+          [fim, existente.id, id],
+        );
+      }
+      continue;
+    }
+
+    if (periodoId !== null) {
+      const inserido = await conexao.query(
+        `INSERT INTO periodos_pendencia (id, demanda_id, inicio, fim, motivo)
+         VALUES ($1, $2, $3::timestamptz, $4::timestamptz, $5)
+         ON CONFLICT (id) DO NOTHING
+         RETURNING id`,
+        [periodoId, id, inicio, fim, motivo],
+      );
+      if (inserido.rowCount) continue;
+    }
+
     await conexao.query(
       `INSERT INTO periodos_pendencia (demanda_id, inicio, fim, motivo)
        VALUES ($1, $2::timestamptz, $3::timestamptz, $4)`,
@@ -1955,8 +2211,8 @@ async function gravarDemanda(
     const tipo = textoCampo(registro.tipo) || "alteracao";
     const tituloHistorico = textoCampo(registro.titulo) || "Alteração registrada";
     const descricaoHistorico = textoCampo(registro.descricao) || tituloHistorico;
-    const usuarioNome = textoCampo(registro.usuario) || "Usuário não identificado";
-    const usuarioId = await obterUsuarioIdPorNome(conexao, usuarioNome);
+    const usuarioNome = autorAutenticado?.nome || textoCampo(registro.usuario) || "Usuário não identificado";
+    const usuarioId = autorAutenticado?.id ?? await obterUsuarioIdPorNome(conexao, usuarioNome);
     const data = timestampParaBanco(registro.data);
     const referenciaId = numeroPositivoSeguro(registro.referenciaId);
     const valorAnterior =
@@ -1973,29 +2229,62 @@ async function gravarDemanda(
         : textoCampo(registro.motivo);
 
     if (registroId !== null) {
-      await conexao.query(
+      const inserido = await conexao.query(
         `INSERT INTO historico (
            id, demanda_id, tipo, titulo, descricao, data, usuario_id, usuario_nome,
            referencia_id, valor_anterior, valor_novo, motivo
          )
-         VALUES ($1, $2, $3, $4, $5, COALESCE($6::timestamptz, CURRENT_TIMESTAMP), $7, $8, $9, $10, $11, $12)`,
+         VALUES ($1, $2, $3, $4, $5, COALESCE($6::timestamptz, CURRENT_TIMESTAMP), $7, $8, $9, $10, $11, $12)
+         ON CONFLICT (id) DO NOTHING
+         RETURNING id`,
         [
           registroId, id, tipo, tituloHistorico, descricaoHistorico, data,
           usuarioId, usuarioNome, referenciaId, valorAnterior, valorNovo, motivo,
         ],
       );
+
+      if (!inserido.rowCount) {
+        const existente = await conexao.query(
+          "SELECT demanda_id FROM historico WHERE id = $1",
+          [registroId],
+        );
+        if (existente.rowCount && Number(existente.rows[0].demanda_id) === id) {
+          continue;
+        }
+        await conexao.query(
+          `INSERT INTO historico (
+             demanda_id, tipo, titulo, descricao, data, usuario_id, usuario_nome,
+             referencia_id, valor_anterior, valor_novo, motivo
+           )
+           VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP), $6, $7, $8, $9, $10, $11)`,
+          [id, tipo, tituloHistorico, descricaoHistorico, data, usuarioId, usuarioNome,
+            referenciaId, valorAnterior, valorNovo, motivo],
+        );
+      }
     } else {
-      await conexao.query(
-        `INSERT INTO historico (
-           demanda_id, tipo, titulo, descricao, data, usuario_id, usuario_nome,
-           referencia_id, valor_anterior, valor_novo, motivo
-         )
-         VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP), $6, $7, $8, $9, $10, $11)`,
-        [
-          id, tipo, tituloHistorico, descricaoHistorico, data,
-          usuarioId, usuarioNome, referenciaId, valorAnterior, valorNovo, motivo,
-        ],
+      const existente = await conexao.query(
+        `SELECT id FROM historico
+          WHERE demanda_id = $1 AND tipo = $2 AND titulo = $3 AND descricao = $4
+            AND data = COALESCE($5::timestamptz, CURRENT_TIMESTAMP)
+            AND usuario_nome = $6
+            AND valor_anterior IS NOT DISTINCT FROM $7
+            AND valor_novo IS NOT DISTINCT FROM $8
+            AND motivo IS NOT DISTINCT FROM $9
+          LIMIT 1`,
+        [id, tipo, tituloHistorico, descricaoHistorico, data, usuarioNome,
+          valorAnterior, valorNovo, motivo],
       );
+      if (!existente.rowCount) {
+        await conexao.query(
+          `INSERT INTO historico (
+             demanda_id, tipo, titulo, descricao, data, usuario_id, usuario_nome,
+             referencia_id, valor_anterior, valor_novo, motivo
+           )
+           VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, CURRENT_TIMESTAMP), $6, $7, $8, $9, $10, $11)`,
+          [id, tipo, tituloHistorico, descricaoHistorico, data, usuarioId, usuarioNome,
+            referenciaId, valorAnterior, valorNovo, motivo],
+        );
+      }
     }
   }
 }
@@ -2020,7 +2309,7 @@ app.put("/api/demandas/:id", async (req, res) => {
     return;
   }
 
-  const autenticacao = res.locals.sgdAuth as { id: number; perfil: string } | undefined;
+  const autenticacao = res.locals.sgdAuth as { id: number; nome: string; perfil: string } | undefined;
   if (!autenticacao?.id) {
     return res.status(401).json({ message: "Sessão não autenticada." });
   }
@@ -2044,9 +2333,17 @@ app.put("/api/demandas/:id", async (req, res) => {
          d.prioridade,
          d.prazo,
          d.prazo_dias_uteis AS "prazoDiasUteis",
-         d.prazo_manual AS "prazoManual"
+         d.prazo_manual AS "prazoManual",
+         COALESCE(NULLIF(d.usuario_criacao_nome, ''), uc.nome, '') AS "usuarioCriacao",
+         COALESCE(NULLIF(d.usuario_conclusao_nome, ''), ucon.nome, '') AS "usuarioConclusao",
+         d.data_conclusao AS "dataConclusao",
+         COALESCE(NULLIF(d.usuario_reabertura_nome, ''), ureab.nome, '') AS "usuarioReabertura",
+         d.data_reabertura AS "dataReabertura"
        FROM demandas d
        LEFT JOIN usuarios u ON u.id = d.responsavel_id
+       LEFT JOIN usuarios uc ON uc.id = d.usuario_criacao_id
+       LEFT JOIN usuarios ucon ON ucon.id = d.usuario_conclusao_id
+       LEFT JOIN usuarios ureab ON ureab.id = d.usuario_reabertura_id
        LEFT JOIN clientes c ON c.id = d.cliente_id
        LEFT JOIN sistemas s ON s.id = d.sistema_id
        LEFT JOIN tipos_demanda td ON td.id = d.tipo_demanda_id
@@ -2069,21 +2366,69 @@ app.put("/api/demandas/:id", async (req, res) => {
       return res.status(403).json({ message: "Você só pode atualizar demandas atribuídas ao seu usuário." });
     }
 
+    let statusAnteriorNormalizado = "Nova";
+    let statusFinalParaGravar = "Nova";
+    let responsavelFoiAlterado = false;
+
     if (demandaAtual.rows.length > 0) {
-      let statusAnterior = String(demandaAtual.rows[0].status ?? "");
+      const atual = demandaAtual.rows[0];
+      let statusAnterior = String(atual.status ?? "");
       if (statusAnterior === "Em Processo" || statusAnterior === "Em análise") {
         statusAnterior = "Em Atendimento";
       }
       if (statusAnterior === "Pendente") statusAnterior = "Com Pendências";
+      statusAnteriorNormalizado = statusAnterior;
 
       let statusNovo = textoCampo(body.status) || statusAnterior;
       if (statusNovo === "Em Processo" || statusNovo === "Em análise") statusNovo = "Em Atendimento";
       if (statusNovo === "Pendente") statusNovo = "Com Pendências";
 
+      const responsavelAnterior = textoCampo(atual.responsavel);
+      const responsavelNovo = perfilGestor
+        ? textoCampo(body.responsavel)
+        : responsavelAnterior;
+      responsavelFoiAlterado =
+        perfilGestor &&
+        responsavelAnterior.toLocaleLowerCase("pt-BR") !==
+          responsavelNovo.toLocaleLowerCase("pt-BR");
+
+      // Regra oficial: atribuir responsável a uma demanda Nova, Aguardando
+      // ou já Em Atendimento mantém/coloca o status em Em Atendimento.
+      // Em Com Pendências e Concluída, a redistribuição não altera o status.
+      if (responsavelFoiAlterado) {
+        if (statusAnterior === "Cancelada") {
+          await conexao.query("ROLLBACK");
+          return res.status(409).json({ message: "Demandas canceladas não podem ser redistribuídas." });
+        }
+        if (statusAnterior === "Com Pendências" && !responsavelNovo) {
+          await conexao.query("ROLLBACK");
+          return res.status(400).json({ message: "Uma demanda em Com Pendências precisa permanecer com um Responsável definido." });
+        }
+        const statusInformado = textoCampo(body.status);
+        const statusInformadoNormalizado =
+          statusInformado === "Em Processo" || statusInformado === "Em análise"
+            ? "Em Atendimento"
+            : statusInformado === "Pendente"
+              ? "Com Pendências"
+              : statusInformado;
+        if (
+          ["Nova", "Aguardando", "Em Atendimento"].includes(statusAnterior) &&
+          (!statusInformadoNormalizado || statusInformadoNormalizado === statusAnterior)
+        ) {
+          statusNovo = responsavelNovo
+            ? "Em Atendimento"
+            : statusAnterior === "Em Atendimento"
+              ? "Aguardando"
+              : statusAnterior;
+        }
+      }
+
       if (!STATUS_DEMANDA_OFICIAIS.has(statusNovo)) {
         await conexao.query("ROLLBACK");
         return res.status(400).json({ message: "O Status informado não é válido." });
       }
+
+      statusFinalParaGravar = statusNovo;
 
       if (statusNovo !== statusAnterior) {
         const historicoRecebido = objetosJson(body.historico);
@@ -2146,13 +2491,24 @@ app.put("/api/demandas/:id", async (req, res) => {
       }
     }
 
-    let dadosParaGravar = body;
+    let dadosParaGravar: RegistroJson = {
+      ...body,
+      // A identidade de quem cadastrou a demanda vem da sessão autenticada,
+      // nunca de um nome enviado livremente pelo navegador.
+      ...(demandaAtual.rows.length === 0
+        ? {
+            usuarioCriacao: autenticacao.nome,
+            status: textoCampo(body.responsavel) ? "Em Atendimento" : "Nova",
+          }
+        : { status: statusFinalParaGravar }),
+    };
+
     if (demandaAtual.rows.length > 0 && !perfilGestor) {
       const atual = demandaAtual.rows[0];
       // O usuário operacional pode trabalhar na própria demanda, mas não pode
       // trocar sua classificação, responsável, prazo ou cadastro de origem.
       dadosParaGravar = {
-        ...body,
+        ...dadosParaGravar,
         cliente: atual.cliente,
         sistema: atual.sistema,
         tipo: atual.tipo,
@@ -2166,7 +2522,44 @@ app.put("/api/demandas/:id", async (req, res) => {
       };
     }
 
-    await gravarDemanda(conexao, id, dadosParaGravar);
+    // O servidor registra como autor da conclusão/reabertura o usuário da sessão.
+    if (demandaAtual.rows.length > 0) {
+      const atual = demandaAtual.rows[0];
+      if (statusFinalParaGravar === "Concluída" && statusAnteriorNormalizado !== "Concluída") {
+        dadosParaGravar.usuarioConclusao = autenticacao.nome;
+        dadosParaGravar.dataConclusao = new Date().toISOString();
+      } else {
+        dadosParaGravar.usuarioConclusao = textoCampo(atual.usuarioConclusao);
+        dadosParaGravar.dataConclusao = atual.dataConclusao ?? null;
+      }
+
+      if (statusAnteriorNormalizado === "Concluída" && statusFinalParaGravar === "Em Atendimento") {
+        dadosParaGravar.usuarioReabertura = autenticacao.nome;
+        dadosParaGravar.dataReabertura = new Date().toISOString();
+      } else {
+        dadosParaGravar.usuarioReabertura = textoCampo(atual.usuarioReabertura);
+        dadosParaGravar.dataReabertura = atual.dataReabertura ?? null;
+      }
+
+      // Preserva a autoria original do cadastro a partir do banco de dados,
+      // sem aceitar alteração do nome do criador enviada pelo navegador.
+      dadosParaGravar.usuarioCriacao = textoCampo(atual.usuarioCriacao);
+    }
+
+    const responsavelIdPreservado =
+      demandaAtual.rows.length > 0 && !responsavelFoiAlterado
+        ? (demandaAtual.rows[0].responsavel_id == null
+            ? null
+            : Number(demandaAtual.rows[0].responsavel_id))
+        : undefined;
+
+    await gravarDemanda(
+      conexao,
+      id,
+      dadosParaGravar,
+      responsavelIdPreservado,
+      { id: autenticacao.id, nome: autenticacao.nome },
+    );
     await conexao.query("COMMIT");
     res.json({ ok: true, id });
   } catch (error) {
@@ -2285,6 +2678,7 @@ app.get("/api/demandas", async (_req, res) => {
         COALESCE((
           SELECT json_agg(
             json_build_object(
+              'id', p.id,
               'inicio', p.inicio,
               'fim', p.fim,
               'motivo', p.motivo
