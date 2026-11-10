@@ -50,7 +50,10 @@
 import { useMemo, useState } from 'react'
 import type { DragEvent } from 'react'
 import type { Demanda } from '../types'
-import { estaAtrasada as estaAtrasadaSLA, obterPrazoEfetivo } from '../sla'
+import {
+  estaAtrasada as estaAtrasadaSLA,
+  estaProximaDoVencimento as estaProximaDoVencimentoSLA,
+} from '../sla'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './TodasDemandas.css'
 
@@ -141,7 +144,7 @@ type Props = {
 // STATUS DO SISTEMA
 // ============================================================
 
-const STATUS = [
+const STATUS_FLUXO = [
   'Nova',
   'Aguardando',
   'Em Atendimento',
@@ -149,6 +152,12 @@ const STATUS = [
   'Concluída',
   'Cancelada',
 ]
+
+// Nos combos, os status são apresentados em ordem alfabética.
+// A sequência oficial do fluxo permanece preservada no Kanban.
+const STATUS_OPCOES = [...STATUS_FLUXO].sort((a, b) =>
+  a.localeCompare(b, 'pt-BR')
+)
 
 // ============================================================
 // CRITICIDADES
@@ -244,32 +253,13 @@ function estaAtrasada(demanda: Demanda): boolean {
 }
 
 // ============================================================
-// VERIFICA SE ESTÁ PRÓXIMA DO VENCIMENTO (7 DIAS)
+// VERIFICA SE ESTÁ PRÓXIMA DO VENCIMENTO
+// Regra oficial: até 2 dias úteis, considerando feriados e
+// períodos de pendência conforme o motor central de SLA.
 // ============================================================
 
 function estaProximaDoVencimento(demanda: Demanda): boolean {
-  if (
-    demanda.status === 'Concluída' ||
-    demanda.status === 'Cancelada' ||
-    !demanda.prazo
-  ) {
-    return false
-  }
-
-  const prazo = obterPrazoEfetivo(demanda)
-
-  if (!prazo) {
-    return false
-  }
-
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  const limite = new Date(hoje)
-  limite.setDate(limite.getDate() + 7)
-
-  return prazo >= hoje && prazo <= limite
-
+  return estaProximaDoVencimentoSLA(demanda, 2)
 }
 
 // ============================================================
@@ -1377,7 +1367,7 @@ export default function TodasDemandas({
                     Todos Os Status
                   </option>
 
-                  {STATUS.map(
+                  {STATUS_OPCOES.map(
                     (item) => (
 
                       <option
@@ -1471,10 +1461,10 @@ export default function TodasDemandas({
                   <option value="">Todas</option>
                   <option value="abertas">Abertas</option>
                   <option value="atrasadas">Atrasadas</option>
+                  <option value="canceladas">Canceladas</option>
+                  <option value="concluidas">Concluídas</option>
                   <option value="proximas">Próximas Do Vencimento</option>
                   <option value="criticas">Urgentes (P1/P2)</option>
-                  <option value="concluidas">Concluídas</option>
-                  <option value="canceladas">Canceladas</option>
                 </select>
 
               </div>
@@ -1494,9 +1484,9 @@ export default function TodasDemandas({
                   }
                 >
                   <option value="">Todos</option>
-                  <option value="7-dias">Próximos 7 Dias</option>
-                  <option value="30-dias">Próximos 30 Dias</option>
                   <option value="mes-atual">Mês Atual</option>
+                  <option value="30-dias">Próximos 30 Dias</option>
+                  <option value="7-dias">Próximos 7 Dias</option>
                 </select>
 
               </div>
@@ -1515,10 +1505,10 @@ export default function TodasDemandas({
                     setOrdenacao(e.target.value)
                   }
                 >
-                  <option value="mais-recentes">Mais Recentes</option>
-                  <option value="prazo-proximo">Prazo Mais Próximo</option>
-                  <option value="prazo-distante">Prazo Mais Distante</option>
                   <option value="prioridade">Maior Prioridade</option>
+                  <option value="mais-recentes">Mais Recentes</option>
+                  <option value="prazo-distante">Prazo Mais Distante</option>
+                  <option value="prazo-proximo">Prazo Mais Próximo</option>
                   <option value="titulo">Título A-Z</option>
                 </select>
 
@@ -1585,7 +1575,7 @@ export default function TodasDemandas({
                   aria-label="Novo Status Para Ações Em Massa"
                 >
                   <option value="">Alterar Status Para...</option>
-                  {STATUS
+                  {STATUS_OPCOES
                     .filter(
                       (item) =>
                         item !== 'Com Pendências' &&
@@ -2000,7 +1990,7 @@ export default function TodasDemandas({
                   "
                 >
 
-                  {STATUS.map(
+                  {STATUS_FLUXO.map(
                     (statusColuna) => {
 
                       const demandasColuna =
@@ -2356,7 +2346,7 @@ export default function TodasDemandas({
                                           Mover Para...
                                         </option>
 
-                                        {STATUS
+                                        {STATUS_OPCOES
                                           .filter((item) => {
                                             if (demanda.status === 'Nova') {
                                               return (

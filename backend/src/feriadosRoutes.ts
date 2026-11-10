@@ -96,18 +96,22 @@ const SELECT_FERIADOS = `
   FROM feriados
 `;
 
-function exigirGestor(res: Response): boolean {
+function usuarioTemPermissaoAdministrativa(res: Response): boolean {
   const autenticacao = res.locals.sgdAuth as
     | { perfil?: string }
     | undefined;
 
-  if (
-    String(autenticacao?.perfil ?? "")
-      .trim()
-      .toLowerCase() !== "gestor/administrador"
-  ) {
+  const perfil = String(autenticacao?.perfil ?? "")
+    .trim()
+    .toLowerCase();
+
+  return perfil === "gestor/administrador" || perfil === "diretor (a)";
+}
+
+function exigirGestor(res: Response): boolean {
+  if (!usuarioTemPermissaoAdministrativa(res)) {
     res.status(403).json({
-      message: "Somente o perfil Gestor pode cadastrar ou alterar feriados.",
+      message: "Somente os perfis Gestor e Diretor (a) podem cadastrar ou alterar feriados.",
     });
     return false;
   }
@@ -276,106 +280,6 @@ export function criarRotasFeriados(pool: Pool) {
       return res.status(500).json({
         message: "Não foi possível consultar os feriados.",
       });
-    }
-  });
-
-  // Importação única dos feriados que estavam no localStorage.
-  router.post("/feriados/migrar", async (req, res) => {
-    if (!exigirGestor(res)) return;
-
-    const itens = req.body;
-
-    if (!Array.isArray(itens) || itens.length === 0 || itens.length > 5000) {
-      return res.status(400).json({
-        message: "Não há feriados válidos para migrar.",
-      });
-    }
-
-    const normalizados: Array<{
-      data: string;
-      descricao: string;
-      ativo: boolean;
-    }> = [];
-
-    const datasRecebidas = new Set<string>();
-
-    for (const item of itens as FeriadoEntrada[]) {
-      const data =
-        typeof item?.data === "string"
-          ? item.data.slice(0, 10)
-          : "";
-
-      const descricao =
-        typeof item?.descricao === "string"
-          ? item.descricao.trim()
-          : "";
-
-      const ativo = item?.ativo !== false;
-
-      if (!dataISOValida(data) || !descricao || descricao.length > 120) {
-        return res.status(400).json({
-          message: "Existe um feriado antigo com data ou descrição inválida. Revise os dados antes da migração.",
-        });
-      }
-
-      if (datasRecebidas.has(data)) continue;
-
-      datasRecebidas.add(data);
-      normalizados.push({ data, descricao, ativo });
-    }
-
-    const conexao = await pool.connect();
-
-    try {
-      await conexao.query("BEGIN");
-      await conexao.query("LOCK TABLE feriados IN EXCLUSIVE MODE");
-
-      const existentes = await conexao.query(
-        "SELECT COUNT(*)::integer AS total FROM feriados",
-      );
-
-      if (Number(existentes.rows[0].total) > 0) {
-        const atuais = await conexao.query(
-          `${SELECT_FERIADOS} ORDER BY data, id`,
-        );
-
-        await conexao.query("COMMIT");
-
-        return res.json({
-          migrado: false,
-          feriados: atuais.rows.map((row) => feriadoPublico(row as FeriadoBanco)),
-        });
-      }
-
-      for (const item of normalizados) {
-        await conexao.query(
-          `INSERT INTO feriados (data, descricao, ativo)
-           VALUES ($1::date, $2, $3)
-           ON CONFLICT (data) DO NOTHING`,
-          [item.data, item.descricao, item.ativo],
-        );
-      }
-
-      const resultado = await conexao.query(
-        `${SELECT_FERIADOS} ORDER BY data, id`,
-      );
-
-      await conexao.query("COMMIT");
-
-      return res.json({
-        migrado: true,
-        feriados: resultado.rows.map((row) => feriadoPublico(row as FeriadoBanco)),
-      });
-    } catch (error) {
-      await conexao.query("ROLLBACK");
-
-      console.error("Falha ao migrar feriados antigos:", error);
-
-      return res.status(500).json({
-        message: "Não foi possível migrar os feriados antigos para o PostgreSQL.",
-      });
-    } finally {
-      conexao.release();
     }
   });
 
@@ -639,14 +543,9 @@ export function criarRotasFeriados(pool: Pool) {
       | { id?: number; perfil?: string }
       | undefined;
 
-    if (
-      !autenticacao ||
-      String(autenticacao.perfil ?? "")
-        .trim()
-        .toLowerCase() !== "gestor/administrador"
-    ) {
+    if (!autenticacao || !usuarioTemPermissaoAdministrativa(res)) {
       return res.status(403).json({
-        message: "Somente o perfil Gestor pode alterar as configurações do sistema.",
+        message: "Somente os perfis Gestor e Diretor (a) podem alterar as configurações do sistema.",
       });
     }
 

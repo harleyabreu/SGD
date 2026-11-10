@@ -2,7 +2,7 @@
 // GESTÃO DE DEMANDAS DE TI
 // V3.0 — ADMINISTRAÇÃO
 // ============================================================
-// Área administrativa exclusiva do Gestor/Administrador.
+// Área administrativa do Gestor/Administrador e do Diretor (a).
 // Mantém os cadastros padronizados usados pelo restante do sistema.
 //
 // V3.0
@@ -582,11 +582,16 @@ function Administracao({
   }
 
   async function salvarUsuario() {
-    const loginPadrao = gerarLoginPadrao(
-      nomeUsuario,
-      usuarios,
-      editUsuario?.id
-    )
+    const contaGestorFixo =
+      editUsuario?.login.trim().toLowerCase() === 'lorenna.goes'
+
+    const loginPadrao = contaGestorFixo
+      ? 'lorenna.goes'
+      : gerarLoginPadrao(
+          nomeUsuario,
+          usuarios,
+          editUsuario?.id
+        )
 
     if (!nomeUsuario.trim() || !emailUsuario.trim()) {
       window.alert('Preencha nome, login e e-mail.')
@@ -642,6 +647,11 @@ function Administracao({
         window.alert('A confirmação da senha não confere.')
         return
       }
+    }
+
+    if (contaGestorFixo && perfilUsuario !== 'Gestor/Administrador') {
+      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode perder esse perfil.')
+      return
     }
 
     if (
@@ -717,7 +727,7 @@ function Administracao({
           atualizado.id,
           modoAlterarSenha ? 'alteracao_senha' : 'edicao',
           modoAlterarSenha
-            ? `Senha do usuário ${atualizado.nome} foi alterada pelo Gestor.`
+            ? `Senha do usuário ${atualizado.nome} foi alterada pelo Gestor ou Diretor (a).`
             : `Usuário ${atualizado.nome} foi atualizado.`,
           usuarioAtual.nome,
           {
@@ -761,6 +771,11 @@ function Administracao({
   }
 
   async function alternarUsuario(item: Usuario) {
+    if (item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo') {
+      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode ser inativada.')
+      return
+    }
+
     if (item.id === usuarioAtual.id && item.status === 'Ativo') {
       window.alert('O usuário atualmente logado não pode ser inativado.')
       return
@@ -818,6 +833,11 @@ function Administracao({
 
 
   async function excluirUsuario(item: Usuario) {
+    if (item.login.trim().toLowerCase() === 'lorenna.goes') {
+      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode ser excluída.')
+      return
+    }
+
     if (item.id === usuarioAtual.id) {
       window.alert('O usuário atualmente logado não pode ser excluído.')
       return
@@ -1394,7 +1414,7 @@ function Administracao({
           <div className="adm-tabs">
 
             {([
-              ['usuarios', 'Analistas'],
+              ['usuarios', 'Usuários'],
               ['clientes', 'Órgãos'],
               ['sistemas', 'Sistemas'],
               ['tipos', 'Tipos de Demanda'],
@@ -1474,7 +1494,7 @@ function Administracao({
                     </h2>
 
                     <p>
-                      Gestores Possuem Também as Permissões Administrativas.
+                      Gestores e Diretores Possuem as Permissões Administrativas.
                     </p>
                   </div>
 
@@ -1500,7 +1520,11 @@ function Administracao({
                       onChange={(e) => {
                         const nome = e.target.value
                         setNomeUsuario(nome)
-                        setLoginUsuario(gerarLoginPadrao(nome, usuarios, editUsuario?.id))
+                        setLoginUsuario(
+                          editUsuario?.login.trim().toLowerCase() === 'lorenna.goes'
+                            ? 'lorenna.goes'
+                            : gerarLoginPadrao(nome, usuarios, editUsuario?.id)
+                        )
                       }}
                       placeholder="Nome do Usuário"
                     />
@@ -1564,11 +1588,11 @@ function Administracao({
                       }}
                     >
                       <option value="">Selecione...</option>
-                      <option value="Gestor/Administrador">Gestor(a)</option>
-                      <option value="Diretor (a)">Diretor(a)</option>
                       <option value="Analista">Analista(a)</option>
                       <option value="Desenvolvedor">Desenvolvedor(a)</option>
+                      <option value="Diretor (a)">Diretor(a)</option>
                       <option value="Estagiário">Estagiário(a)</option>
+                      <option value="Gestor/Administrador">Gestor(a)</option>
                     </select>
                   </label>
 
@@ -1607,7 +1631,9 @@ function Administracao({
                           Selecione...
                         </option>
 
-                        {(Object.entries(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias) as Array<[SiglaGerencia, (typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias)[SiglaGerencia]]>).map(([sigla, gerencia]) => (
+                        {(Object.entries(ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias) as Array<[SiglaGerencia, (typeof ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias)[SiglaGerencia]]>)
+                          .sort(([, gerenciaA], [, gerenciaB]) => gerenciaA.nome.localeCompare(gerenciaB.nome, 'pt-BR'))
+                          .map(([sigla, gerencia]) => (
                           <option key={sigla} value={sigla}>
                             {sigla} — {gerencia.nome}
                           </option>
@@ -1627,7 +1653,9 @@ function Administracao({
                         </option>
 
                         {gerenciaUsuario &&
-                          ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaUsuario].divisoes.map((divisao) => (
+                          [...ESTRUTURA_ORGANIZACIONAL.diretoria.gerencias[gerenciaUsuario].divisoes]
+                            .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+                            .map((divisao) => (
                             <option key={divisao} value={divisao}>
                               {divisao}
                             </option>
@@ -1850,14 +1878,17 @@ function Administracao({
                                   alternarUsuario(item)
                                 }
                                 className={`adm-table-action ${item.status === 'Ativo' ? 'adm-table-action-danger' : 'adm-table-action-success'}`}
+                                disabled={item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo'}
+                                title={item.login.trim().toLowerCase() === 'lorenna.goes' ? 'Gestor fixo do SGD' : undefined}
                               >
-                                {item.status ===
-                                'Ativo'
-                                  ? 'Inativar'
-                                  : 'Ativar'}
+                                {item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo'
+                                  ? 'Gestor Fixo'
+                                  : item.status === 'Ativo'
+                                    ? 'Inativar'
+                                    : 'Ativar'}
                               </button>
 
-                              {item.id !== usuarioAtual.id && (
+                              {item.id !== usuarioAtual.id && item.login.trim().toLowerCase() !== 'lorenna.goes' && (
                                 <button
                                   type="button"
                                   onClick={() => excluirUsuario(item)}
@@ -2105,9 +2136,8 @@ function Administracao({
                       </option>
 
                       {clientes
-                        .filter(
-                          (item) => item.ativo
-                        )
+                        .filter((item) => item.ativo)
+                        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
                         .map((item) => (
                           <option
                             key={item.id}

@@ -1,6 +1,10 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ehPerfilOperacional } from '../types'
-import type { Usuario } from '../types'
+import type { Demanda, Usuario } from '../types'
+import {
+  estaAtrasada as estaAtrasadaSLA,
+  estaProximaDoVencimento as estaProximaDoVencimentoSLA,
+} from '../sla'
 import ToastGlobal from './ToastGlobal'
 
 /**
@@ -979,11 +983,21 @@ function iniciaisDoUsuario(nome: string) {
     .toUpperCase()
 }
 
-function perfilExibicao(usuario: Usuario) {
-  return usuario.perfil === 'Gestor/Administrador'
-    ? 'Gestor (a)'
-    : usuario.perfil
+function formatarPerfilExibicao(perfil: string): string {
+  const rotulos: Record<string, string> = {
+    'Gestor/Administrador': 'Gestor(a)',
+    Gestor: 'Gestor(a)',
+    'Diretor (a)': 'Diretor(a)',
+    Analista: 'Analista(a)',
+    Desenvolvedor: 'Desenvolvedor(a)',
+    'Desenvolvedor (a)': 'Desenvolvedor(a)',
+    Estagiário: 'Estagiário(a)',
+    'Estagiário (a)': 'Estagiário(a)',
+  }
+
+  return rotulos[perfil] || perfil
 }
+
 
 
 
@@ -997,21 +1011,8 @@ function perfilExibicao(usuario: Usuario) {
 // sem obrigar cada página a duplicar a implementação.
 // ============================================================
 
-type DemandaNotificacaoGlobal = {
-  id: number
-  titulo: string
-  prioridade: string
-  prazo: string
-  status: string
-  historico?: Array<{
-    id: number
-    tipo: string
-    titulo: string
-    descricao: string
-    data: string
-    usuario: string
-    referenciaId?: number
-  }>
+type DemandaNotificacaoGlobal = Demanda & {
+  responsavelId?: number
 }
 
 type NotificacaoGlobal = {
@@ -1041,29 +1042,138 @@ function carregarDemandasParaNotificacoes(): DemandaNotificacaoGlobal[] {
       return []
     }
 
-    const dados = JSON.parse(salvo)
+    const dados: unknown = JSON.parse(salvo)
 
     if (!Array.isArray(dados)) {
       return []
     }
 
-    return dados.map((item) => ({
-      ...item,
-      status:
-        item?.status === 'Em Processo'
-          ? 'Em Atendimento'
-          : String(item?.status || ''),
-      prioridade:
-        item?.prioridade === 'Urgente'
-          ? 'Crítica'
-          : String(item?.prioridade || ''),
-      historico: Array.isArray(item?.historico)
-        ? item.historico
-        : [],
-    }))
+    return dados
+      .map((valor): DemandaNotificacaoGlobal | null => {
+        if (!valor || typeof valor !== 'object') {
+          return null
+        }
+
+        const item = valor as Record<string, unknown>
+        const id = Number(item.id)
+
+        if (!Number.isSafeInteger(id) || id <= 0) {
+          return null
+        }
+
+        return {
+          ...item,
+          id,
+          titulo: String(item.titulo ?? ''),
+          descricao: String(item.descricao ?? ''),
+          cliente: String(item.cliente ?? ''),
+          responsavel: String(item.responsavel ?? ''),
+          responsavelId:
+            item.responsavelId === null || item.responsavelId === undefined
+              ? undefined
+              : Number(item.responsavelId),
+          prioridade:
+            item.prioridade === 'Urgente'
+              ? 'Crítica'
+              : String(item.prioridade ?? ''),
+          prazo: String(item.prazo ?? ''),
+          observacao: String(item.observacao ?? ''),
+          status:
+            item.status === 'Em Processo'
+              ? 'Em Atendimento'
+              : String(item.status ?? ''),
+          historico: Array.isArray(item.historico)
+            ? item.historico
+            : [],
+        } as DemandaNotificacaoGlobal
+      })
+      .filter(
+        (item): item is DemandaNotificacaoGlobal => item !== null
+      )
   } catch {
     return []
   }
+}
+
+function normalizarIdentificadorUsuario(valor: unknown): string {
+  return String(valor ?? '')
+    .trim()
+    .toLocaleLowerCase('pt-BR')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+function filtrarDemandasDasNotificacoes(
+  demandas: DemandaNotificacaoGlobal[],
+  usuarioAtual?: Usuario,
+  nomeUsuario?: string,
+  perfilUsuario?: string
+): DemandaNotificacaoGlobal[] {
+  const perfil = usuarioAtual?.perfil || perfilUsuario
+
+  if (!perfil) {
+    return []
+  }
+
+  // Gestor e Diretor possuem abrangência global sobre a DDS.
+  if (
+    perfil === 'Gestor/Administrador' ||
+    perfil === 'Gestor' ||
+    perfil === 'Diretor (a)'
+  ) {
+    return demandas
+  }
+
+  // Outros perfis que não sejam operacionais não recebem a lista global.
+  if (!ehPerfilOperacional(perfil)) {
+    return []
+  }
+
+  const nomesPermitidos = new Set(
+    [usuarioAtual?.nome, usuarioAtual?.login, nomeUsuario]
+      .map(normalizarIdentificadorUsuario)
+      .filter(Boolean)
+  )
+
+  const usuarioId = Number(usuarioAtual?.id)
+
+  // Sem identidade operacional confiável, não exibir notificações globais.
+  if (!nomesPermitidos.size && (!Number.isSafeInteger(usuarioId) || usuarioId <= 0)) {
+    return []
+  }
+
+  return demandas.filter((demanda) => {
+    const responsavel = normalizarIdentificadorUsuario(demanda.responsavel)
+    const responsavelId = Number(demanda.responsavelId)
+
+    return (
+      (nomesPermitidos.size > 0 && nomesPermitidos.has(responsavel)) ||
+      (Number.isSafeInteger(usuarioId) && usuarioId > 0 && responsavelId === usuarioId)
+    )
+  })
+}
+
+function obterChaveLeiturasNotificacoes(
+  usuarioAtual?: Usuario,
+  perfilUsuario?: string,
+  nomeUsuario?: string
+): string {
+  const perfil = usuarioAtual?.perfil || perfilUsuario
+
+  // O Dashboard do Gestor/Diretor utiliza a chave legada compartilhada.
+  // Para perfis operacionais, as leituras são isoladas por usuário.
+  if (!ehPerfilOperacional(perfil)) {
+    return 'notificacoes_lidas'
+  }
+
+  const identificador =
+    usuarioAtual?.id ??
+    usuarioAtual?.login ??
+    usuarioAtual?.nome ??
+    nomeUsuario ??
+    'operacional'
+
+  return `notificacoes_lidas_usuario_${String(identificador)}`
 }
 
 function converterDataNotificacaoGlobal(
@@ -1180,67 +1290,15 @@ function criarIdNotificacaoGlobal(
 function estaAtrasadaNotificacaoGlobal(
   demanda: DemandaNotificacaoGlobal
 ): boolean {
-  if (
-    demanda.status === 'Concluída' ||
-    demanda.status === 'Cancelada'
-  ) {
-    return false
-  }
-
-  if (!demanda.prazo) {
-    return false
-  }
-
-  const prazo =
-    converterDataNotificacaoGlobal(
-      demanda.prazo
-    )
-
-  if (!prazo) {
-    return false
-  }
-
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  return prazo < hoje
+  return estaAtrasadaSLA(demanda)
 }
 
 function estaProximaDoVencimentoNotificacaoGlobal(
   demanda: DemandaNotificacaoGlobal
 ): boolean {
-  if (
-    demanda.status === 'Concluída' ||
-    demanda.status === 'Cancelada'
-  ) {
-    return false
-  }
-
-  if (!demanda.prazo) {
-    return false
-  }
-
-  const prazo =
-    converterDataNotificacaoGlobal(
-      demanda.prazo
-    )
-
-  if (!prazo) {
-    return false
-  }
-
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  const limite = new Date(hoje)
-  limite.setDate(
-    limite.getDate() + 7
-  )
-
-  return (
-    prazo >= hoje &&
-    prazo <= limite
-  )
+  // Regra oficial do SGD: proximidade de até 2 dias úteis,
+  // respeitando finais de semana, feriados e períodos de pendência.
+  return estaProximaDoVencimentoSLA(demanda, 2)
 }
 
 function gerarNotificacoesGlobais(
@@ -1505,7 +1563,8 @@ function obterClasseNotificacaoGlobal(
 }
 
 function marcarLeituraNotificacaoGlobal(
-  id: string
+  id: string,
+  chaveLeituras: string
 ) {
   if (!id) {
     return
@@ -1513,9 +1572,7 @@ function marcarLeituraNotificacaoGlobal(
 
   try {
     const salvo =
-      localStorage.getItem(
-        'notificacoes_lidas'
-      )
+      localStorage.getItem(chaveLeituras)
 
     const atuais =
       salvo
@@ -1532,7 +1589,7 @@ function marcarLeituraNotificacaoGlobal(
     }
 
     localStorage.setItem(
-      'notificacoes_lidas',
+      chaveLeituras,
       JSON.stringify([
         ...leituras,
         id,
@@ -1544,13 +1601,12 @@ function marcarLeituraNotificacaoGlobal(
 }
 
 function salvarTodasLeiturasNotificacoesGlobais(
-  ids: string[]
+  ids: string[],
+  chaveLeituras: string
 ) {
   try {
     const salvo =
-      localStorage.getItem(
-        'notificacoes_lidas'
-      )
+      localStorage.getItem(chaveLeituras)
 
     const atuais =
       salvo
@@ -1563,7 +1619,7 @@ function salvarTodasLeiturasNotificacoesGlobais(
         : []
 
     localStorage.setItem(
-      'notificacoes_lidas',
+      chaveLeituras,
       JSON.stringify([
         ...new Set([
           ...leiturasAtuais,
@@ -1752,9 +1808,29 @@ export default function MenuPrincipal({
     () => typeof window === 'undefined' ? true : window.innerWidth > 900
   )
 
+  const chaveLeituras = obterChaveLeiturasNotificacoes(
+    usuarioAtual,
+    perfilUsuario,
+    nomeUsuario
+  )
+
   const demandasParaNotificacoes = useMemo(
-    () => carregarDemandasParaNotificacoes(),
-    [notificacoesAtualizacao]
+    () =>
+      filtrarDemandasDasNotificacoes(
+        carregarDemandasParaNotificacoes(),
+        usuarioAtual,
+        nomeUsuario,
+        perfilUsuario
+      ),
+    [
+      notificacoesAtualizacao,
+      usuarioAtual?.id,
+      usuarioAtual?.nome,
+      usuarioAtual?.login,
+      usuarioAtual?.perfil,
+      nomeUsuario,
+      perfilUsuario,
+    ]
   )
 
   const notificacoesGlobaisBase = useMemo(
@@ -1768,9 +1844,7 @@ export default function MenuPrincipal({
     () => {
       try {
         const salvo =
-          localStorage.getItem(
-            'notificacoes_lidas'
-          )
+          localStorage.getItem(chaveLeituras)
 
         const dados =
           salvo
@@ -1785,6 +1859,16 @@ export default function MenuPrincipal({
       }
     }
   )
+
+  useEffect(() => {
+    try {
+      const salvo = localStorage.getItem(chaveLeituras)
+      const dados = salvo ? JSON.parse(salvo) : []
+      setLeiturasGlobais(Array.isArray(dados) ? dados : [])
+    } catch {
+      setLeiturasGlobais([])
+    }
+  }, [chaveLeituras])
 
   const notificacoesGlobais = useMemo(
     () =>
@@ -1808,9 +1892,7 @@ export default function MenuPrincipal({
   function atualizarNotificacoesGlobais() {
     try {
       const salvo =
-        localStorage.getItem(
-          'notificacoes_lidas'
-        )
+        localStorage.getItem(chaveLeituras)
 
       const dados =
         salvo
@@ -1850,7 +1932,7 @@ export default function MenuPrincipal({
       novasLeituras
     )
 
-    marcarLeituraNotificacaoGlobal(id)
+    marcarLeituraNotificacaoGlobal(id, chaveLeituras)
   }
 
   function marcarTodasNotificacoesGlobaisComoLidas() {
@@ -1871,12 +1953,15 @@ export default function MenuPrincipal({
     )
 
     salvarTodasLeiturasNotificacoesGlobais(
-      ids
+      ids,
+      chaveLeituras
     )
   }
 
   const nomeExibicao = usuarioAtual?.nome || nomeUsuario || 'Usuário'
-  const perfil = usuarioAtual ? perfilExibicao(usuarioAtual) : (perfilUsuario || 'Usuário')
+  const perfil = formatarPerfilExibicao(
+    usuarioAtual?.perfil || perfilUsuario || 'Usuário'
+  )
   const iniciais = iniciaisDoUsuario(nomeExibicao)
 
   return (

@@ -93,55 +93,34 @@ const STATUS = [
   'Cancelada',
 ]
 
-function carregarConfiguracoes(): ConfiguracoesSistema {
+function criarConfiguracoesPadrao(): ConfiguracoesSistema {
+  return {
+    sla: { ...CONFIGURACOES_PADRAO.sla },
+    slaPrioridade: { ...CONFIGURACOES_PADRAO.slaPrioridade },
+    notificacoes: { ...CONFIGURACOES_PADRAO.notificacoes },
+    interface: { ...CONFIGURACOES_PADRAO.interface },
+  }
+}
+
+function atualizarCacheConfiguracoes(configuracoes: ConfiguracoesSistema) {
   try {
-    const salvo = localStorage.getItem(CHAVE_CONFIGURACOES)
-    if (!salvo) return CONFIGURACOES_PADRAO
-
-    const dados = JSON.parse(salvo) as Partial<ConfiguracoesSistema>
-
-    return {
-      sla: {
-        ...CONFIGURACOES_PADRAO.sla,
-        ...(dados.sla || {}),
-      },
-      slaPrioridade: {
-        ...CONFIGURACOES_PADRAO.slaPrioridade,
-        ...(dados.slaPrioridade || {}),
-      },
-      notificacoes: {
-        ...CONFIGURACOES_PADRAO.notificacoes,
-        ...(dados.notificacoes || {}),
-      },
-      interface: {
-        ...CONFIGURACOES_PADRAO.interface,
-        ...(dados.interface || {}),
-        itensPorPagina:
-          dados.interface?.itensPorPagina === 20 ||
-          dados.interface?.itensPorPagina === 30 ||
-          dados.interface?.itensPorPagina === 50
-            ? dados.interface.itensPorPagina
-            : 10,
-        visualizacaoPadrao:
-          dados.interface?.visualizacaoPadrao === 'kanban'
-            ? 'kanban'
-            : 'lista',
-      },
-    }
-  } catch {
-    return CONFIGURACOES_PADRAO
+    localStorage.setItem(CHAVE_CONFIGURACOES, JSON.stringify(configuracoes))
+  } catch (erro) {
+    // O cache do navegador é auxiliar. A gravação oficial ocorre no PostgreSQL.
+    console.warn('Não foi possível atualizar o cache local das configurações:', erro)
   }
 }
 
 async function salvarConfiguracoes(configuracoes: ConfiguracoesSistema) {
-  localStorage.setItem(CHAVE_CONFIGURACOES, JSON.stringify(configuracoes))
-
-  await apiRequest<ConfiguracoesSistema>('/configuracoes', {
+  const salvas = await apiRequest<ConfiguracoesSistema>('/configuracoes', {
     method: 'PUT',
     body: JSON.stringify(configuracoes),
   })
 
-  return true
+  // Atualiza o cache somente depois de o PostgreSQL confirmar a gravação.
+  atualizarCacheConfiguracoes(salvas)
+
+  return salvas
 }
 
 const cardBase: CSSProperties = {
@@ -251,7 +230,7 @@ export default function Configuracoes({
   onAdministracao,
   onLogout,
 }: Props) {
-  const [configuracoes, setConfiguracoes] = useState<ConfiguracoesSistema>(carregarConfiguracoes)
+  const [configuracoes, setConfiguracoes] = useState<ConfiguracoesSistema>(criarConfiguracoesPadrao)
 
   // ============================================================
   // CARREGAR CONFIGURAÇÕES DO POSTGRESQL
@@ -261,50 +240,56 @@ export default function Configuracoes({
     let ativo = true
 
     apiRequest<ConfiguracoesSistema | null>('/configuracoes')
-      .then(async (dadosBanco) => {
+      .then((dadosBanco) => {
         if (!ativo) return
 
-        if (dadosBanco) {
-          const normalizadas: ConfiguracoesSistema = {
-            sla: {
-              ...CONFIGURACOES_PADRAO.sla,
-              ...(dadosBanco.sla || {}),
-            },
-            slaPrioridade: {
-              ...CONFIGURACOES_PADRAO.slaPrioridade,
-              ...(dadosBanco.slaPrioridade || {}),
-            },
-            notificacoes: {
-              ...CONFIGURACOES_PADRAO.notificacoes,
-              ...(dadosBanco.notificacoes || {}),
-            },
-            interface: {
-              ...CONFIGURACOES_PADRAO.interface,
-              ...(dadosBanco.interface || {}),
-            },
-          }
-
-          setConfiguracoes(normalizadas)
-
-          localStorage.setItem(
-            CHAVE_CONFIGURACOES,
-            JSON.stringify(normalizadas)
-          )
-        } else {
-          const legado = carregarConfiguracoes()
-
-          await salvarConfiguracoes(legado)
-
-          if (ativo) {
-            setConfiguracoes(legado)
-          }
+        // O PostgreSQL é a fonte oficial. Quando ainda não existe registro,
+        // a tela usa os padrões e NÃO importa configurações antigas do navegador.
+        const dados = dadosBanco ?? CONFIGURACOES_PADRAO
+        const normalizadas: ConfiguracoesSistema = {
+          sla: {
+            ...CONFIGURACOES_PADRAO.sla,
+            ...(dados.sla || {}),
+          },
+          slaPrioridade: {
+            ...CONFIGURACOES_PADRAO.slaPrioridade,
+            ...(dados.slaPrioridade || {}),
+          },
+          notificacoes: {
+            ...CONFIGURACOES_PADRAO.notificacoes,
+            ...(dados.notificacoes || {}),
+          },
+          interface: {
+            ...CONFIGURACOES_PADRAO.interface,
+            ...(dados.interface || {}),
+            itensPorPagina: [10, 20, 30, 50].includes(
+              Number(dados.interface?.itensPorPagina)
+            )
+              ? Number(dados.interface?.itensPorPagina)
+              : CONFIGURACOES_PADRAO.interface.itensPorPagina,
+            visualizacaoPadrao:
+              dados.interface?.visualizacaoPadrao === 'kanban'
+                ? 'kanban'
+                : 'lista',
+          },
         }
+
+        setConfiguracoes(normalizadas)
+        atualizarCacheConfiguracoes(normalizadas)
       })
       .catch((erro) => {
         console.error(
           'Não foi possível carregar as configurações do PostgreSQL:',
           erro
         )
+
+        if (!ativo) return
+
+        // Em caso de indisponibilidade da API, utiliza apenas os padrões.
+        // Não reutiliza dados antigos do localStorage como se fossem oficiais.
+        const padrao = criarConfiguracoesPadrao()
+        setConfiguracoes(padrao)
+        atualizarCacheConfiguracoes(padrao)
       })
 
     return () => {
@@ -410,7 +395,8 @@ export default function Configuracoes({
 
   async function salvar() {
     try {
-      await salvarConfiguracoes(configuracoes)
+      const salvas = await salvarConfiguracoes(configuracoes)
+      setConfiguracoes(salvas)
 
       toastSucesso(
         'Configurações salvas no PostgreSQL com sucesso.'
@@ -448,7 +434,8 @@ export default function Configuracoes({
     setConfiguracoes(padrao)
 
     try {
-      await salvarConfiguracoes(padrao)
+      const salvas = await salvarConfiguracoes(padrao)
+      setConfiguracoes(salvas)
 
       toastSucesso(
         'Configurações padrão restauradas e salvas no PostgreSQL.'
@@ -702,7 +689,7 @@ export default function Configuracoes({
                     lineHeight: 1.4,
                   }}
                 >
-                  Analistas, Órgãos, Sistemas, Tipos de Demanda e Auditoria.
+                  Usuários, Clientes, Sistemas, Tipos de Demanda e Auditoria.
                 </p>
               </div>
             </div>

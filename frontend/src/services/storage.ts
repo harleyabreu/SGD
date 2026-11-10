@@ -38,6 +38,11 @@ function ler<T>(chave: string, padrao: T): T {
   }
 }
 
+function lerLista<T>(chave: string): T[] {
+  const valor = ler<unknown>(chave, [])
+  return Array.isArray(valor) ? (valor as T[]) : []
+}
+
 function salvar<T>(chave: string, valor: T) {
   try {
     localStorage.setItem(chave, JSON.stringify(valor))
@@ -46,8 +51,14 @@ function salvar<T>(chave: string, valor: T) {
   }
 }
 
+function ordenarPorNome<T extends { nome: string }>(itens: T[]): T[] {
+  return [...itens].sort((a, b) =>
+    a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })
+  )
+}
+
 export function carregarDemandas(): Demanda[] {
-  return ler<Demanda[]>(STORAGE_KEYS.demandas, [])
+  return lerLista<Demanda>(STORAGE_KEYS.demandas)
 }
 
 export function salvarDemandas(demandas: Demanda[]) {
@@ -62,11 +73,8 @@ export function salvarDemandas(demandas: Demanda[]) {
 function normalizarEstruturaOrganizacional(usuario: Usuario): Usuario {
   const estrutura = usuario.estruturaOrganizacional
 
-  if (!estrutura) {
-    return usuario
-  }
-
-  // Diretor(a) representa toda a DDS.
+  // Diretor(a) representa toda a DDS, mesmo quando o registro recebido
+  // ainda não possui o objeto de estrutura organizacional preenchido.
   // Não deve possuir Gerência ou Divisão específica.
   if (usuario.perfil === 'Diretor (a)') {
     return {
@@ -76,6 +84,10 @@ function normalizarEstruturaOrganizacional(usuario: Usuario): Usuario {
         diretoriaNome: 'Diretoria de Desenvolvimento de Sistemas',
       },
     }
+  }
+
+  if (!estrutura) {
+    return usuario
   }
 
   const divisaoAnterior = String(
@@ -209,61 +221,22 @@ function normalizarEstruturaOrganizacional(usuario: Usuario): Usuario {
 // ============================================================
 
 export function carregarUsuarios(): Usuario[] {
-  const usuarios = ler<Usuario[]>(
-    STORAGE_KEYS.usuarios,
-    []
+  // O PostgreSQL é a fonte oficial dos usuários.
+  // O localStorage é somente um cache, sem criação automática de contas.
+  const usuarios = lerLista<Usuario>(STORAGE_KEYS.usuarios)
+  const normalizados = usuarios.map(normalizarEstruturaOrganizacional)
+
+  const houveMudanca = normalizados.some(
+    (item, index) =>
+      JSON.stringify(item.estruturaOrganizacional) !==
+      JSON.stringify(usuarios[index]?.estruturaOrganizacional)
   )
 
-  if (usuarios.length > 0) {
-    const normalizados = usuarios.map(
-      normalizarEstruturaOrganizacional
-    )
-
-    const houveMudanca = normalizados.some(
-      (item, index) =>
-        JSON.stringify(
-          item.estruturaOrganizacional
-        ) !==
-        JSON.stringify(
-          usuarios[index]?.estruturaOrganizacional
-        )
-    )
-
-    if (houveMudanca) {
-      salvar(
-        STORAGE_KEYS.usuarios,
-        normalizados
-      )
-    }
-
-    return normalizados
+  if (houveMudanca) {
+    salvar(STORAGE_KEYS.usuarios, normalizados)
   }
 
-  /*
-   * Compatibilidade com instalações antigas.
-   *
-   * O cadastro novo deve utilizar o PostgreSQL através
-   * das rotas da API.
-   */
-  const agora = new Date().toISOString()
-
-  const inicial: Usuario = {
-    id: 1,
-    nome: 'Lorenna Góes',
-    login: 'lorenna.goes',
-    email: 'lorenna.goes@prodepa.pa.gov.br',
-    telefone: '',
-    perfil: 'Gestor/Administrador',
-    status: 'Ativo',
-    criadoEm: agora,
-  }
-
-  salvar(
-    STORAGE_KEYS.usuarios,
-    [inicial]
-  )
-
-  return [inicial]
+  return ordenarPorNome(normalizados)
 }
 
 export function salvarUsuarios(
@@ -271,7 +244,7 @@ export function salvarUsuarios(
 ) {
   salvar(
     STORAGE_KEYS.usuarios,
-    usuarios
+    ordenarPorNome(usuarios)
   )
 }
 
@@ -281,38 +254,8 @@ export function salvarUsuarios(
 // ============================================================
 
 export function carregarClientes(): Cliente[] {
-  const clientes = ler<Cliente[]>(
-    STORAGE_KEYS.clientes,
-    []
-  )
-
-  if (clientes.length > 0) {
-    return clientes
-  }
-
-  const agora = new Date().toISOString()
-
-  const iniciais: Cliente[] = [
-    ['SEFA', 'SEFA'],
-    ['PRODEPA', 'PRODEPA'],
-    ['CGE', 'CGE'],
-    ['SEDUC', 'SEDUC'],
-    ['SEPLAD', 'SEPLAD'],
-    ['SESPA', 'SESPA'],
-  ].map(([nome, sigla], index) => ({
-    id: index + 1,
-    nome,
-    sigla,
-    ativo: true,
-    criadoEm: agora,
-  }))
-
-  salvar(
-    STORAGE_KEYS.clientes,
-    iniciais
-  )
-
-  return iniciais
+  // Não cria clientes fictícios no navegador. Os registros vêm do PostgreSQL.
+  return ordenarPorNome(lerLista<Cliente>(STORAGE_KEYS.clientes))
 }
 
 export function salvarClientes(
@@ -320,7 +263,7 @@ export function salvarClientes(
 ) {
   salvar(
     STORAGE_KEYS.clientes,
-    clientes
+    ordenarPorNome(clientes)
   )
 }
 
@@ -330,35 +273,8 @@ export function salvarClientes(
 // ============================================================
 
 export function carregarSistemas(): Sistema[] {
-  const sistemas = ler<Sistema[]>(
-    STORAGE_KEYS.sistemas,
-    []
-  )
-
-  if (sistemas.length > 0) {
-    return sistemas
-  }
-
-  const agora = new Date().toISOString()
-
-  const iniciais: Sistema[] = [
-    'Sistema de Contratos',
-    'Portal da Transparência',
-    'SIAFE',
-    'Sistema de Demandas de TI',
-  ].map((nome, index) => ({
-    id: index + 1,
-    nome,
-    ativo: true,
-    criadoEm: agora,
-  }))
-
-  salvar(
-    STORAGE_KEYS.sistemas,
-    iniciais
-  )
-
-  return iniciais
+  // Não cria sistemas fictícios no navegador. Os registros vêm do PostgreSQL.
+  return ordenarPorNome(lerLista<Sistema>(STORAGE_KEYS.sistemas))
 }
 
 export function salvarSistemas(
@@ -366,7 +282,7 @@ export function salvarSistemas(
 ) {
   salvar(
     STORAGE_KEYS.sistemas,
-    sistemas
+    ordenarPorNome(sistemas)
   )
 }
 
@@ -376,38 +292,8 @@ export function salvarSistemas(
 // ============================================================
 
 export function carregarTipos(): TipoDemanda[] {
-  const tipos = ler<TipoDemanda[]>(
-    STORAGE_KEYS.tipos,
-    []
-  )
-
-  if (tipos.length > 0) {
-    return tipos
-  }
-
-  const agora = new Date().toISOString()
-
-  const iniciais: TipoDemanda[] = [
-    'Erro/Incidente',
-    'Correção',
-    'Solicitação',
-    'Melhoria',
-    'Nova Funcionalidade',
-    'Dúvida/Orientação',
-    'Manutenção',
-  ].map((nome, index) => ({
-    id: index + 1,
-    nome,
-    ativo: true,
-    criadoEm: agora,
-  }))
-
-  salvar(
-    STORAGE_KEYS.tipos,
-    iniciais
-  )
-
-  return iniciais
+  // Não cria tipos fictícios no navegador. Os registros vêm do PostgreSQL.
+  return ordenarPorNome(lerLista<TipoDemanda>(STORAGE_KEYS.tipos))
 }
 
 export function salvarTipos(
@@ -415,7 +301,7 @@ export function salvarTipos(
 ) {
   salvar(
     STORAGE_KEYS.tipos,
-    tipos
+    ordenarPorNome(tipos)
   )
 }
 
@@ -425,10 +311,7 @@ export function salvarTipos(
 // ============================================================
 
 export function carregarNotificacoes(): Notificacao[] {
-  return ler<Notificacao[]>(
-    STORAGE_KEYS.notificacoes,
-    []
-  )
+  return lerLista<Notificacao>(STORAGE_KEYS.notificacoes)
 }
 
 export function salvarNotificacoes(
@@ -468,10 +351,7 @@ export function salvarNotificacoes(
 // ============================================================
 
 export function carregarAuditoria(): RegistroAuditoria[] {
-  return ler<RegistroAuditoria[]>(
-    STORAGE_KEYS.auditoria,
-    []
-  )
+  return lerLista<RegistroAuditoria>(STORAGE_KEYS.auditoria)
 }
 
 export function salvarAuditoria(

@@ -9,6 +9,13 @@ import { PERFIS_RESPONSAVEIS, ROTULOS_PERFIL, type Usuario } from '../types'
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Responsaveis.css'
 
+function formatarRotuloPerfil(perfil: Usuario['perfil']): string {
+  const rotulo = ROTULOS_PERFIL[perfil]
+  return rotulo
+    .replace(/\s*\(a\)/gi, '(a)')
+    .replace(/^Analista$/, 'Analista(a)')
+}
+
 interface Props {
   usuarios: Usuario[]
   carregandoUsuarios?: boolean
@@ -246,7 +253,7 @@ export default function Responsaveis({
                     </td>
 
                     <td style={textoTabela}>
-                      {ROTULOS_PERFIL[responsavel.perfil]}
+                      {formatarRotuloPerfil(responsavel.perfil)}
                     </td>
 
                     <td style={textoTabela}>

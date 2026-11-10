@@ -124,7 +124,7 @@ function estaAtrasada(demanda: Demanda): boolean {
 
 function estaProxima(demanda: Demanda): boolean {
 
-  return estaProximaDoVencimentoSLA(demanda, 7)
+  return estaProximaDoVencimentoSLA(demanda, 2)
 
 }
 
@@ -408,7 +408,7 @@ export default function DashboardAnalista({
 
             <strong>{indicadores.proximas}</strong>
 
-            <small>Até 7 Dias</small>
+            <small>Até 2 Dias Úteis</small>
 
           </div>
 
@@ -610,7 +610,7 @@ export default function DashboardAnalista({
 
               <h3>Próximos Prazos</h3>
 
-              <span>Demandas Com Vencimento Nos Próximos 7 Dias</span>
+              <span>Demandas Com Vencimento Nos Próximos 2 Dias Úteis</span>
 
             </div>
 

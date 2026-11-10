@@ -66,9 +66,6 @@ type Props = {
 
 
 
-const CHAVE_STORAGE = 'feriados'
-
-
 
 function formatarData(data: string): string {
 
@@ -114,132 +111,6 @@ function obterDataHojeISO(): string {
 
 }
 
-function carregarFeriados(): Feriado[] {
-
-  try {
-
-    const dados = JSON.parse(
-
-      localStorage.getItem(CHAVE_STORAGE) || '[]'
-
-    )
-
-
-
-    if (!Array.isArray(dados)) {
-
-      return []
-
-    }
-
-
-
-    return dados
-
-      .map((item, indice) => {
-
-        if (typeof item === 'string') {
-
-          const data =
-
-               /^\d{2}\/\d{2}\/\d{4}$/.test(item)
-
-              ? `${item.slice(6, 10)}-${item.slice(3, 5)}-${item.slice(0, 2)}`
-
-              : item.slice(0, 10)
-
-
-
-          return {
-
-            id: Date.now() + indice,
-
-            data,
-
-            descricao:
-
-              'Feriado Cadastrado Anteriormente',
-
-            ativo: true,
-
-            criadoEm:
-
-              new Date().toISOString(),
-
-          }
-
-        }
-
-
-
-        return {
-
-          id:
-
-            Number(item?.id) ||
-
-            Date.now() + indice,
-
-          data: String(
-
-            item?.data || ''
-
-          ).slice(0, 10),
-
-          descricao: String(
-
-            item?.descricao || 'Feriado'
-
-          ),
-
-          ativo: item?.ativo !== false,
-
-          criadoEm: String(
-
-            item?.criadoEm ||
-
-              new Date().toISOString()
-
-          ),
-
-          atualizadoEm:
-
-            item?.atualizadoEm,
-
-        }
-
-      })
-
-      .filter((item) => item.data)
-
-  } catch {
-
-    return []
-
-  }
-
-}
-
-
-
-function salvarFeriados(
-
-  lista: Feriado[]
-
-) {
-
-  localStorage.setItem(
-
-    CHAVE_STORAGE,
-
-    JSON.stringify(lista)
-
-  )
-
-}
-
-
-
 export default function Feriados({
 
   onVoltar,
@@ -270,7 +141,7 @@ export default function Feriados({
 
   const [feriados, setFeriados] =
 
-    useState<Feriado[]>(carregarFeriados)
+    useState<Feriado[]>([])
 
 
 
@@ -304,80 +175,35 @@ export default function Feriados({
 
 
   // ==========================================================
-  // SINCRONIZAR COM O POSTGRESQL
+  // CARREGAR FERIADOS DIRETAMENTE DO POSTGRESQL
+  // O banco é a fonte oficial; não importar dados antigos do navegador.
   // ==========================================================
 
   useEffect(() => {
 
     let desmontado = false
 
-    async function sincronizarFeriados() {
+    async function carregarDoBanco() {
 
       try {
 
-        let registros = await apiRequest<Feriado[]>('/feriados')
-
-        if (!Array.isArray(registros)) {
-
-          registros = []
-
-        }
-
-        // Migra os feriados antigos somente quando o banco ainda
-        // não possui registros. A importação preserva datas históricas.
-
-        if (registros.length === 0) {
-
-          const antigos = carregarFeriados()
-
-          if (antigos.length > 0) {
-
-            const migracao = await apiRequest<{
-
-              migrado: boolean
-
-              feriados: Feriado[]
-
-            }>('/feriados/migrar', {
-
-              method: 'POST',
-
-              body: JSON.stringify(antigos),
-
-            })
-
-            registros = Array.isArray(migracao.feriados)
-
-              ? migracao.feriados
-
-              : await apiRequest<Feriado[]>('/feriados')
-
-          }
-
-        }
+        const registros = await apiRequest<Feriado[]>('/feriados')
 
         if (desmontado) return
 
-        setFeriados(registros)
-
-        salvarFeriados(registros)
+        setFeriados(Array.isArray(registros) ? registros : [])
 
       } catch (erro) {
 
         console.error(
-
-          'Não foi possível sincronizar os feriados com o PostgreSQL:',
-
+          'Não foi possível consultar os feriados no PostgreSQL:',
           erro,
-
         )
 
         if (!desmontado) {
 
           mostrarToast(
-
-            'Não foi possível sincronizar os feriados com o banco de dados. Os dados locais foram mantidos na tela.',
-
+            'Não foi possível consultar os feriados no PostgreSQL. Verifique a conexão e tente novamente.',
           )
 
         }
@@ -386,7 +212,7 @@ export default function Feriados({
 
     }
 
-    void sincronizarFeriados()
+    void carregarDoBanco()
 
     return () => {
 
@@ -395,10 +221,6 @@ export default function Feriados({
     }
 
   }, [])
-
-
-
-
 
 
   const filtrados = useMemo(() => {
@@ -619,7 +441,6 @@ export default function Feriados({
 
         setFeriados(atualizados)
 
-        salvarFeriados(atualizados)
 
         limparFormulario()
 
@@ -665,7 +486,6 @@ export default function Feriados({
 
       setFeriados(atualizados)
 
-      salvarFeriados(atualizados)
 
       limparFormulario()
 
@@ -761,7 +581,6 @@ export default function Feriados({
 
       setFeriados(atualizados)
 
-      salvarFeriados(atualizados)
 
       mostrarToast(
 

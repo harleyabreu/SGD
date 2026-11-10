@@ -355,12 +355,12 @@ export default function Relatorios({
                     Todo O Período
                   </option>
 
-                  <option value="7">
-                    Últimos 7 Dias
-                  </option>
-
                   <option value="30">
                     Últimos 30 Dias
+                  </option>
+
+                  <option value="7">
+                    Últimos 7 Dias
                   </option>
 
                   <option value="90">
@@ -383,14 +383,16 @@ export default function Relatorios({
                     Todos
                   </option>
 
-                  {porStatus.map((item) => (
-                    <option
-                      key={item.nome}
-                      value={item.nome}
-                    >
-                      {item.nome}
-                    </option>
-                  ))}
+                  {[...porStatus]
+                    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                    .map((item) => (
+                      <option
+                        key={item.nome}
+                        value={item.nome}
+                      >
+                        {item.nome}
+                      </option>
+                    ))}
                 </select>
               </label>
 
@@ -408,11 +410,13 @@ export default function Relatorios({
                     Todas
                   </option>
 
-                  {CRITICIDADES.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
+                  {[...CRITICIDADES]
+                    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+                    .map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
                   <option value={FILTRO_SEM_CRITICIDADE}>Não Definida</option>
                   <option value={FILTRO_CRITICIDADE_INVALIDA}>Valor Inválido</option>
                 </select>

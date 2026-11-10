@@ -197,25 +197,25 @@ async function sincronizarDadosCompartilhados(): Promise<void> {
       // ========================================================
       // 2. NOTIFICAÇÕES DO USUÁRIO
       // ========================================================
+      // O PostgreSQL é a fonte oficial das notificações.
+      // Não importamos notificações antigas do localStorage.
+      // O cache local só pode ser reutilizado quando pertence ao
+      // mesmo usuário autenticado; em caso de troca de usuário,
+      // ele é descartado para evitar mistura de informações.
+
+      const usuarioId = obterUsuarioLocalId();
+      const usuarioCache = localStorage.getItem(
+        "notificacoes_usuario_cache_id",
+      );
+      const cachePertenceAoUsuario =
+        usuarioId !== null && usuarioCache === String(usuarioId);
+
+      if (!cachePertenceAoUsuario) {
+        localStorage.removeItem("notificacoes");
+        localStorage.removeItem("notificacoes_usuario_cache_id");
+      }
 
       try {
-        const usuarioId = obterUsuarioLocalId();
-
-        const usuarioCache = localStorage.getItem(
-          "notificacoes_usuario_cache_id",
-        );
-
-        const cachePertenceAoUsuario =
-          usuarioId !== null &&
-          (
-            usuarioCache === null ||
-            usuarioCache === String(usuarioId)
-          );
-
-        const locais = cachePertenceAoUsuario
-          ? lerLocal<NotificacaoLocal[]>("notificacoes", [])
-          : [];
-
         const remotas =
           await requisicaoDireta<NotificacaoLocal[]>("/notificacoes");
 
@@ -225,46 +225,15 @@ async function sincronizarDadosCompartilhados(): Promise<void> {
           );
         }
 
-        const porId = new Map<string, NotificacaoLocal>();
-
-        for (const item of remotas) {
-          porId.set(String(item.id), item);
-        }
-
-        for (const item of locais) {
-          if (!porId.has(String(item.id))) {
-            porId.set(String(item.id), item);
-          }
-        }
-
-        const combinadas = [...porId.values()].sort(
+        const notificacoesOrdenadas = [...remotas].sort(
           (a, b) =>
             new Date(b.data).getTime() -
             new Date(a.data).getTime(),
         );
 
-        // Migra notificações locais que ainda não estejam no banco.
-        if (
-          usuarioId !== null &&
-          combinadas.length > remotas.length
-        ) {
-          try {
-            await requisicaoDireta<NotificacaoLocal[]>(
-              "/notificacoes",
-              "PUT",
-              combinadas,
-            );
-          } catch (erro) {
-            console.warn(
-              "Não foi possível migrar notificações locais para o PostgreSQL:",
-              erro,
-            );
-          }
-        }
-
         localStorage.setItem(
           "notificacoes",
-          JSON.stringify(combinadas),
+          JSON.stringify(notificacoesOrdenadas),
         );
 
         if (usuarioId !== null) {
@@ -275,7 +244,7 @@ async function sincronizarDadosCompartilhados(): Promise<void> {
         }
       } catch (erro) {
         console.warn(
-          "Não foi possível sincronizar notificações do PostgreSQL:",
+          "Não foi possível sincronizar notificações do PostgreSQL. O cache do mesmo usuário, quando existente, foi preservado:",
           erro,
         );
       }
@@ -300,15 +269,14 @@ async function sincronizarDadosCompartilhados(): Promise<void> {
           );
         }
       } catch (erro) {
-        // O GET de auditoria é restrito ao Gestor.
-        // Resposta 403 para outros perfis é esperada.
+        // O GET de auditoria é restrito ao Gestor e ao Diretor.
+        // Resposta 403 para os demais perfis é esperada e não exige aviso.
+        const mensagemErro = erro instanceof Error
+          ? erro.message.toLowerCase()
+          : "";
         if (
-          !(
-            erro instanceof Error &&
-            erro.message.toLowerCase().includes(
-              "somente o perfil gestor",
-            )
-          )
+          !mensagemErro.includes("auditoria completa") &&
+          !mensagemErro.includes("somente o perfil gestor")
         ) {
           console.warn(
             "Não foi possível sincronizar a auditoria do PostgreSQL:",

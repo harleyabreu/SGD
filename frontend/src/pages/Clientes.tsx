@@ -8,10 +8,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import type { Cliente } from '../types'
 import { apiRequest } from '../services/api'
 
-import {
-  carregarClientes,
-  salvarClientes,
-} from '../services/storage'
+import { salvarClientes } from '../services/storage'
 
 import MenuPrincipal from '../components/MenuPrincipal'
 import './Clientes.css'
@@ -35,10 +32,6 @@ interface Props {
   onConfiguracoes?: () => void
 }
 
-function agoraISO() {
-  return new Date().toISOString()
-}
-
 export default function Clientes({
   onVoltar,
   nomeUsuario,
@@ -54,7 +47,10 @@ export default function Clientes({
   onConfiguracoes,
 }: Props) {
   const [clientes, setClientes] =
-    useState<Cliente[]>(carregarClientes)
+    useState<Cliente[]>([])
+
+  const [carregandoClientes, setCarregandoClientes] =
+    useState(true)
 
   const [pesquisa, setPesquisa] =
     useState('')
@@ -71,31 +67,43 @@ export default function Clientes({
   const [sigla, setSigla] =
     useState('')
 
-  // Carrega os clientes do PostgreSQL. O localStorage é mantido como
-  // alternativa caso a API esteja indisponível.
+  // O PostgreSQL é a fonte oficial dos clientes.
+  // O localStorage recebe somente um cache após a consulta bem-sucedida.
   useEffect(() => {
     let ativo = true
 
     apiRequest<Cliente[]>('/clientes')
       .then((dados) => {
+        if (!Array.isArray(dados)) {
+          throw new Error('A resposta do servidor não contém uma lista válida de clientes.')
+        }
+
         if (ativo) {
-          const normalizados = dados.map((cliente) => ({
-            ...cliente,
-            id: Number(cliente.id),
-          }))
+          const normalizados = dados
+            .map((cliente) => ({
+              ...cliente,
+              id: Number(cliente.id),
+            }))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+
           setClientes(normalizados)
-          // Mantém outras telas sincronizadas com a lista oficial do PostgreSQL.
+          // Atualiza o cache para compatibilidade com outras telas,
+          // sem utilizá-lo como fonte inicial ou alternativa ao banco.
           salvarClientes(normalizados)
         }
       })
       .catch((erro: unknown) => {
-        console.error('Erro ao carregar clientes da API:', erro)
+        console.error('Erro ao carregar clientes do PostgreSQL:', erro)
 
         if (ativo) {
+          setClientes([])
           toastAviso(
-            'Não foi possível consultar os clientes do banco. Os dados locais foram mantidos.'
+            'Não foi possível consultar os clientes no PostgreSQL. Verifique a conexão e tente novamente.'
           )
         }
+      })
+      .finally(() => {
+        if (ativo) setCarregandoClientes(false)
       })
 
     return () => {
@@ -150,6 +158,11 @@ export default function Clientes({
       return
     }
 
+    if (!siglaLimpa) {
+      toastAviso('Informe a Sigla do Cliente.')
+      return
+    }
+
     const duplicado = clientes.some(
       (cliente) =>
         cliente.id !== editando?.id &&
@@ -158,6 +171,17 @@ export default function Clientes({
 
     if (duplicado) {
       toastAviso('Já Existe um Cliente com Esse Nome.')
+      return
+    }
+
+    const siglaDuplicada = clientes.some(
+      (cliente) =>
+        cliente.id !== editando?.id &&
+        String(cliente.sigla || '').trim().toUpperCase() === siglaLimpa
+    )
+
+    if (siglaDuplicada) {
+      toastAviso('Já Existe um Cliente com Essa Sigla.')
       return
     }
 
@@ -191,7 +215,7 @@ export default function Clientes({
           'cliente',
           salvo.id,
           'edicao',
-          `Órgão/Cliente ${salvo.nome} foi atualizado.`,
+          `Cliente ${salvo.nome} foi atualizado.`,
           nomeUsuario,
           {
             valorAnterior: anterior,
@@ -217,7 +241,7 @@ export default function Clientes({
           'cliente',
           salvo.id,
           'criacao',
-          `Órgão/Cliente ${salvo.nome} foi cadastrado.`,
+          `Cliente ${salvo.nome} foi cadastrado.`,
           nomeUsuario
         )
       }
@@ -367,7 +391,7 @@ export default function Clientes({
             </h1>
 
             <p style={descricaoPaginaStyle}>
-              Cadastro e Consulta dos Órgãos/Clientes
+              Cadastro e Consulta dos Clientes
               Atendidos pelo Sistema.
             </p>
           </div>
@@ -480,7 +504,7 @@ export default function Clientes({
                 </label>
 
                 <label style={label}>
-                  Sigla
+                  Sigla *
 
                   <input
                     className="clientes-input"
@@ -631,7 +655,7 @@ export default function Clientes({
                   )
                 )}
 
-                {filtrados.length === 0 && (
+                {!carregandoClientes && filtrados.length === 0 && (
                   <tr>
                     <td
                       colSpan={6}
@@ -641,8 +665,22 @@ export default function Clientes({
                         color: '#718096',
                       }}
                     >
-                      Nenhum Cliente
-                      Encontrado.
+                      Nenhum Cliente Encontrado.
+                    </td>
+                  </tr>
+                )}
+
+                {carregandoClientes && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{
+                        padding: 28,
+                        textAlign: 'center',
+                        color: '#718096',
+                      }}
+                    >
+                      Carregando Clientes...
                     </td>
                   </tr>
                 )}

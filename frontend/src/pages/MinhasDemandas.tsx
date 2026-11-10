@@ -44,7 +44,7 @@ type UsuarioSeguranca = Usuario & {
 
 const MINIMO_SENHA = 8
 
-const STATUS = ['Todos', 'Aguardando', 'Em Atendimento', 'Com Pendências', 'Concluída', 'Cancelada']
+const STATUS = ['Todos', 'Aguardando', 'Cancelada', 'Com Pendências', 'Concluída', 'Em Atendimento']
 
 const PRIORIDADES = ['Todas', 'Alta', 'Baixa', 'Crítica', 'Média']
 
@@ -110,7 +110,7 @@ function estaAtrasada(demanda: Demanda): boolean {
 
 function estaProxima(demanda: Demanda): boolean {
 
-  return estaProximaDoVencimentoSLA(demanda, 7)
+  return estaProximaDoVencimentoSLA(demanda)
 
 }
 
@@ -686,7 +686,7 @@ export default function MinhasDemandas({
 
               onChange={(event) => setPesquisa(event.target.value)}
 
-              placeholder="Pesquisar Por ID, Título, Órgão, Sistema Ou Descrição..."
+              placeholder="Pesquisar Por ID, Título, Cliente, Sistema Ou Descrição..."
 
             />
 
@@ -740,9 +740,9 @@ export default function MinhasDemandas({
 
               <option value="Abertas">Abertas</option>
 
-              <option value="Concluídas">Concluídas</option>
-
               <option value="Atrasadas">Atrasadas</option>
+
+              <option value="Concluídas">Concluídas</option>
 
             </select>
 
@@ -804,7 +804,7 @@ export default function MinhasDemandas({
 
                     <th>Demanda</th>
 
-                    <th>Órgão</th>
+                    <th>Cliente</th>
 
                     <th>Classificação</th>
 

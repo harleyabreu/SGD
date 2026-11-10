@@ -115,15 +115,18 @@ export default function NovaDemanda({
     [sistemas]
   )
   const sistemasFiltrados = useMemo(() => {
-    if (!clienteObjetoSelecionado?.id) {
-      return sistemasAtivos
-    }
-    const vinculados = sistemasAtivos.filter(
-      (item) =>
-        item.clienteId === clienteObjetoSelecionado.id
-    )
-    return [...(vinculados.length > 0 ? vinculados : sistemasAtivos)].sort(
-      (a, b) => textoItem(a).localeCompare(textoItem(b), 'pt-BR')
+    const disponiveis = clienteObjetoSelecionado?.id
+      ? sistemasAtivos.filter(
+          (item) => item.clienteId === clienteObjetoSelecionado.id
+        )
+      : []
+
+    const lista = disponiveis.length > 0 ? disponiveis : sistemasAtivos
+
+    return [...lista].sort((a, b) =>
+      textoItem(a).localeCompare(textoItem(b), 'pt-BR', {
+        sensitivity: 'base',
+      })
     )
   }, [sistemasAtivos, clienteObjetoSelecionado])
   function selecionarArquivos(event: ChangeEvent<HTMLInputElement>) {
@@ -235,7 +238,7 @@ export default function NovaDemanda({
         )
       ) {
         alert(
-          'Selecione Um Sistema Vinculado Ao Cliente / Órgão Informado.'
+          'Selecione Um Sistema Vinculado Ao Cliente Informado.'
         )
         return
       }
@@ -306,7 +309,7 @@ export default function NovaDemanda({
               </p>
             </div>
             <div className="campo">
-              <label htmlFor="cliente">Cliente / Órgão *</label>
+              <label htmlFor="cliente">Cliente *</label>
               <select
                 id="cliente"
                 name="cliente"

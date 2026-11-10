@@ -5,7 +5,6 @@ import argon2 from "argon2";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import { criarRotasFeriados } from "./feriadosRoutes.js";
-import { criarRotasOperacionais } from "./operacionalRoutes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -192,6 +191,7 @@ app.post("/api/auth/login", async (req, res) => {
     );
 
     const atualizado = atualizacao.rows[0];
+    const ehDiretor = String(usuario.perfil ?? "") === "Diretor (a)";
     const estruturaCompleta = Boolean(
       usuario.diretoria_sigla &&
       usuario.diretoria_nome &&
@@ -199,6 +199,20 @@ app.post("/api/auth/login", async (req, res) => {
       usuario.gerencia_nome &&
       usuario.divisao_nome,
     );
+    const estruturaOrganizacional = ehDiretor && usuario.diretoria_sigla && usuario.diretoria_nome
+      ? {
+          diretoriaSigla: usuario.diretoria_sigla,
+          diretoriaNome: usuario.diretoria_nome,
+        }
+      : estruturaCompleta
+        ? {
+            diretoriaSigla: usuario.diretoria_sigla,
+            diretoriaNome: usuario.diretoria_nome,
+            gerenciaSigla: usuario.gerencia_sigla,
+            gerenciaNome: usuario.gerencia_nome,
+            divisaoNome: usuario.divisao_nome,
+          }
+        : null;
 
     // Cria uma sessão opaca no PostgreSQL. O navegador recebe apenas um cookie HttpOnly.
     const idSessao = randomBytes(32).toString("base64url");
@@ -225,16 +239,8 @@ app.post("/api/auth/login", async (req, res) => {
         criadoEm: usuario.criado_em,
         atualizadoEm: atualizado?.atualizado_em ?? usuario.atualizado_em,
         ultimoAcesso: atualizado?.ultimo_acesso ?? null,
-        ...(estruturaCompleta
-          ? {
-              estruturaOrganizacional: {
-                diretoriaSigla: usuario.diretoria_sigla,
-                diretoriaNome: usuario.diretoria_nome,
-                gerenciaSigla: usuario.gerencia_sigla,
-                gerenciaNome: usuario.gerencia_nome,
-                divisaoNome: usuario.divisao_nome,
-              },
-            }
+        ...(estruturaOrganizacional
+          ? { estruturaOrganizacional }
           : {}),
       },
       exigirTrocaSenha: Boolean(usuario.exigir_troca_senha),
@@ -415,6 +421,31 @@ function ehPerfilDiretor(perfil: string): boolean {
   return perfil === "Diretor (a)";
 }
 
+function ehGestorOuDiretor(perfil: string | null | undefined): boolean {
+  const normalizado = String(perfil ?? "").trim().toLowerCase();
+  return normalizado === "gestor/administrador" || normalizado === "diretor (a)";
+}
+
+const LOGIN_GESTOR_FIXO = "lorenna.goes";
+
+const STATUS_DEMANDA_OFICIAIS = new Set([
+  "Nova",
+  "Aguardando",
+  "Em Atendimento",
+  "Com Pendências",
+  "Concluída",
+  "Cancelada",
+]);
+
+const TRANSICOES_DEMANDA_PERMITIDAS: Record<string, string[]> = {
+  Nova: ["Aguardando", "Em Atendimento", "Cancelada"],
+  Aguardando: ["Em Atendimento", "Cancelada"],
+  "Em Atendimento": ["Aguardando", "Com Pendências", "Concluída", "Cancelada"],
+  "Com Pendências": ["Em Atendimento", "Concluída", "Cancelada"],
+  Concluída: [],
+  Cancelada: [],
+};
+
 function validarEstruturaPorPerfil(perfil: string, estrutura: ReturnType<typeof lerEstruturaOrganizacional>): string | null {
   if (ehPerfilDiretor(perfil)) {
     if (estrutura.diretoriaSigla !== "DDS" || estrutura.diretoriaNome !== "Diretoria de Desenvolvimento de Sistemas") {
@@ -431,10 +462,25 @@ function validarEstruturaPorPerfil(perfil: string, estrutura: ReturnType<typeof 
 }
 
 function usuarioPublico(row: UsuarioBanco) {
+  const ehDiretor = row.perfil === "Diretor (a)";
   const estruturaCompleta = Boolean(
     row.diretoria_sigla && row.diretoria_nome && row.gerencia_sigla &&
     row.gerencia_nome && row.divisao_nome,
   );
+  const estruturaOrganizacional = ehDiretor && row.diretoria_sigla && row.diretoria_nome
+    ? {
+        diretoriaSigla: row.diretoria_sigla,
+        diretoriaNome: row.diretoria_nome,
+      }
+    : estruturaCompleta
+      ? {
+          diretoriaSigla: row.diretoria_sigla,
+          diretoriaNome: row.diretoria_nome,
+          gerenciaSigla: row.gerencia_sigla,
+          gerenciaNome: row.gerencia_nome,
+          divisaoNome: row.divisao_nome,
+        }
+      : null;
 
   return {
     id: Number(row.id),
@@ -448,15 +494,7 @@ function usuarioPublico(row: UsuarioBanco) {
     atualizadoEm: row.atualizado_em,
     ultimoAcesso: row.ultimo_acesso,
     exigirTrocaSenha: Boolean(row.exigir_troca_senha),
-    ...(estruturaCompleta ? {
-      estruturaOrganizacional: {
-        diretoriaSigla: row.diretoria_sigla,
-        diretoriaNome: row.diretoria_nome,
-        gerenciaSigla: row.gerencia_sigla,
-        gerenciaNome: row.gerencia_nome,
-        divisaoNome: row.divisao_nome,
-      },
-    } : {}),
+    ...(estruturaOrganizacional ? { estruturaOrganizacional } : {}),
   };
 }
 
@@ -561,7 +599,10 @@ app.post("/api/usuarios", async (req, res) => {
     );
     return res.status(201).json(usuarioPublico(resultado.rows[0] as UsuarioBanco));
   } catch (error) {
-    const dbError = error as { code?: string };
+    const dbError = error as { code?: string; constraint?: string };
+    if (dbError.code === "23505" && dbError.constraint === "ux_usuarios_unico_diretor") {
+      return res.status(409).json({ message: "Já existe um usuário com o perfil Diretor(a). O sistema permite apenas um Diretor(a)." });
+    }
     if (dbError.code === "23505") {
       return res.status(409).json({ message: "Este login ou e-mail já está cadastrado." });
     }
@@ -601,6 +642,38 @@ app.put("/api/usuarios/:id", async (req, res) => {
     return res.status(400).json({ message: erroEstrutura });
   }
 
+  const usuarioAtualResultado = await pool.query(
+    "SELECT perfil, status, login FROM usuarios WHERE id = $1",
+    [id],
+  );
+  if (usuarioAtualResultado.rowCount === 0) {
+    return res.status(404).json({ message: "Usuário não encontrado." });
+  }
+  const usuarioAtualBanco = usuarioAtualResultado.rows[0];
+  const ehContaGestorFixo =
+    String(usuarioAtualBanco.login ?? "").trim().toLowerCase() === LOGIN_GESTOR_FIXO;
+
+  if (ehContaGestorFixo && (login.toLowerCase() !== LOGIN_GESTOR_FIXO || perfil !== "Gestor/Administrador")) {
+    return res.status(409).json({
+      message: "A conta lorenna.goes é o Gestor fixo do SGD. O login e o perfil Gestor dessa conta não podem ser alterados.",
+    });
+  }
+
+  if (
+    usuarioAtualBanco.perfil === "Gestor/Administrador" &&
+    usuarioAtualBanco.status === "Ativo" &&
+    perfil !== "Gestor/Administrador"
+  ) {
+    const gestoresAtivos = await pool.query(
+      "SELECT COUNT(*)::integer AS total FROM usuarios WHERE perfil = 'Gestor/Administrador' AND status = 'Ativo'",
+    );
+    if (Number(gestoresAtivos.rows[0]?.total ?? 0) <= 1) {
+      return res.status(409).json({
+        message: "O sistema precisa manter pelo menos um Gestor ativo. Não é possível retirar o perfil do último Gestor ativo.",
+      });
+    }
+  }
+
   if (ehPerfilDiretor(perfil)) {
     const diretorExistente = await pool.query(
       "SELECT id FROM usuarios WHERE perfil = 'Diretor (a)' AND id <> $1 LIMIT 1",
@@ -637,7 +710,10 @@ app.put("/api/usuarios/:id", async (req, res) => {
     }
     return res.json(usuarioPublico(resultado.rows[0] as UsuarioBanco));
   } catch (error) {
-    const dbError = error as { code?: string };
+    const dbError = error as { code?: string; constraint?: string };
+    if (dbError.code === "23505" && dbError.constraint === "ux_usuarios_unico_diretor") {
+      return res.status(409).json({ message: "Já existe um usuário com o perfil Diretor(a). O sistema permite apenas um Diretor(a)." });
+    }
     if (dbError.code === "23505") {
       return res.status(409).json({ message: "Este login ou e-mail já está cadastrado." });
     }
@@ -663,13 +739,18 @@ app.delete("/api/usuarios/:id", async (req, res) => {
     await conexao.query("BEGIN");
 
     const atual = await conexao.query(
-      "SELECT id, nome, perfil, status FROM usuarios WHERE id=$1 FOR UPDATE",
+      "SELECT id, nome, login, perfil, status FROM usuarios WHERE id=$1 FOR UPDATE",
       [id],
     );
 
     if (atual.rowCount === 0) {
       await conexao.query("ROLLBACK");
       return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    if (String(atual.rows[0].login ?? "").trim().toLowerCase() === LOGIN_GESTOR_FIXO) {
+      await conexao.query("ROLLBACK");
+      return res.status(409).json({ message: "A conta lorenna.goes é o Gestor fixo do SGD e não pode ser excluída." });
     }
 
     if (atual.rows[0].perfil === "Gestor/Administrador" && atual.rows[0].status === "Ativo") {
@@ -714,11 +795,15 @@ app.patch("/api/usuarios/:id/status", async (req, res) => {
     await conexao.query("BEGIN");
     if (status === "Inativo") {
       const atual = await conexao.query(
-        "SELECT perfil, status FROM usuarios WHERE id=$1 FOR UPDATE", [id],
+        "SELECT perfil, status, login FROM usuarios WHERE id=$1 FOR UPDATE", [id],
       );
       if (atual.rowCount === 0) {
         await conexao.query("ROLLBACK");
         return res.status(404).json({ message: "Usuário não encontrado." });
+      }
+      if (String(atual.rows[0].login ?? "").trim().toLowerCase() === LOGIN_GESTOR_FIXO) {
+        await conexao.query("ROLLBACK");
+        return res.status(409).json({ message: "A conta lorenna.goes é o Gestor fixo do SGD e não pode ser inativada." });
       }
       if (atual.rows[0].perfil === "Gestor/Administrador" && atual.rows[0].status === "Ativo") {
         const gestores = await conexao.query(
@@ -1675,6 +1760,10 @@ async function gravarDemanda(
   if (status === "Em Processo" || status === "Em análise") status = "Em Atendimento";
   if (status === "Pendente") status = "Com Pendências";
 
+  if (!STATUS_DEMANDA_OFICIAIS.has(status)) {
+    throw erroValidacao(`A demanda ${id} possui um Status inválido.`);
+  }
+
   if (!titulo) throw erroValidacao(`A demanda ${id} está sem título.`);
   if (!descricao) throw erroValidacao(`A demanda ${id} está sem descrição.`);
   if (!nomeCliente) throw erroValidacao(`A demanda ${id} está sem cliente.`);
@@ -1734,8 +1823,9 @@ async function gravarDemanda(
         $24, $25, $26, CURRENT_TIMESTAMP
       )
       ON CONFLICT (id) DO UPDATE SET
-        titulo = EXCLUDED.titulo,
-        descricao = EXCLUDED.descricao,
+        -- Título e descrição são imutáveis após o cadastro da demanda.
+        titulo = demandas.titulo,
+        descricao = demandas.descricao,
         cliente_id = EXCLUDED.cliente_id,
         sistema_id = EXCLUDED.sistema_id,
         tipo_demanda_id = EXCLUDED.tipo_demanda_id,
@@ -1930,10 +2020,153 @@ app.put("/api/demandas/:id", async (req, res) => {
     return;
   }
 
+  const autenticacao = res.locals.sgdAuth as { id: number; perfil: string } | undefined;
+  if (!autenticacao?.id) {
+    return res.status(401).json({ message: "Sessão não autenticada." });
+  }
+  const perfilGestor = ehGestorOuDiretor(autenticacao.perfil);
+
   const conexao = await pool.connect();
   try {
     await conexao.query("BEGIN");
-    await gravarDemanda(conexao, id, body);
+
+    const demandaAtual = await conexao.query(
+      `SELECT
+         d.id,
+         d.status,
+         d.responsavel_id,
+         COALESCE(NULLIF(d.responsavel_nome, ''), u.nome, '') AS responsavel,
+         c.nome AS cliente,
+         COALESCE(s.nome, NULLIF(d.sistema_nome, ''), '') AS sistema,
+         td.nome AS tipo,
+         d.criticidade,
+         d.prioridade_atendimento AS "prioridadeAtendimento",
+         d.prioridade,
+         d.prazo,
+         d.prazo_dias_uteis AS "prazoDiasUteis",
+         d.prazo_manual AS "prazoManual"
+       FROM demandas d
+       LEFT JOIN usuarios u ON u.id = d.responsavel_id
+       LEFT JOIN clientes c ON c.id = d.cliente_id
+       LEFT JOIN sistemas s ON s.id = d.sistema_id
+       LEFT JOIN tipos_demanda td ON td.id = d.tipo_demanda_id
+       WHERE d.id = $1
+       FOR UPDATE OF d`,
+      [id],
+    );
+
+    if (demandaAtual.rows.length === 0 && !perfilGestor) {
+      await conexao.query("ROLLBACK");
+      return res.status(403).json({ message: "Somente Gestor ou Diretor pode cadastrar uma nova demanda." });
+    }
+
+    if (
+      demandaAtual.rows.length > 0 &&
+      !perfilGestor &&
+      Number(demandaAtual.rows[0].responsavel_id) !== Number(autenticacao.id)
+    ) {
+      await conexao.query("ROLLBACK");
+      return res.status(403).json({ message: "Você só pode atualizar demandas atribuídas ao seu usuário." });
+    }
+
+    if (demandaAtual.rows.length > 0) {
+      let statusAnterior = String(demandaAtual.rows[0].status ?? "");
+      if (statusAnterior === "Em Processo" || statusAnterior === "Em análise") {
+        statusAnterior = "Em Atendimento";
+      }
+      if (statusAnterior === "Pendente") statusAnterior = "Com Pendências";
+
+      let statusNovo = textoCampo(body.status) || statusAnterior;
+      if (statusNovo === "Em Processo" || statusNovo === "Em análise") statusNovo = "Em Atendimento";
+      if (statusNovo === "Pendente") statusNovo = "Com Pendências";
+
+      if (!STATUS_DEMANDA_OFICIAIS.has(statusNovo)) {
+        await conexao.query("ROLLBACK");
+        return res.status(400).json({ message: "O Status informado não é válido." });
+      }
+
+      if (statusNovo !== statusAnterior) {
+        const historicoRecebido = objetosJson(body.historico);
+        const motivoHistorico = (tipoEsperado: string, novoValor: string) =>
+          historicoRecebido.some((registro) =>
+            textoCampo(registro.tipo) === tipoEsperado &&
+            textoCampo(registro.valorAnterior) === statusAnterior &&
+            textoCampo(registro.valorNovo) === novoValor &&
+            Boolean(textoCampo(registro.motivo))
+          );
+
+        const reaberturaEspecial =
+          statusAnterior === "Concluída" && statusNovo === "Em Atendimento";
+
+        if (reaberturaEspecial) {
+          const reaberturaValida =
+            perfilGestor &&
+            Boolean(textoCampo(body.dataReabertura)) &&
+            Boolean(textoCampo(body.usuarioReabertura)) &&
+            motivoHistorico("reabertura", "Em Atendimento");
+
+          if (!reaberturaValida) {
+            await conexao.query("ROLLBACK");
+            return res.status(403).json({
+              message: "A reabertura de uma demanda concluída exige Gestor ou Diretor e motivo registrado no histórico.",
+            });
+          }
+        } else {
+          const destinos = TRANSICOES_DEMANDA_PERMITIDAS[statusAnterior] ?? [];
+          if (!destinos.includes(statusNovo)) {
+            await conexao.query("ROLLBACK");
+            return res.status(409).json({
+              message: `Não é permitido alterar o Status de \"${statusAnterior}\" para \"${statusNovo}\".`,
+            });
+          }
+
+          if (statusAnterior === "Nova" && statusNovo === "Aguardando" && !perfilGestor) {
+            await conexao.query("ROLLBACK");
+            return res.status(403).json({ message: "Somente Gestor ou Diretor pode mover uma demanda Nova para Aguardando." });
+          }
+
+          if (statusNovo === "Cancelada") {
+            if (!perfilGestor || !motivoHistorico("cancelamento", "Cancelada")) {
+              await conexao.query("ROLLBACK");
+              return res.status(403).json({ message: "O cancelamento exige Gestor ou Diretor e motivo registrado no histórico." });
+            }
+          }
+
+          if (statusNovo === "Com Pendências" || statusNovo === "Concluída") {
+            if (!motivoHistorico("status", statusNovo)) {
+              await conexao.query("ROLLBACK");
+              return res.status(400).json({
+                message: statusNovo === "Com Pendências"
+                  ? "O motivo da pendência é obrigatório."
+                  : "O comentário de conclusão é obrigatório.",
+              });
+            }
+          }
+        }
+      }
+    }
+
+    let dadosParaGravar = body;
+    if (demandaAtual.rows.length > 0 && !perfilGestor) {
+      const atual = demandaAtual.rows[0];
+      // O usuário operacional pode trabalhar na própria demanda, mas não pode
+      // trocar sua classificação, responsável, prazo ou cadastro de origem.
+      dadosParaGravar = {
+        ...body,
+        cliente: atual.cliente,
+        sistema: atual.sistema,
+        tipo: atual.tipo,
+        responsavel: atual.responsavel,
+        criticidade: atual.criticidade,
+        prioridade: atual.prioridade,
+        prioridadeAtendimento: atual.prioridadeAtendimento,
+        prazo: atual.prazo,
+        prazoDiasUteis: atual.prazoDiasUteis,
+        prazoManual: atual.prazoManual,
+      };
+    }
+
+    await gravarDemanda(conexao, id, dadosParaGravar);
     await conexao.query("COMMIT");
     res.json({ ok: true, id });
   } catch (error) {
@@ -2015,6 +2248,15 @@ app.delete("/api/demandas/:id", async (req, res) => {
 // ============================================================
 
 app.get("/api/demandas", async (_req, res) => {
+  const autenticacao = res.locals.sgdAuth as { id: number; perfil: string } | undefined;
+  if (!autenticacao?.id) {
+    return res.status(401).json({ message: "Sessão não autenticada." });
+  }
+
+  const perfilGestor = ehGestorOuDiretor(autenticacao.perfil);
+  const filtroAcesso = perfilGestor ? "" : "WHERE d.responsavel_id = $1";
+  const parametros = perfilGestor ? [] : [autenticacao.id];
+
   try {
     const result = await pool.query(`
       SELECT
@@ -2107,8 +2349,9 @@ app.get("/api/demandas", async (_req, res) => {
       LEFT JOIN usuarios uc ON uc.id = d.usuario_criacao_id
       LEFT JOIN usuarios ucon ON ucon.id = d.usuario_conclusao_id
       LEFT JOIN usuarios ur ON ur.id = d.usuario_reabertura_id
+      ${filtroAcesso}
       ORDER BY d.id DESC
-    `);
+    `, parametros);
 
     res.json(result.rows);
   } catch (error) {
@@ -2122,7 +2365,6 @@ app.get("/api/demandas", async (_req, res) => {
 
 // Rotas adicionais do backend: feriados, notificações e auditoria.
 app.use("/api", criarRotasFeriados(pool));
-app.use("/api", criarRotasOperacionais(pool));
 
 // ============================================================
 // INICIAR SERVIDOR
@@ -2170,22 +2412,12 @@ async function prepararPerfisUsuariosNoBanco(): Promise<void> {
       ALTER COLUMN divisao_nome DROP NOT NULL
   `);
 
-  // Atualiza o conjunto permitido de perfis sem depender do nome fixo de uma constraint antiga.
+  // Atualiza somente a constraint dedicada à lista de perfis.
+  // A restrição adicional
+  // usuarios_diretor_sem_gerencia_divisao precisa permanecer ativa.
   await pool.query(`
-    DO $$
-    DECLARE
-      c RECORD;
-    BEGIN
-      FOR c IN
-        SELECT conname
-          FROM pg_constraint
-         WHERE conrelid = 'usuarios'::regclass
-           AND contype = 'c'
-           AND pg_get_constraintdef(oid) ILIKE '%perfil%'
-      LOOP
-        EXECUTE format('ALTER TABLE usuarios DROP CONSTRAINT %I', c.conname);
-      END LOOP;
-    END $$;
+    ALTER TABLE usuarios
+      DROP CONSTRAINT IF EXISTS usuarios_perfil_check
   `);
 
   await pool.query(`
@@ -2193,6 +2425,46 @@ async function prepararPerfisUsuariosNoBanco(): Promise<void> {
       ADD CONSTRAINT usuarios_perfil_check
       CHECK (perfil IN ('Gestor/Administrador', 'Diretor (a)', 'Analista', 'Desenvolvedor', 'Estagiário'))
   `);
+
+  // Normaliza registros de Diretor criados antes desta regra.
+  await pool.query(`
+    UPDATE usuarios
+       SET diretoria_sigla = 'DDS',
+           diretoria_nome = 'Diretoria de Desenvolvimento de Sistemas',
+           gerencia_sigla = NULL,
+           gerencia_nome = NULL,
+           divisao_nome = NULL
+     WHERE perfil = 'Diretor (a)'
+  `);
+
+  await pool.query(`
+    ALTER TABLE usuarios
+      DROP CONSTRAINT IF EXISTS usuarios_diretor_sem_gerencia_divisao
+  `);
+
+  await pool.query(`
+    ALTER TABLE usuarios
+      ADD CONSTRAINT usuarios_diretor_sem_gerencia_divisao
+      CHECK (
+        perfil <> 'Diretor (a)'
+        OR (
+          diretoria_sigla = 'DDS'
+          AND diretoria_nome = 'Diretoria de Desenvolvimento de Sistemas'
+          AND gerencia_sigla IS NULL
+          AND gerencia_nome IS NULL
+          AND divisao_nome IS NULL
+        )
+      )
+  `);
+
+  const diretoresExistentes = await pool.query(
+    "SELECT COUNT(*)::integer AS total FROM usuarios WHERE perfil = 'Diretor (a)'",
+  );
+  if (Number(diretoresExistentes.rows[0]?.total ?? 0) > 1) {
+    throw new Error(
+      "Foram encontrados mais de um usuário com perfil Diretor (a). Mantenha apenas um Diretor antes de iniciar o backend.",
+    );
+  }
 
   await pool.query(`
     CREATE UNIQUE INDEX IF NOT EXISTS ux_usuarios_unico_diretor

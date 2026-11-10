@@ -26,7 +26,7 @@ import {
   useState,
   type ChangeEvent,
 } from 'react'
-import { ehPerfilOperacional } from '../types'
+import { ehPerfilDiretor, ehPerfilOperacional } from '../types'
 import type {
   Demanda,
   Comentario,
@@ -105,11 +105,11 @@ type Props = {
 // STATUS
 // ============================================================
 const STATUS = [
-  'Nova',
   'Aguardando',
-  'Em Atendimento',
   'Com Pendências',
   'Concluída',
+  'Em Atendimento',
+  'Nova',
 ]
 // ============================================================
 // CRITICIDADES
@@ -246,6 +246,11 @@ export function DetalheDemandaPage({
   onReabrirDemanda,
   onCancelarDemanda,
 }: Props) {
+  const usuarioPodeAdministrarDemanda =
+    perfilUsuario === 'Gestor/Administrador' ||
+    ehPerfilDiretor(perfilUsuario) ||
+    String(perfilUsuario) === 'Gestor'
+
   // ==========================================================
   // STATUS
   // ==========================================================
@@ -400,7 +405,7 @@ export function DetalheDemandaPage({
   // ==========================================================
   // Importante: alterar um único campo da demanda atualiza o objeto
   // inteiro recebido pelo componente. Isso NÃO deve apagar os outros
-  // valores que o Gestor já selecionou e ainda não salvou (criticidade,
+  // valores que o Gestor ou Diretor(a) já selecionou e ainda não salvou (criticidade,
   // prioridade de atendimento e prazo manual).
   // Os campos de alteração só são reiniciados ao abrir outra demanda.
   const demandaSincronizadaIdRef = useRef<number | null>(null)
@@ -1148,7 +1153,7 @@ export function DetalheDemandaPage({
 
     if (!executarAlteracao) return
 
-    // A opção só é aplicada depois que o Gestor seleciona e confirma.
+    // A opção só é aplicada depois que o Gestor ou Diretor(a) seleciona e confirma.
     const recalcularPrazoManual = pendente.decisao === 'recalcular'
     const resultado = executarAlteracao(
       demanda.id,
@@ -1182,9 +1187,11 @@ export function DetalheDemandaPage({
           login: '',
           email: '',
           perfil:
-            ehPerfilOperacional(perfilUsuarioGlobal)
-              ? perfilUsuarioGlobal as Usuario['perfil']
-              : 'Gestor/Administrador',
+            ehPerfilDiretor(perfilUsuarioGlobal)
+              ? 'Diretor (a)'
+              : ehPerfilOperacional(perfilUsuarioGlobal)
+                ? perfilUsuarioGlobal as Usuario['perfil']
+                : 'Gestor/Administrador',
           status: 'Ativo',
           criadoEm: '',
         }}
@@ -1256,7 +1263,7 @@ export function DetalheDemandaPage({
           <div className="dados-grid">
             <div>
               <span>
-                CLIENTE / ÓRGÃO
+                CLIENTE
               </span>
               <strong>
                 {demanda.cliente ||
@@ -1314,10 +1321,9 @@ export function DetalheDemandaPage({
             </div>
           </div>
           {/* =================================================
-              CONTROLES DO GESTOR
+              CONTROLES DO GESTOR E DIRETOR(A)
               ================================================= */}
-          {perfilUsuario ===
-            'Gestor/Administrador' && (
+          {usuarioPodeAdministrarDemanda && (
             <div
               className="gestor-controles"
               style={{
@@ -1341,7 +1347,7 @@ export function DetalheDemandaPage({
                     '12px',
                 }}
               >
-                Controles do Gestor
+                Controles do Gestor/Diretor(a)
               </strong>
               <div className="dados-grid">
                 {/* CRITICIDADE */}
@@ -1803,10 +1809,9 @@ export function DetalheDemandaPage({
                   )
                 }
                 disabled={
-                  demanda.status ===
-                    'Concluída' ||
-                  demanda.status ===
-                    'Cancelada'
+                  !usuarioPodeAdministrarDemanda ||
+                  demanda.status === 'Concluída' ||
+                  demanda.status === 'Cancelada'
                 }
               >
                 <option value="">

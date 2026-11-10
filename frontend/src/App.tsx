@@ -1047,7 +1047,7 @@ function App() {
   }, [sessao?.usuarioId, sessao?.login])
 
   // ==========================================================
-  // CARREGAR DEMANDAS DO POSTGRESQL / MIGRAR DADOS LOCAIS ANTIGOS
+  // CARREGAR DEMANDAS DO POSTGRESQL
   // ==========================================================
 
   useEffect(() => {
@@ -1100,13 +1100,16 @@ function App() {
           )
         }
 
-        // Os prazos são normalizados somente depois da sincronização dos feriados.
-        await apiRequest<Demanda[]>('/demandas')
-
+        // O PostgreSQL é a fonte oficial das demandas. Não importamos em lote
+        // registros antigos do localStorage: somente alterações que já ficaram
+        // explicitamente na fila de pendências são reenviadas.
         const falhasSincronizacao = new Map<number, Demanda>()
 
-        // Retenta primeiro alterações que ficaram pendentes numa sessão anterior.
         for (const demandaPendente of carregarDemandasPendentesPostgreSQL()) {
+          if (!ehGestor(sessao) && demandaPendente.responsavel !== sessao.nome) {
+            continue
+          }
+
           const corpo = JSON.stringify(demandaPendente)
           try {
             await apiRequest(`/demandas/${encodeURIComponent(String(demandaPendente.id))}`, {
@@ -1123,66 +1126,25 @@ function App() {
           }
         }
 
-        const demandasBancoInicial = await apiRequest<Demanda[]>('/demandas')
-        const demandasBancoNormalizadas = Array.isArray(demandasBancoInicial)
-          ? demandasBancoInicial.map(normalizarDemandaDoBanco)
-          : []
-
-        const idsExistentesNoBanco = new Set(
-          demandasBancoNormalizadas.map((item) => Number(item.id))
-        )
-
-        // Migra somente demandas locais ausentes do banco. A fila pendente tem
-        // prioridade sobre o banco, porque representa alterações não confirmadas.
-        const demandasLocais = carregarDemandas()
-          .map(normalizarDemanda)
-          .filter(
-            (item) =>
-              !idsExistentesNoBanco.has(Number(item.id)) &&
-              !falhasSincronizacao.has(Number(item.id))
-          )
-
-        for (const demandaLocal of demandasLocais) {
-          const corpo = JSON.stringify(demandaLocal)
-          gravarDemandaPendentePostgreSQL(demandaLocal)
-          try {
-            await apiRequest(`/demandas/${encodeURIComponent(String(demandaLocal.id))}`, {
-              method: 'PUT',
-              body: corpo,
-            })
-            removerDemandaPendentePostgreSQL(Number(demandaLocal.id), corpo)
-          } catch (erro) {
-            console.error(
-              `Não foi possível migrar a demanda ${demandaLocal.id} para o PostgreSQL:`,
-              erro
-            )
-            falhasSincronizacao.set(Number(demandaLocal.id), demandaLocal)
-          }
-        }
-
-        const demandasBancoFinais = await apiRequest<Demanda[]>('/demandas')
-        const normalizadasBanco = Array.isArray(demandasBancoFinais)
-          ? demandasBancoFinais.map(normalizarDemandaDoBanco)
+        const demandasBanco = await apiRequest<Demanda[]>('/demandas')
+        const normalizadasBanco = Array.isArray(demandasBanco)
+          ? demandasBanco.map(normalizarDemandaDoBanco)
           : []
 
         if (!montado) return
 
-        const idsFinalBanco = new Set(
-          normalizadasBanco.map((item) => Number(item.id))
-        )
-        const demandasLocaisPendentes = [...falhasSincronizacao.values()].filter(
-          (item) => !idsFinalBanco.has(Number(item.id))
+        const demandasPendentesVisiveis = [...falhasSincronizacao.values()].filter(
+          (item) => ehGestor(sessao) || item.responsavel === sessao.nome
         )
 
-        demandasAnterioresBackendRef.current = normalizadasBanco
-
-        // Mantém temporariamente na tela os registros cuja sincronização falhou,
-        // para não escondê-los nem descartá-los do navegador.
         const combinadas = [
           ...normalizadasBanco,
-          ...demandasLocaisPendentes,
+          ...demandasPendentesVisiveis.filter(
+            (pendente) => !normalizadasBanco.some((item) => Number(item.id) === Number(pendente.id))
+          ),
         ]
 
+        demandasAnterioresBackendRef.current = normalizadasBanco
         setDemandas(combinadas)
 
         try {
@@ -1969,10 +1931,7 @@ function App() {
     novoPrazo: string,
     motivo: string
   ) {
-    if (
-      sessao?.perfil !==
-      'Gestor/Administrador'
-    ) {
+    if (!ehGestor(sessao)) {
       return
     }
 
@@ -2108,10 +2067,7 @@ function App() {
     id: number,
     motivo: string
   ) {
-    if (
-      sessao?.perfil !==
-      'Gestor/Administrador'
-    ) {
+    if (!ehGestor(sessao)) {
       return
     }
 
@@ -2259,7 +2215,7 @@ function App() {
   // ==========================================================
   // CANCELAR DEMANDA
   //
-  // SOMENTE GESTOR.
+  // SOMENTE GESTOR OU DIRETOR (A).
   // MOTIVO OBRIGATÓRIO.
   // ==========================================================
 
@@ -2267,10 +2223,7 @@ function App() {
     id: number,
     motivo: string
   ) {
-    if (
-      sessao?.perfil !==
-      'Gestor/Administrador'
-    ) {
+    if (!ehGestor(sessao)) {
       return
     }
 
@@ -2479,7 +2432,7 @@ function App() {
       !usuarioEhGestor
     ) {
       window.alert(
-        'Somente o Gestor pode colocar uma demanda Nova em Aguardando.'
+        'Somente o Gestor ou Diretor (a) pode colocar uma demanda Nova em Aguardando.'
       )
       return
     }
@@ -3052,7 +3005,7 @@ function App() {
   ) {
     if (!ehGestor(sessao)) {
       window.alert(
-        'Somente o Gestor pode distribuir ou redistribuir demandas.'
+        'Somente o Gestor ou Diretor (a) pode distribuir ou redistribuir demandas.'
       )
       return
     }

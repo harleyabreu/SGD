@@ -1,21 +1,23 @@
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 import type { Usuario } from '../types'
 import './TrocarSenha.css'
 
 type Props = {
   usuario: Usuario
-  onSalvar: (novaSenha: string) => void
+  onSalvar: (novaSenha: string) => void | Promise<void>
   onSair: () => void
 }
 
-const MINIMO_SENHA = 6
+const MINIMO_SENHA = 8
 
 export default function TrocarSenha({ usuario, onSalvar, onSair }: Props) {
   const [novaSenha, setNovaSenha] = useState('')
   const [confirmacao, setConfirmacao] = useState('')
   const [erro, setErro] = useState('')
+  const [salvando, setSalvando] = useState(false)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setErro('')
 
@@ -29,7 +31,19 @@ export default function TrocarSenha({ usuario, onSalvar, onSair }: Props) {
       return
     }
 
-    onSalvar(novaSenha)
+    setSalvando(true)
+
+    try {
+      await onSalvar(novaSenha)
+    } catch (error: unknown) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível salvar a nova senha. Tente novamente.',
+      )
+    } finally {
+      setSalvando(false)
+    }
   }
 
   return (
@@ -52,7 +66,9 @@ export default function TrocarSenha({ usuario, onSalvar, onSair }: Props) {
               placeholder={`Mínimo ${MINIMO_SENHA} caracteres`}
               autoComplete="new-password"
               minLength={MINIMO_SENHA}
+              required
               autoFocus
+              disabled={salvando}
             />
           </label>
 
@@ -65,24 +81,39 @@ export default function TrocarSenha({ usuario, onSalvar, onSair }: Props) {
               placeholder="Repita a nova senha"
               autoComplete="new-password"
               minLength={MINIMO_SENHA}
+              required
+              disabled={salvando}
             />
           </label>
 
-          {erro && <div className="troca-senha-erro">{erro}</div>}
+          {erro && (
+            <div className="troca-senha-erro" role="alert" aria-live="polite">
+              {erro}
+            </div>
+          )}
 
           <div className="troca-senha-politica">
-            A nova senha deve ter no mínimo 6 caracteres. Não reutilize a senha temporária recebida por e-mail.
+            A nova senha deve ter no mínimo {MINIMO_SENHA} caracteres. Não reutilize a senha temporária recebida por e-mail.
           </div>
 
-          <button type="submit" className="troca-senha-primary">
-            Salvar Nova Senha
+          <button
+            type="submit"
+            className="troca-senha-primary"
+            disabled={salvando}
+          >
+            {salvando ? 'Salvando...' : 'Salvar Nova Senha'}
           </button>
 
-          <button type="button" className="troca-senha-secondary" onClick={onSair}>
+          <button
+            type="button"
+            className="troca-senha-secondary"
+            onClick={onSair}
+            disabled={salvando}
+          >
             Sair
           </button>
         </form>
       </div>
     </div>
-  )//
+  )
 }
