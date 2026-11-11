@@ -426,7 +426,7 @@ function ehGestorOuDiretor(perfil: string | null | undefined): boolean {
   return normalizado === "gestor/administrador" || normalizado === "diretor (a)";
 }
 
-const LOGIN_GESTOR_FIXO = "lorenna.goes";
+const LOGIN_GESTOR_FIXO = "lorenna.queiroz";
 
 const STATUS_DEMANDA_OFICIAIS = new Set([
   "Nova",
@@ -753,7 +753,7 @@ app.put("/api/usuarios/:id", async (req, res) => {
 
   if (ehContaGestorFixo && (login.toLowerCase() !== LOGIN_GESTOR_FIXO || perfil !== "Gestor/Administrador")) {
     return res.status(409).json({
-      message: "A conta lorenna.goes é o Gestor fixo do SGD. O login e o perfil Gestor dessa conta não podem ser alterados.",
+      message: "A conta lorenna.queiroz é o Gestor fixo do SGD. O login e o perfil Gestor dessa conta não podem ser alterados.",
     });
   }
 
@@ -848,7 +848,7 @@ app.delete("/api/usuarios/:id", async (req, res) => {
 
     if (String(atual.rows[0].login ?? "").trim().toLowerCase() === LOGIN_GESTOR_FIXO) {
       await conexao.query("ROLLBACK");
-      return res.status(409).json({ message: "A conta lorenna.goes é o Gestor fixo do SGD e não pode ser excluída." });
+      return res.status(409).json({ message: "A conta lorenna.queiroz é o Gestor fixo do SGD e não pode ser excluída." });
     }
 
     if (atual.rows[0].perfil === "Gestor/Administrador" && atual.rows[0].status === "Ativo") {
@@ -901,7 +901,7 @@ app.patch("/api/usuarios/:id/status", async (req, res) => {
       }
       if (String(atual.rows[0].login ?? "").trim().toLowerCase() === LOGIN_GESTOR_FIXO) {
         await conexao.query("ROLLBACK");
-        return res.status(409).json({ message: "A conta lorenna.goes é o Gestor fixo do SGD e não pode ser inativada." });
+        return res.status(409).json({ message: "A conta lorenna.queiroz é o Gestor fixo do SGD e não pode ser inativada." });
       }
       if (atual.rows[0].perfil === "Gestor/Administrador" && atual.rows[0].status === "Ativo") {
         const gestores = await conexao.query(

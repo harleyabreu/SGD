@@ -1820,7 +1820,10 @@ function App() {
         criticidade: novaPrioridade,
         prioridade: novaPrioridade,
         prazo: novoPrazo,
-        prazoDiasUteis: novoSla,
+        // Ao preservar o prazo manual, preservar também a quantidade de dias úteis
+        // originalmente registrada. O novo SLA só substitui esse valor quando
+        // o Gestor escolhe explicitamente recalcular o prazo.
+        prazoDiasUteis: preservarPrazoManual ? demanda.prazoDiasUteis : novoSla,
         prazoManual: preservarPrazoManual,
         motivoAlteracaoPrioridade: motivoFinal,
         historico: [historico, ...(demanda.historico || [])],
@@ -1912,7 +1915,10 @@ function App() {
         ...demanda,
         prioridadeAtendimento: novaPrioridadeAtendimento,
         prazo: novoPrazo,
-        prazoDiasUteis: novoSla,
+        // Ao preservar o prazo manual, preservar também a quantidade de dias úteis
+        // originalmente registrada. O novo SLA só substitui esse valor quando
+        // o Gestor escolhe explicitamente recalcular o prazo.
+        prazoDiasUteis: preservarPrazoManual ? demanda.prazoDiasUteis : novoSla,
         prazoManual: preservarPrazoManual,
         motivoAlteracaoPrioridade: motivoFinal,
         historico: [historico, ...(demanda.historico || [])],

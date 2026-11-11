@@ -1,4 +1,3 @@
-
 const path = require("node:path");
 const readline = require("node:readline");
 const dotenv = require("dotenv");
@@ -8,18 +7,28 @@ const { Pool } = require("pg");
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 const MINIMO_SENHA = 8;
-const LOGIN_PRESERVADO = "lorenna.goes";
+const LOGIN_GESTOR_FIXO = "lorenna.queiroz";
 
-function perguntar(mensagem) {
+const ESTRUTURA_INICIAL = {
+  diretoriaSigla: "DDS",
+  diretoriaNome: "Diretoria de Desenvolvimento de Sistemas",
+  gerenciaSigla: "GNS",
+  gerenciaNome: "Gerência de Negócios de Sistemas",
+  divisaoNome: "Divisão de Sistemas Corporativos (DSC)",
+};
+
+function perguntar(mensagem, padrao = "") {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
+  const sufixo = padrao ? ` [${padrao}]` : "";
+
   return new Promise((resolve) => {
-    rl.question(mensagem, (resposta) => {
+    rl.question(`${mensagem}${sufixo}: `, (resposta) => {
       rl.close();
-      resolve(resposta.trim());
+      resolve(resposta.trim() || padrao);
     });
   });
 }
@@ -34,13 +43,11 @@ function perguntarSenhaOculta(mensagem) {
         output: process.stdout,
       });
 
-      rl.question(
-        mensagem + " (a senha será exibida): ",
-        (resposta) => {
-          rl.close();
-          resolve(resposta);
-        },
-      );
+      rl.question(mensagem + " (a senha será exibida): ", (resposta) => {
+        rl.close();
+        resolve(resposta);
+      });
+
       return;
     }
 
@@ -51,10 +58,13 @@ function perguntarSenhaOculta(mensagem) {
 
     const limpar = () => {
       if (finalizado) return;
+
       finalizado = true;
+
       entrada.removeListener("data", aoDigitar);
       entrada.setRawMode(false);
       entrada.pause();
+
       process.stdout.write("\n");
     };
 
@@ -117,8 +127,7 @@ async function criarUsuarioInicial() {
 
   if (ausentes.length > 0) {
     throw new Error(
-      "Configurações ausentes no backend/.env: " +
-        ausentes.join(", "),
+      "Configurações ausentes no backend/.env: " + ausentes.join(", "),
     );
   }
 
@@ -135,41 +144,78 @@ async function criarUsuarioInicial() {
   let transacaoIniciada = false;
 
   try {
+    const contaExistente = await conexao.query(
+      `SELECT id, nome, login, perfil, status
+         FROM public.usuarios
+        WHERE LOWER(login) = LOWER($1)
+        LIMIT 1`,
+      [LOGIN_GESTOR_FIXO],
+    );
+
+    if (contaExistente.rowCount > 0) {
+      const conta = contaExistente.rows[0];
+
+      console.log(
+        "\nA conta oficial do SGD já existe. Nenhum dado foi alterado.",
+      );
+
+      console.table([conta]);
+
+      if (
+        conta.perfil !== "Gestor/Administrador" ||
+        conta.status !== "Ativo"
+      ) {
+        console.warn(
+          "Atenção: confira o perfil e o status dessa conta na Administração do SGD.",
+        );
+      }
+
+      return;
+    }
+
     const verificacao = await conexao.query(
       "SELECT COUNT(*)::integer AS total FROM public.usuarios",
     );
 
     if (Number(verificacao.rows[0].total) !== 0) {
       throw new Error(
-        "O cadastro inicial foi bloqueado: já existem usuários. " +
-          "Nenhum registro foi alterado.",
+        `A conta ${LOGIN_GESTOR_FIXO} não foi encontrada, mas já existem usuários cadastrados. ` +
+          "Por segurança, nenhum registro foi criado ou alterado.",
       );
     }
 
-    console.log("\nCADASTRO DO GESTOR INICIAL DO SGD");
-    console.log("A conta lorenna.goes será preservada para a etapa final.");
-    console.log("Este cadastro será feito somente se a tabela estiver vazia.\n");
+    console.log("\nCADASTRO DO GESTOR OFICIAL DO SGD");
+    console.log(`Login reservado: ${LOGIN_GESTOR_FIXO}`);
+    console.log(
+      "O usuário será criado somente se a tabela usuarios estiver vazia.",
+    );
+    console.log(
+      "No primeiro acesso, o sistema exigirá a troca da senha.\n",
+    );
 
-    const nome = await perguntar("Nome completo: ");
-    const login = await perguntar("Novo login (diferente de lorenna.goes): ");
-    const email = await perguntar("E-mail: ");
-    const telefone = await perguntar("Telefone (opcional): ");
+    const nome = await perguntar(
+      "Nome completo",
+      "Lorenna Goes de Queiroz",
+    );
 
-    if (!nome || !login || !email) {
-      throw new Error("Nome, login e e-mail são obrigatórios.");
-    }
+    const email = await perguntar(
+      "E-mail",
+      "lorenna.queiroz@prodepa.pa.gov.br",
+    );
 
-    if (login.toLowerCase() === LOGIN_PRESERVADO) {
-      throw new Error(
-        "Esse login está reservado para a etapa final. Escolha outro.",
-      );
+    const telefone = await perguntar("Telefone (opcional)", "");
+
+    if (!nome || !email) {
+      throw new Error("Nome e e-mail são obrigatórios.");
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new Error("Informe um endereço de e-mail válido.");
     }
 
-    const senha = await perguntarSenhaOculta("Crie a senha (mínimo 8 caracteres): ");
+    const senha = await perguntarSenhaOculta(
+      "Crie a senha (mínimo 8 caracteres): ",
+    );
 
     if (senha.length < MINIMO_SENHA) {
       throw new Error("A senha deve possuir no mínimo 8 caracteres.");
@@ -178,10 +224,10 @@ async function criarUsuarioInicial() {
     const confirmacao = await perguntarSenhaOculta("Confirme a senha: ");
 
     if (senha !== confirmacao) {
-      throw new Error("As senhas não conferem. Nenhum usuário foi criado.");
+      throw new Error(
+        "As senhas não conferem. Nenhum usuário foi criado.",
+      );
     }
-
-    console.log("\nValidando e criando o usuário...");
 
     const hash = await argon2.hash(senha, {
       type: argon2.argon2id,
@@ -190,7 +236,6 @@ async function criarUsuarioInicial() {
     await conexao.query("BEGIN");
     transacaoIniciada = true;
 
-    // Bloqueia inserções concorrentes durante o cadastro inicial.
     await conexao.query(
       "LOCK TABLE public.usuarios IN EXCLUSIVE MODE",
     );
@@ -206,28 +251,42 @@ async function criarUsuarioInicial() {
     }
 
     const resultado = await conexao.query(
-      `INSERT INTO public.usuarios
-        (nome, login, email, telefone, senha_hash, perfil, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, nome, login, email, perfil, status`,
+      `INSERT INTO public.usuarios (
+         nome, login, email, telefone, senha_hash, perfil, status,
+         diretoria_sigla, diretoria_nome, gerencia_sigla, gerencia_nome,
+         divisao_nome, exigir_troca_senha, criado_em, atualizado_em
+       ) VALUES ($1, $2, $3, $4, $5, 'Gestor/Administrador', 'Ativo',
+                 $6, $7, $8, $9, $10, TRUE,
+                 CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id, nome, login, email, perfil, status,
+                 diretoria_sigla, gerencia_sigla, divisao_nome`,
       [
-        nome.trim(),
-        login.trim(),
-        email.trim(),
-        telefone.trim() || null,
+        nome,
+        LOGIN_GESTOR_FIXO,
+        email,
+        telefone || null,
         hash,
-        "Gestor/Administrador",
-        "Ativo",
+        ESTRUTURA_INICIAL.diretoriaSigla,
+        ESTRUTURA_INICIAL.diretoriaNome,
+        ESTRUTURA_INICIAL.gerenciaSigla,
+        ESTRUTURA_INICIAL.gerenciaNome,
+        ESTRUTURA_INICIAL.divisaoNome,
       ],
     );
 
     await conexao.query("COMMIT");
     transacaoIniciada = false;
 
-    console.log("\nUsuário inicial criado com sucesso!");
+    console.log("\nGestor oficial criado com sucesso!");
     console.table(resultado.rows);
-    console.log("A senha não foi exibida nem armazenada em texto puro.");
-    console.log("A conta lorenna.goes não foi alterada.");
+
+    console.log(
+      "A senha não foi exibida nem armazenada em texto puro.",
+    );
+
+    console.log(
+      "A troca de senha será solicitada no primeiro acesso.",
+    );
   } catch (erro) {
     if (transacaoIniciada) {
       await conexao.query("ROLLBACK");

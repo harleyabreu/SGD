@@ -1,4 +1,3 @@
-
 const path = require("node:path");
 const dotenv = require("dotenv");
 const { Pool } = require("pg");
@@ -58,11 +57,11 @@ async function consultarUsuarios() {
 
     const lorenna = usuarios.rows.find(
       (usuario) =>
-        String(usuario.login).trim().toLowerCase() === "lorenna.goes",
+        String(usuario.login).trim().toLowerCase() === "lorenna.queiroz",
     );
 
     console.log(
-      "Usuário lorenna.goes:",
+      "Usuário lorenna.queiroz:",
       lorenna ? "ENCONTRADO" : "NÃO ENCONTRADO NESTE BANCO",
     );
   } catch (error) {

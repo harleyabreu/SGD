@@ -366,7 +366,7 @@ function Administracao({
     useState('')
 
   // Usuários são carregados do PostgreSQL. O localStorage antigo é mantido
-  // intacto durante a transição, para preservar a conta legada lorenna.goes.
+  // intacto durante a transição, para preservar a conta legada lorenna.queiroz.
   useEffect(() => {
     let montado = true
 
@@ -583,10 +583,10 @@ function Administracao({
 
   async function salvarUsuario() {
     const contaGestorFixo =
-      editUsuario?.login.trim().toLowerCase() === 'lorenna.goes'
+      editUsuario?.login.trim().toLowerCase() === 'lorenna.queiroz'
 
     const loginPadrao = contaGestorFixo
-      ? 'lorenna.goes'
+      ? 'lorenna.queiroz'
       : gerarLoginPadrao(
           nomeUsuario,
           usuarios,
@@ -650,7 +650,7 @@ function Administracao({
     }
 
     if (contaGestorFixo && perfilUsuario !== 'Gestor/Administrador') {
-      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode perder esse perfil.')
+      window.alert('A conta lorenna.queiroz é o Gestor fixo do SGD e não pode perder esse perfil.')
       return
     }
 
@@ -771,8 +771,8 @@ function Administracao({
   }
 
   async function alternarUsuario(item: Usuario) {
-    if (item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo') {
-      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode ser inativada.')
+    if (item.login.trim().toLowerCase() === 'lorenna.queiroz' && item.status === 'Ativo') {
+      window.alert('A conta lorenna.queiroz é o Gestor fixo do SGD e não pode ser inativada.')
       return
     }
 
@@ -833,8 +833,8 @@ function Administracao({
 
 
   async function excluirUsuario(item: Usuario) {
-    if (item.login.trim().toLowerCase() === 'lorenna.goes') {
-      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode ser excluída.')
+    if (item.login.trim().toLowerCase() === 'lorenna.queiroz') {
+      window.alert('A conta lorenna.queiroz é o Gestor fixo do SGD e não pode ser excluída.')
       return
     }
 
@@ -1521,8 +1521,8 @@ function Administracao({
                         const nome = e.target.value
                         setNomeUsuario(nome)
                         setLoginUsuario(
-                          editUsuario?.login.trim().toLowerCase() === 'lorenna.goes'
-                            ? 'lorenna.goes'
+                          editUsuario?.login.trim().toLowerCase() === 'lorenna.queiroz'
+                            ? 'lorenna.queiroz'
                             : gerarLoginPadrao(nome, usuarios, editUsuario?.id)
                         )
                       }}
@@ -1878,17 +1878,17 @@ function Administracao({
                                   alternarUsuario(item)
                                 }
                                 className={`adm-table-action ${item.status === 'Ativo' ? 'adm-table-action-danger' : 'adm-table-action-success'}`}
-                                disabled={item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo'}
-                                title={item.login.trim().toLowerCase() === 'lorenna.goes' ? 'Gestor fixo do SGD' : undefined}
+                                disabled={item.login.trim().toLowerCase() === 'lorenna.queiroz' && item.status === 'Ativo'}
+                                title={item.login.trim().toLowerCase() === 'lorenna.queiroz' ? 'Gestor fixo do SGD' : undefined}
                               >
-                                {item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo'
+                                {item.login.trim().toLowerCase() === 'lorenna.queiroz' && item.status === 'Ativo'
                                   ? 'Gestor Fixo'
                                   : item.status === 'Ativo'
                                     ? 'Inativar'
                                     : 'Ativar'}
                               </button>
 
-                              {item.id !== usuarioAtual.id && item.login.trim().toLowerCase() !== 'lorenna.goes' && (
+                              {item.id !== usuarioAtual.id && item.login.trim().toLowerCase() !== 'lorenna.queiroz' && (
                                 <button
                                   type="button"
                                   onClick={() => excluirUsuario(item)}
