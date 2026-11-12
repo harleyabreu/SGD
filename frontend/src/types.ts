@@ -133,7 +133,7 @@ export const PERFIS_RESPONSAVEIS: PerfilUsuario[] = [
 // ============================================================
 
 export const ROTULOS_PERFIL: Record<PerfilUsuario, string> = {
-  'Gestor/Administrador': 'Gestor (a)',
+  'Gestor/Administrador': 'Gestor(a)',
   'Diretor (a)': 'Diretor (a)',
   Analista: 'Analista',
   Desenvolvedor: 'Desenvolvedor (a)',

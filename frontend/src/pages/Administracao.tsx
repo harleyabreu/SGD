@@ -365,8 +365,8 @@ function Administracao({
   const [nomeTipo, setNomeTipo] =
     useState('')
 
-  // Usuários são carregados do PostgreSQL. O localStorage antigo é mantido
-  // intacto durante a transição, para preservar a conta legada lorenna.queiroz.
+  // Usuários são carregados do PostgreSQL, que é a fonte oficial dos cadastros.
+  // A conta lorenna.queiroz permanece independente; lorenna.goes é a conta fixa.
   useEffect(() => {
     let montado = true
 
@@ -528,7 +528,11 @@ function Administracao({
   function editarUsuario(item: Usuario) {
     setEditUsuario(item)
     setNomeUsuario(item.nome)
-    setLoginUsuario(gerarLoginPadrao(item.nome, usuarios, item.id))
+    setLoginUsuario(
+      item.login.trim().toLowerCase() === 'lorenna.goes'
+        ? 'lorenna.goes'
+        : gerarLoginPadrao(item.nome, usuarios, item.id)
+    )
     setEmailUsuario(item.email)
     setTelefoneUsuario(aplicarMascaraTelefone(item.telefone || ''))
     setPerfilUsuario(item.perfil)
@@ -583,10 +587,10 @@ function Administracao({
 
   async function salvarUsuario() {
     const contaGestorFixo =
-      editUsuario?.login.trim().toLowerCase() === 'lorenna.queiroz'
+      editUsuario?.login.trim().toLowerCase() === 'lorenna.goes'
 
     const loginPadrao = contaGestorFixo
-      ? 'lorenna.queiroz'
+      ? 'lorenna.goes'
       : gerarLoginPadrao(
           nomeUsuario,
           usuarios,
@@ -650,7 +654,7 @@ function Administracao({
     }
 
     if (contaGestorFixo && perfilUsuario !== 'Gestor/Administrador') {
-      window.alert('A conta lorenna.queiroz é o Gestor fixo do SGD e não pode perder esse perfil.')
+      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode perder esse perfil.')
       return
     }
 
@@ -771,8 +775,8 @@ function Administracao({
   }
 
   async function alternarUsuario(item: Usuario) {
-    if (item.login.trim().toLowerCase() === 'lorenna.queiroz' && item.status === 'Ativo') {
-      window.alert('A conta lorenna.queiroz é o Gestor fixo do SGD e não pode ser inativada.')
+    if (item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo') {
+      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode ser inativada.')
       return
     }
 
@@ -833,8 +837,8 @@ function Administracao({
 
 
   async function excluirUsuario(item: Usuario) {
-    if (item.login.trim().toLowerCase() === 'lorenna.queiroz') {
-      window.alert('A conta lorenna.queiroz é o Gestor fixo do SGD e não pode ser excluída.')
+    if (item.login.trim().toLowerCase() === 'lorenna.goes') {
+      window.alert('A conta lorenna.goes é o Gestor fixo do SGD e não pode ser excluída.')
       return
     }
 
@@ -1521,8 +1525,8 @@ function Administracao({
                         const nome = e.target.value
                         setNomeUsuario(nome)
                         setLoginUsuario(
-                          editUsuario?.login.trim().toLowerCase() === 'lorenna.queiroz'
-                            ? 'lorenna.queiroz'
+                          editUsuario?.login.trim().toLowerCase() === 'lorenna.goes'
+                            ? 'lorenna.goes'
                             : gerarLoginPadrao(nome, usuarios, editUsuario?.id)
                         )
                       }}
@@ -1878,17 +1882,17 @@ function Administracao({
                                   alternarUsuario(item)
                                 }
                                 className={`adm-table-action ${item.status === 'Ativo' ? 'adm-table-action-danger' : 'adm-table-action-success'}`}
-                                disabled={item.login.trim().toLowerCase() === 'lorenna.queiroz' && item.status === 'Ativo'}
-                                title={item.login.trim().toLowerCase() === 'lorenna.queiroz' ? 'Gestor fixo do SGD' : undefined}
+                                disabled={item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo'}
+                                title={item.login.trim().toLowerCase() === 'lorenna.goes' ? 'Gestor fixo do SGD' : undefined}
                               >
-                                {item.login.trim().toLowerCase() === 'lorenna.queiroz' && item.status === 'Ativo'
+                                {item.login.trim().toLowerCase() === 'lorenna.goes' && item.status === 'Ativo'
                                   ? 'Gestor Fixo'
                                   : item.status === 'Ativo'
                                     ? 'Inativar'
                                     : 'Ativar'}
                               </button>
 
-                              {item.id !== usuarioAtual.id && item.login.trim().toLowerCase() !== 'lorenna.queiroz' && (
+                              {item.id !== usuarioAtual.id && item.login.trim().toLowerCase() !== 'lorenna.goes' && (
                                 <button
                                   type="button"
                                   onClick={() => excluirUsuario(item)}

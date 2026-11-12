@@ -5,20 +5,10 @@ const { Pool } = require("pg");
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 async function consultarUsuarios() {
-  const variaveis = [
-    "DB_HOST",
-    "DB_PORT",
-    "DB_NAME",
-    "DB_USER",
-    "DB_PASSWORD",
-  ];
-
+  const variaveis = ["DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"];
   const ausentes = variaveis.filter(
-    (nome) =>
-      typeof process.env[nome] !== "string" ||
-      process.env[nome].trim() === "",
+    (nome) => typeof process.env[nome] !== "string" || process.env[nome].trim() === "",
   );
-
   if (ausentes.length > 0) {
     console.error("Variáveis ausentes no backend/.env:", ausentes.join(", "));
     process.exitCode = 1;
@@ -35,10 +25,7 @@ async function consultarUsuarios() {
   });
 
   try {
-    const total = await pool.query(
-      "SELECT COUNT(*)::integer AS total FROM public.usuarios",
-    );
-
+    const total = await pool.query("SELECT COUNT(*)::integer AS total FROM public.usuarios");
     const usuarios = await pool.query(`
       SELECT id, nome, login, status, perfil
       FROM public.usuarios
@@ -47,7 +34,6 @@ async function consultarUsuarios() {
 
     console.log("Banco consultado:", process.env.DB_NAME);
     console.log("Total de usuários:", total.rows[0].total);
-
     if (usuarios.rows.length === 0) {
       console.log("A tabela usuarios está vazia neste banco.");
     } else {
@@ -56,12 +42,10 @@ async function consultarUsuarios() {
     }
 
     const lorenna = usuarios.rows.find(
-      (usuario) =>
-        String(usuario.login).trim().toLowerCase() === "lorenna.queiroz",
+      (usuario) => String(usuario.login).trim().toLowerCase() === "lorenna.goes",
     );
-
     console.log(
-      "Usuário lorenna.queiroz:",
+      "Usuário oficial lorenna.goes:",
       lorenna ? "ENCONTRADO" : "NÃO ENCONTRADO NESTE BANCO",
     );
   } catch (error) {
