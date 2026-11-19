@@ -137,7 +137,7 @@ const STATUS_OFICIAIS = [
 
 const TRANSICOES_PERMITIDAS: Record<string, string[]> = {
   Nova: ['Aguardando', 'Em Atendimento', 'Cancelada'],
-  Aguardando: ['Em Atendimento', 'Cancelada'],
+  Aguardando: ['Em Atendimento', 'Com Pendências', 'Concluída', 'Cancelada'],
   'Em Atendimento': ['Aguardando', 'Com Pendências', 'Concluída', 'Cancelada'],
   'Com Pendências': ['Em Atendimento', 'Concluída', 'Cancelada'],
   Concluída: [],

@@ -5,6 +5,12 @@ import argon2 from "argon2";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import { criarRotasFeriados } from "./feriadosRoutes.js";
+import {
+  CRITICIDADES_OFICIAIS,
+  PRIORIDADES_ATENDIMENTO_OFICIAIS,
+  dataISOValida,
+  obterDecisaoPrazoManual,
+} from "./regrasDemanda.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
@@ -439,7 +445,7 @@ const STATUS_DEMANDA_OFICIAIS = new Set([
 
 const TRANSICOES_DEMANDA_PERMITIDAS: Record<string, string[]> = {
   Nova: ["Aguardando", "Em Atendimento", "Cancelada"],
-  Aguardando: ["Em Atendimento", "Cancelada"],
+  Aguardando: ["Em Atendimento", "Com Pendências", "Concluída", "Cancelada"],
   "Em Atendimento": ["Aguardando", "Com Pendências", "Concluída", "Cancelada"],
   "Com Pendências": ["Em Atendimento", "Concluída", "Cancelada"],
   Concluída: [],
@@ -1744,12 +1750,6 @@ function objetosJson(valor: unknown): RegistroJson[] {
 }
 
 // Os valores são mantidos idênticos aos apresentados pela interface.
-const PRIORIDADES_ATENDIMENTO_OFICIAIS = new Set<string>([
-  "P1 — Imediata",
-  "P2 — Urgente",
-  "P3 — Normal",
-  "P4 — Planejada",
-]);
 
 // O histórico é a fonte de referência quando a cópia do campo principal
 // chega defasada no PUT, mas o evento de alteração já está no mesmo payload.
@@ -1788,21 +1788,59 @@ async function obterClienteIdPorNome(
   nome: string,
 ): Promise<number | null> {
   const resultado = await conexao.query(
-    "SELECT id FROM clientes WHERE LOWER(BTRIM(nome)) = LOWER(BTRIM($1)) ORDER BY id LIMIT 1",
+    `SELECT id
+       FROM clientes
+      WHERE LOWER(BTRIM(nome)) = LOWER(BTRIM($1))
+      ORDER BY id
+      LIMIT 2`,
     [nome],
   );
+
+  if (resultado.rows.length > 1) {
+    throw erroValidacao(
+      `Existe mais de um cliente chamado "${nome}". A demanda não pode ser vinculada de forma ambígua.`,
+    );
+  }
+
   return resultado.rows.length ? Number(resultado.rows[0].id) : null;
 }
 
 async function obterSistemaIdPorNome(
   conexao: PoolClient,
   nome: string,
+  clienteId: number,
 ): Promise<number | null> {
   if (!nome) return null;
+
+  // O mesmo nome pode existir para clientes diferentes. Prioriza sempre
+  // o sistema vinculado ao cliente da demanda; sistemas sem cliente ficam
+  // como segunda opção e os demais somente como compatibilidade da tela,
+  // que permite selecionar sistemas gerais quando o cliente não possui lista própria.
   const resultado = await conexao.query(
-    "SELECT id FROM sistemas WHERE LOWER(BTRIM(nome)) = LOWER(BTRIM($1)) ORDER BY id LIMIT 1",
-    [nome],
+    `SELECT id,
+            CASE
+              WHEN cliente_id = $2 THEN 0
+              WHEN cliente_id IS NULL THEN 1
+              ELSE 2
+            END AS prioridade_vinculo,
+            CASE WHEN ativo THEN 0 ELSE 1 END AS prioridade_ativo
+       FROM sistemas
+      WHERE LOWER(BTRIM(nome)) = LOWER(BTRIM($1))
+      ORDER BY prioridade_vinculo, prioridade_ativo, id
+      LIMIT 2`,
+    [nome, clienteId],
   );
+
+  if (
+    resultado.rows.length > 1 &&
+    Number(resultado.rows[0].prioridade_vinculo) === Number(resultado.rows[1].prioridade_vinculo) &&
+    Number(resultado.rows[0].prioridade_ativo) === Number(resultado.rows[1].prioridade_ativo)
+  ) {
+    throw erroValidacao(
+      `Existe mais de um sistema chamado "${nome}" que pode ser associado ao cliente selecionado. Corrija o cadastro para evitar vínculo incorreto.`,
+    );
+  }
+
   return resultado.rows.length ? Number(resultado.rows[0].id) : null;
 }
 
@@ -1908,6 +1946,22 @@ async function gravarDemanda(
   // registrado para Prioridade de Atendimento, evitando voltar ao valor antigo.
   const prioridadeAtendimento =
     prioridadeAtendimentoHistorica || prioridadeAtendimentoInformada || null;
+
+  if (!CRITICIDADES_OFICIAIS.has(criticidade)) {
+    throw erroValidacao(
+      `A Criticidade da demanda ${id} é inválida. Utilize Crítica, Alta, Média ou Baixa.`,
+    );
+  }
+
+  if (
+    prioridadeAtendimento !== null &&
+    !PRIORIDADES_ATENDIMENTO_OFICIAIS.has(prioridadeAtendimento)
+  ) {
+    throw erroValidacao(
+      `A Prioridade de Atendimento da demanda ${id} é inválida.`,
+    );
+  }
+
   const prazo = textoCampo(demanda.prazo);
   const observacao = textoCampo(demanda.observacao);
   let status = textoCampo(demanda.status) || "Nova";
@@ -1922,8 +1976,12 @@ async function gravarDemanda(
   if (!titulo) throw erroValidacao(`A demanda ${id} está sem título.`);
   if (!descricao) throw erroValidacao(`A demanda ${id} está sem descrição.`);
   if (!nomeCliente) throw erroValidacao(`A demanda ${id} está sem cliente.`);
+  if (!nomeSistema) throw erroValidacao(`A demanda ${id} está sem sistema.`);
   if (!nomeTipo) throw erroValidacao(`A demanda ${id} está sem tipo de demanda.`);
   if (!prazo) throw erroValidacao(`A demanda ${id} está sem prazo.`);
+  if (!dataISOValida(prazo)) {
+    throw erroValidacao(`O prazo da demanda ${id} deve estar no formato AAAA-MM-DD.`);
+  }
 
   const clienteId = await obterClienteIdPorNome(conexao, nomeCliente);
   if (clienteId === null) {
@@ -1939,7 +1997,12 @@ async function gravarDemanda(
     );
   }
 
-  const sistemaId = await obterSistemaIdPorNome(conexao, nomeSistema);
+  const sistemaId = await obterSistemaIdPorNome(conexao, nomeSistema, clienteId);
+  if (sistemaId === null) {
+    throw erroValidacao(
+      `O sistema "${nomeSistema}" da demanda ${id} não existe no PostgreSQL.`,
+    );
+  }
   const responsavelId =
     responsavelIdPreservado !== undefined
       ? responsavelIdPreservado
@@ -2155,6 +2218,12 @@ async function gravarDemanda(
     const fim = timestampParaBanco(periodo.fim);
     const motivo = textoCampo(periodo.motivo) || "Pendência";
 
+    if (fim !== null && Date.parse(fim) < Date.parse(inicio)) {
+      throw erroValidacao(
+        `O período de pendência da demanda ${id} possui encerramento anterior ao início.`,
+      );
+    }
+
     let existente: { id: number | string; fim: string | Date | null } | null = null;
 
     if (periodoId !== null) {
@@ -2203,6 +2272,50 @@ async function gravarDemanda(
       `INSERT INTO periodos_pendencia (demanda_id, inicio, fim, motivo)
        VALUES ($1, $2::timestamptz, $3::timestamptz, $4)`,
       [id, inicio, fim, motivo],
+    );
+  }
+
+  // Integridade do SLA: somente demandas em "Com Pendências" podem manter
+  // um período aberto. O backend corrige o fechamento com seu próprio relógio,
+  // sem depender de o navegador enviar corretamente a data de encerramento.
+  const periodosAbertos = await conexao.query(
+    `SELECT id, inicio, motivo
+       FROM periodos_pendencia
+      WHERE demanda_id = $1 AND fim IS NULL
+      ORDER BY inicio, id
+      FOR UPDATE`,
+    [id],
+  );
+
+  if (status === "Com Pendências") {
+    if (periodosAbertos.rows.length > 1) {
+      throw erroValidacao(
+        `A demanda ${id} possui mais de um período de pendência aberto. Corrija a duplicidade antes de continuar.`,
+      );
+    }
+
+    if (periodosAbertos.rows.length === 0) {
+      const eventoPendencia = objetosJson(demanda.historico).find(
+        (registro) =>
+          textoCampo(registro.tipo) === "status" &&
+          textoCampo(registro.valorNovo) === "Com Pendências" &&
+          Boolean(textoCampo(registro.motivo)),
+      );
+      const motivoPendencia = textoCampo(eventoPendencia?.motivo) ||
+        "Pendência em andamento regularizada pelo backend.";
+
+      await conexao.query(
+        `INSERT INTO periodos_pendencia (demanda_id, inicio, motivo)
+         VALUES ($1, CURRENT_TIMESTAMP, $2)`,
+        [id, motivoPendencia],
+      );
+    }
+  } else if (periodosAbertos.rows.length > 0) {
+    await conexao.query(
+      `UPDATE periodos_pendencia
+          SET fim = GREATEST(CURRENT_TIMESTAMP, inicio)
+        WHERE demanda_id = $1 AND fim IS NULL`,
+      [id],
     );
   }
 
@@ -2324,6 +2437,12 @@ app.put("/api/demandas/:id", async (req, res) => {
          d.id,
          d.status,
          d.responsavel_id,
+         d.criticidade,
+         d.prioridade,
+         d.prioridade_atendimento,
+         d.prazo,
+         d.prazo_dias_uteis,
+         d.prazo_manual,
          COALESCE(NULLIF(d.responsavel_nome, ''), u.nome, '') AS responsavel,
          c.nome AS cliente,
          COALESCE(s.nome, NULLIF(d.sistema_nome, ''), '') AS sistema,
@@ -2486,6 +2605,106 @@ app.put("/api/demandas/:id", async (req, res) => {
                   : "O comentário de conclusão é obrigatório.",
               });
             }
+          }
+        }
+      }
+    }
+
+    if (demandaAtual.rows.length === 0) {
+      const criticidadeNova = textoCampo(body.criticidade);
+      const prioridadeNova = textoCampo(body.prioridadeAtendimento);
+
+      if (!CRITICIDADES_OFICIAIS.has(criticidadeNova)) {
+        await conexao.query("ROLLBACK");
+        return res.status(400).json({
+          message: "Informe uma Criticidade válida para cadastrar a demanda.",
+        });
+      }
+
+      if (!PRIORIDADES_ATENDIMENTO_OFICIAIS.has(prioridadeNova)) {
+        await conexao.query("ROLLBACK");
+        return res.status(400).json({
+          message: "Informe uma Prioridade de Atendimento válida para cadastrar a demanda.",
+        });
+      }
+    } else if (perfilGestor && demandaAtual.rows[0].prazo_manual === true) {
+      const atual = demandaAtual.rows[0];
+      const criticidadeAnterior = textoCampo(atual.criticidade) || textoCampo(atual.prioridade);
+      const criticidadeNova = textoCampo(body.criticidade) || criticidadeAnterior;
+      const prioridadeAnterior = textoCampo(atual.prioridade_atendimento);
+      const prioridadeNova = textoCampo(body.prioridadeAtendimento) || prioridadeAnterior;
+      const mudouCriticidade = criticidadeNova !== criticidadeAnterior;
+      const mudouPrioridadeAtendimento = prioridadeNova !== prioridadeAnterior;
+
+      if (mudouCriticidade || mudouPrioridadeAtendimento) {
+        const eventos = objetosJson(body.historico);
+        const decisaoCriticidade = mudouCriticidade
+          ? obterDecisaoPrazoManual(
+              eventos,
+              "prioridade",
+              criticidadeAnterior,
+              criticidadeNova,
+            )
+          : null;
+        const decisaoPrioridade = mudouPrioridadeAtendimento
+          ? obterDecisaoPrazoManual(
+              eventos,
+              "prioridade_atendimento",
+              prioridadeAnterior || "Não definida",
+              prioridadeNova,
+            )
+          : null;
+        const decisoes = [decisaoCriticidade, decisaoPrioridade].filter(Boolean);
+
+        if (
+          (mudouCriticidade && !decisaoCriticidade) ||
+          (mudouPrioridadeAtendimento && !decisaoPrioridade) ||
+          decisoes.length === 0
+        ) {
+          await conexao.query("ROLLBACK");
+          return res.status(400).json({
+            message: "A alteração da Criticidade ou Prioridade exige registrar a decisão do Gestor sobre o prazo manual.",
+          });
+        }
+
+        const preservarPrazo = decisoes.every((decisao) => decisao === "preservar");
+        const recalcularPrazo = decisoes.every((decisao) => decisao === "recalcular");
+
+        if (!preservarPrazo && !recalcularPrazo) {
+          await conexao.query("ROLLBACK");
+          return res.status(400).json({
+            message: "A decisão sobre o prazo manual está inconsistente entre as alterações registradas.",
+          });
+        }
+
+        const prazoDiasEnviados = Number(body.prazoDiasUteis);
+        const prazoDiasAtuais = atual.prazo_dias_uteis == null
+          ? null
+          : Number(atual.prazo_dias_uteis);
+
+        if (preservarPrazo) {
+          if (
+            textoCampo(body.prazo) !== textoCampo(atual.prazo) ||
+            body.prazoManual !== true ||
+            (prazoDiasAtuais !== null && prazoDiasEnviados !== prazoDiasAtuais)
+          ) {
+            await conexao.query("ROLLBACK");
+            return res.status(400).json({
+              message: "A decisão foi preservar o prazo manual; a data, o indicador manual e os dias registrados devem permanecer inalterados.",
+            });
+          }
+        } else {
+          const prazoInformado = textoCampo(body.prazo);
+          if (
+            body.prazoManual !== false ||
+            !dataISOValida(prazoInformado) ||
+            !Number.isSafeInteger(prazoDiasEnviados) ||
+            prazoDiasEnviados < 0
+          ) {
+            await conexao.query("ROLLBACK");
+            return res.status(400).json({
+              message: "A decisão foi recalcular o prazo; informe uma nova data válida e o SLA aplicado.",
+            });
           }
         }
       }
